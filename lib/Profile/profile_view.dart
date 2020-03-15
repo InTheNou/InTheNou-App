@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_flux/flutter_flux.dart' as flux;
 
 const String PROFILE = "Profile";
 

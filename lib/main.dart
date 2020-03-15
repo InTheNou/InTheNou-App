@@ -1,14 +1,16 @@
-import 'package:InTheNou/EventFeed/FeedView.dart';
-import 'package:InTheNou/EventFeed/PersonalFeedView.dart';
-import 'package:InTheNou/Profile/ProfileView.dart';
-import 'InformoationBase/InfoBaseCategoryView.dart';
+import 'package:InTheNou/EventFeed/general_feed_view.dart';
+import 'package:InTheNou/EventFeed/personal_feed_view.dart';
+import 'package:InTheNou/Profile/profile_view.dart';
+import 'package:InTheNou/RouteGenerator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
+
+import 'InformoationBase/infobase_category_view.dart';
 
 void main() => runApp(InTheNouApp());
 
 class InTheNouApp extends StatelessWidget {
-  // This widget is the root of your application.
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -16,9 +18,7 @@ class InTheNouApp extends StatelessWidget {
       theme: ThemeData(
         primaryColor: Colors.indigo,
         primaryColorDark: Colors.indigo,
-
         // This is the theme of your application.
-        //
         // Try running your application with "flutter run". You'll see the
         // application has a blue toolbar. Then, without quitting the app, try
         // changing the primarySwatch below to Colors.green and then invoke
@@ -28,23 +28,15 @@ class InTheNouApp extends StatelessWidget {
         // is not restarted.
           primarySwatch: Colors.indigo, accentColor: Colors.redAccent[400]
       ),
-      home: HomePage(title: 'InTheNou'),
+      initialRoute: '/',
+      onGenerateRoute: RouteGenerator.generateRoute,
+//      home: HomePage(title: 'InTheNou'),
     );
   }
 }
 
 class HomePage extends StatefulWidget {
   HomePage({Key key, this.title}) : super(key: key);
-  InfoBaseCategoryView informationBaseCategoryView;
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
 
   final String title;
 
