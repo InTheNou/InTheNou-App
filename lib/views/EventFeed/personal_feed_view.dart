@@ -1,4 +1,4 @@
-import 'package:InTheNou/EventFeed/event_store.dart';
+import 'file:///E:/Users/Jonathan/AndroidStudioProjects/inthenou/lib/stores/event_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 

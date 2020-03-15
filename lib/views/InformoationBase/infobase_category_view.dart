@@ -1,5 +1,5 @@
+import 'package:InTheNou/stores/infobase_store.dart';
 import 'package:flutter/material.dart';
-import "infobase_store.dart";
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
 const String INFORMATION_BASE = "Inforamtion Base";
