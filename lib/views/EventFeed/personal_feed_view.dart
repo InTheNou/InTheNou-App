@@ -147,7 +147,17 @@ class PersonalFeedState extends State<PersonalFeedView>
               )
             );
           },
-        )
+        ),
+        floatingActionButton: new Visibility(
+          visible: true,
+          child: new FloatingActionButton(
+            onPressed: (){
+              Navigator.of(context).pushNamed('/create_event');
+            },
+            tooltip: 'Open Event Creation',
+            child: new Icon(Icons.add),
+          ),
+        ),
     );
   }
 

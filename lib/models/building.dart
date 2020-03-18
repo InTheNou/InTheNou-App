@@ -14,4 +14,11 @@ class Building {
   Building(this._UID, this._name, this._commonName, this._numFloors, this._type,
       this._coordinates);
 
+  int get UID => _UID;
+  String get name => _name;
+  String get commonName => _commonName;
+  int get numFloors => _numFloors;
+  String get type => _type;
+  Coordinate get coordinates => _coordinates;
+
 }
