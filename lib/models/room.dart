@@ -16,4 +16,13 @@ class Room {
 
   Room.result(this._UID, this._code, this._building, this._description);
 
+  int get UID => _UID;
+  String get code => _code;
+  String get building => _building;
+  int get floor => _floor;
+  String get description => _description;
+  int get occupancy => _occupancy;
+  String get custodian => _custodian;
+  Coordinate get coordinates => _coordinates;
+
 }
