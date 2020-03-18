@@ -1,6 +1,8 @@
 import 'package:InTheNou/models/coordinate.dart';
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/models/room.dart';
+import 'package:InTheNou/models/tag.dart';
+import 'package:InTheNou/models/website.dart';
 
 class EventsRepo {
 
@@ -8,48 +10,49 @@ class EventsRepo {
 
   List<Event> getGenEvents(int userUID, DateTime currentTime, int skipEvents,
       int numEvents){
-    return dummyEvents;
+    return new List.from(dummyEvents);
   }
 
   List<Event> getPerEvents(int userUID, DateTime currentTime, int skipEvents,
       int numEvents){
-    return dummyEvents;
+    return new List.from(dummyEvents);
   }
 
   List<Event> searchGenEvents(int userUID, String keyword,
       DateTime currentTime, int skipEvents, int numEvents){
     genSearchKeyword = keyword;
     runLocalSearch();
-    return genSearch;
+    return new List.from(genSearch);
   }
 
   List<Event> searchPerEvents(int userUID, String keyword,
       DateTime currentTime, int skipEvents, int numEvents){
     perSearchKeyword = keyword;
     runLocalSearch();
-    return perSearch;
+    return new List.from(perSearch);
   }
 
   Event getEvent(int userUID, int eventUID){
-    return null;
+    return dummyEvents.firstWhere((element) =>
+      element.UID == eventUID);
   }
 
-  void requestFollowEvent(int userUID, int eventUID){
+  bool requestFollowEvent(int userUID, int eventUID){
     int index = dummyEvents.indexWhere((event) => event.UID == eventUID);
-    dummyEvents[index] = Event.copy(dummyEvents[index], true);
-    runLocalSearch();
+    dummyEvents[index].followed = true;
+    return true;
   }
 
-  void requestUnFollowEvent(int userUID, int eventUID){
+  bool requestUnFollowEvent(int userUID, int eventUID){
     int index = dummyEvents.indexWhere((event) => event.UID == eventUID);
-    dummyEvents[index] = Event.copy(dummyEvents[index], false);
-    runLocalSearch();
+    dummyEvents[index].followed = false;
+    return true;
   }
 
-  void requestDismissEvent(int userUID, int eventUID){
+  bool requestDismissEvent(int userUID, int eventUID){
     int index = dummyEvents.indexWhere((event) => event.UID == eventUID);
     dummyEvents.removeAt(index);
-    runLocalSearch();
+    return true;
   }
 
   void createEvent(int userUID, Event event){
@@ -62,15 +65,21 @@ class EventsRepo {
 
   List<Event> dummyEvents = List<Event>.generate(
       20,
-          (i) =>  Event.result(i, "Event $i With a BIg Name that take us a "
-              "lot of sapce", "This is a very long "
+          (i) =>  Event(i, "Event $i With a Big Name that take us a "
+              "lot of space", "This is a very long "
               "description fo the event currantly displayed. This is to test "
               "out how good it looks when it cuts off.",
           DateTime.now().add(new Duration(days: i, hours: i+2)),
           DateTime.now().add(new Duration(days: i, hours: i+5)),
+          DateTime.now(),
           new Room(0, "S-200", "Stefani", 2, "Stefani is Cool", 20,
-              "Alguien.importante@upr.edu", new Coordinate(50.0, 30.0)
-          ), (i%2 == 0)
+              "Alguien.importante@upr.edu", new Coordinate(18.209641, -67.139923)
+          ), 
+              new List.generate(3, (i) => Website(
+                  "https://portal.upr.edu/rum/portal.php?a=rea_login",
+                  "link $i")),
+              new List.generate(40, (i) => Tag("Tag$i",100)),
+              (i%2 == 0)
       )
   );
 
@@ -80,7 +89,6 @@ class EventsRepo {
   void clearPerSearch() => perSearchKeyword = "";
   void clearGenSearch() => genSearchKeyword = "";
   void runLocalSearch(){
-
     if (perSearchKeyword.isNotEmpty) {
       perSearch.clear();
       dummyEvents.forEach((element) {

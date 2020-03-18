@@ -1,8 +1,11 @@
 class Tag {
 
   String _name;
-  double _weight;
+  int _weight;
 
   Tag(this._name, this._weight);
+
+  String get name => _name;
+  int get weight => _weight;
 
 }

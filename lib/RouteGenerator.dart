@@ -1,3 +1,4 @@
+import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/main.dart';
 import 'package:InTheNou/views/Account/account_creation_view.dart';
 import 'package:InTheNou/views/Account/login_view.dart';
@@ -15,15 +16,23 @@ import "package:flutter/material.dart";
 class RouteGenerator{
 
   static Route<dynamic> generateRoute(RouteSettings settings){
+
+    final args = settings.arguments;
     switch (settings.name){
       case "/":
         return MaterialPageRoute(builder: (_) => HomePage());
       case "/login":
         return MaterialPageRoute(builder: (_) => LoginView());
       case "/accountcreation":
-        return MaterialPageRoute(builder: (_) => AccountCreationView());
+        return MaterialPageRoute(builder: (F) => AccountCreationView());
       case "/eventdetail":
-        return MaterialPageRoute(builder: (_) => EventDetailView());
+        if (args is FeedType) {
+          return MaterialPageRoute(
+            builder: (_) =>
+                EventDetailView(args),
+          );
+        }
+        return _errorRoute();
       case '/infobase/search':
         return MaterialPageRoute(builder: (_) => InfoBaseSearchView());
       case '/infobase/building':

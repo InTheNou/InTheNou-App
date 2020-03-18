@@ -1,5 +1,6 @@
 import 'package:InTheNou/models/room.dart';
 import 'package:InTheNou/models/tag.dart';
+import 'package:InTheNou/models/website.dart';
 import 'package:intl/intl.dart';
 
 class Event {
@@ -11,14 +12,15 @@ class Event {
   DateTime _endDateTime;
   DateTime _timestamp;
   Room _room;
+  List<Website> _websites;
   List<Tag> _tags;
-  bool _followed;
+  bool followed;
 
   Event(this._UID,this._title, this._description,
       this._startDateTime, this._endDateTime, this._timestamp,
-      this._room, this._tags);
+      this._room, this._websites, this._tags, this.followed);
 
-  Event.copy (Event event, bool followed){
+  Event.copy (Event event){
     this._UID = event._UID;
     this._title = event._title;
     this._description = event._description;
@@ -26,30 +28,28 @@ class Event {
     this._endDateTime = event._endDateTime;
     this._timestamp = event._timestamp;
     this._room = event._room;
+    this._websites = event._websites;
     this._tags = event._tags;
-    this._followed = followed;
+    this.followed = event.followed;
   }
 
-  Event.newEvent(this._title, this._description,
-      this._startDateTime, this._endDateTime, this._timestamp,
-      this._room, this._tags){
+  Event.newEvent(this._title, this._description, this._startDateTime,
+      this._endDateTime, this._room, this._websites, this._tags){
     this._UID = 0;
-    this._followed = false;
+    this.followed = false;
   }
 
   Event.result(this._UID, this._title, this._description, this._startDateTime,
-      this._endDateTime, this._room, this._followed) {
+      this._endDateTime, this._room, this.followed) {
     this._timestamp = null;
     this._tags = new List(10);
   }
 
-  List<Tag> get tags => _tags;
-
-  Room get room => _room;
-
-  DateTime get timestamp => _timestamp;
-
   DateTime get endDateTime => _endDateTime;
+  DateTime get timestamp => _timestamp;
+  Room get room => _room;
+  List<Website> get websites => _websites;
+  List<Tag> get tags => _tags;
 
   String getEEndTimeString() {
     if (_startDateTime.month ==  DateTime.now().month){
@@ -96,8 +96,6 @@ class Event {
   String get title => _title;
 
   int get UID => _UID;
-
-  bool get followed => _followed;
 
 
 }
