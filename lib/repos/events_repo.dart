@@ -6,7 +6,13 @@ import 'package:InTheNou/models/website.dart';
 
 class EventsRepo {
 
-  EventsRepo();
+  static final EventsRepo _instance = EventsRepo._internal();
+
+  factory EventsRepo() {
+    return _instance;
+  }
+
+  EventsRepo._internal();
 
   List<Event> getGenEvents(int userUID, DateTime currentTime, int skipEvents,
       int numEvents){
@@ -56,7 +62,8 @@ class EventsRepo {
   }
 
   void createEvent(int userUID, Event event){
-    return null;
+    dummyEvents.add(event);
+    runLocalSearch();
   }
 
   //---------------------- DEBUGGING STUFF ----------------------
@@ -64,7 +71,7 @@ class EventsRepo {
   String genSearchKeyword = "";
 
   List<Event> dummyEvents = List<Event>.generate(
-      20,
+      2,
           (i) =>  Event(i, "Event $i With a Big Name that take us a "
               "lot of space", "This is a very long "
               "description fo the event currantly displayed. This is to test "

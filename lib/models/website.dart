@@ -7,4 +7,8 @@ class Website {
   String get URL => _URL;
   String get description => _description;
 
+  @override
+  String toString() {
+    return 'Website{_URL: $_URL, _description: $_description}';
+  }
 }

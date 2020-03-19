@@ -35,7 +35,7 @@ class Event {
 
   Event.newEvent(this._title, this._description, this._startDateTime,
       this._endDateTime, this._room, this._websites, this._tags){
-    this._UID = 0;
+    this._UID = -1;
     this.followed = false;
   }
 
@@ -96,6 +96,11 @@ class Event {
   String get title => _title;
 
   int get UID => _UID;
+
+  @override
+  String toString() {
+    return 'Event{_UID: $_UID, _title: $_title, _description: $_description, _startDateTime: $_startDateTime, _endDateTime: $_endDateTime, _timestamp: $_timestamp, _room: $_room, _websites: $_websites, _tags: $_tags, followed: $followed}';
+  }
 
 
 }

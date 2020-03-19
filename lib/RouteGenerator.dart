@@ -2,6 +2,7 @@ import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/main.dart';
 import 'package:InTheNou/views/Account/account_creation_view.dart';
 import 'package:InTheNou/views/Account/login_view.dart';
+import 'package:InTheNou/views/EventFeed/event_creation_view.dart';
 import 'package:InTheNou/views/EventFeed/event_detail_view.dart';
 import 'package:InTheNou/views/InformoationBase/building_view.dart';
 import 'package:InTheNou/views/InformoationBase/floor_view.dart';
@@ -24,7 +25,7 @@ class RouteGenerator{
       case "/login":
         return MaterialPageRoute(builder: (_) => LoginView());
       case "/accountcreation":
-        return MaterialPageRoute(builder: (F) => AccountCreationView());
+        return MaterialPageRoute(builder: (_) => AccountCreationView());
       case "/eventdetail":
         if (args is FeedType) {
           return MaterialPageRoute(
@@ -33,6 +34,8 @@ class RouteGenerator{
           );
         }
         return _errorRoute();
+      case '/create_event':
+        return MaterialPageRoute(builder: (_) => EventCreationView());
       case '/infobase/search':
         return MaterialPageRoute(builder: (_) => InfoBaseSearchView());
       case '/infobase/building':

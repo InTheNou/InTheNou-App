@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:InTheNou/models/floor.dart';
 
 enum FeedType{
   GeneralFeed,
@@ -34,3 +37,20 @@ String telephoneTypeString(PhoneType telephoneType) {
       break;
   }
 }
+///
+/// Helped method to convert the number [n] to its ordinal form.
+/// As in:
+///
+///     ordinalNumber(1) = 1st
+///     ordinalNumber(2) = 2nd
+///     ordinalNumber(3) = 3rd
+///     ordinalNumber(4) = 4th
+///     ordinalNumber(5) = 5th
+///
+Floor ordinalNumber(int n){
+  String suffix = ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)];
+  if (11 <= (n % 100) && (n % 100) <= 13)
+    suffix = 'th';
+  return new Floor(n.toString() + suffix, n);
+}
+
