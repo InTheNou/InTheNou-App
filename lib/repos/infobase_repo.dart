@@ -5,7 +5,13 @@ import 'package:InTheNou/models/service.dart';
 
 class InfoBaseRepo {
 
-  InfoBaseRepo();
+  static final InfoBaseRepo _instance = InfoBaseRepo._internal();
+
+  factory InfoBaseRepo() {
+    return _instance;
+  }
+
+  InfoBaseRepo._internal();
 
   List<Building> getAllBuildings(){
     return new List.from(dummyBuildings);
@@ -13,7 +19,7 @@ class InfoBaseRepo {
   Building getBuilding(int buildingUID){
     return dummyBuildings.firstWhere((element) => (element.UID == buildingUID));
   }
-  List<Room> GetRoomsOfFloor(int buildingUID, int floor){
+  List<Room> getRoomsOfFloor(int buildingUID, int floor){
     return dummyRooms[buildingUID].where((element) => element.floor == floor);
   }
   Room getRoom(int roomUID){

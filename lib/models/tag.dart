@@ -8,4 +8,9 @@ class Tag {
   String get name => _name;
   int get weight => _weight;
 
+  @override
+  String toString() {
+    return 'Tag{_name: $_name, _weight: $_weight}';
+  }
+
 }
