@@ -1,3 +1,6 @@
+import 'package:InTheNou/models/building.dart';
+import 'package:InTheNou/models/floor.dart';
+import 'package:InTheNou/models/room.dart';
 import 'package:InTheNou/models/website.dart';
 import 'package:InTheNou/stores/event_creation_store.dart';
 import 'package:InTheNou/views/EventFeed/tag_selection_widget.dart';
@@ -23,16 +26,22 @@ class _EventCreationViewState extends State<EventCreationView>
   final format = DateFormat("EEE d: hh:mm aaa");
   final DateTime _initialDaeTime = DateTime(DateTime.now().year,
       DateTime.now().month, DateTime.now().day);
+
   EventCreationStore _creationStore;
+  bool _autoValidate = false;
+  bool _autoValidateDates = false;
+  bool _endDateEnable = false;
 
   @override
   void initState() {
     _creationStore = listenToStore(eventCreationStoreToken);
+    getBuildingsAction();
+    getAllTagsAction();
+    // In case the user had decided to save the draft and they had entered at
+    // least the Start Date, this would enable the End Date picker
+    _endDateEnable = _creationStore.startDateTime != null;
+    super.initState();
   }
-
-  bool _autoValidate = false;
-  bool _autoValidateDates = false;
-  bool _endDateEnable = false;
 
   @override
   Widget build(BuildContext context) {
@@ -45,30 +54,18 @@ class _EventCreationViewState extends State<EventCreationView>
             child: Text(
               "SUBMIT"
             ),
-            onPressed: (){
-              if(_formKey.currentState.validate()
-                  && _creationStore.selectedTags.length < 11
-                  && _creationStore.selectedTags.length > 2){
-                _formKey.currentState.save();
-                submitEventAction();
-                Navigator.of(context).pop();
-              }
-              else if (_creationStore.selectedTags.length >10
-                  || _creationStore.selectedTags.length < 3){
-                showTagWarning(context);
-              }
-              else{
-                setState(() {
-                  _autoValidate = true;
-                });
-              }
-            },
+            onPressed: () => validateEventSubmit(context)
           )
         ],
+        leading: IconButton(
+          icon: Icon(Icons.clear),
+          onPressed: () => showGoBackWarning(context),
+        ),
       ),
       body: SingleChildScrollView(
         child: Form(
             key: _formKey,
+            onWillPop: () => showGoBackWarning(context),
             child: Padding(
               padding: const EdgeInsets.only(top: 16.0, bottom: 8.0,
                   left: 8.0, right: 8.0),
@@ -81,9 +78,10 @@ class _EventCreationViewState extends State<EventCreationView>
                           labelText: "Event Title",
                           border: OutlineInputBorder()),
                       autovalidate: _autoValidate,
-                      autocorrect: true,
                       maxLines: 1,
                       maxLength: 50,
+                      textInputAction: TextInputAction.next,
+                      initialValue: _creationStore.title,
                       validator: (value) {
                         if (value.isEmpty){
                           return "Title must be provided";
@@ -92,7 +90,8 @@ class _EventCreationViewState extends State<EventCreationView>
                         }
                         return null;
                       },
-                      onSaved: (String title) => inputEventTitleAction(title),
+                      onChanged: (String description) =>
+                          inputEventTitleAction(description),
                     ),
                     const Padding(padding: EdgeInsets.only(bottom: 8.0)),
                     //
@@ -105,6 +104,8 @@ class _EventCreationViewState extends State<EventCreationView>
                       maxLines: null,
                       maxLength: 400,
                       keyboardType: TextInputType.text,
+                      textInputAction: TextInputAction.done,
+                      initialValue: _creationStore.description,
                       validator: (value) {
                         if (value == null){
                           return "Description must be provided";
@@ -113,7 +114,7 @@ class _EventCreationViewState extends State<EventCreationView>
                         }
                         return null;
                       },
-                      onSaved: (String description) =>
+                      onChanged: (String description) =>
                           inputEventDescriptionAction(description),
                     ),
                     const Padding(padding: EdgeInsets.only(bottom: 8.0)),
@@ -125,43 +126,49 @@ class _EventCreationViewState extends State<EventCreationView>
                           labelText: "Event Start Date",
                           border: OutlineInputBorder()),
                       autovalidate: _autoValidateDates,
+                      initialValue: _creationStore.startDateTime,
+                      autofocus: false,
+                      focusNode: FocusNode(canRequestFocus: false),
                       onShowPicker: (context, currentValue) async {
                         final date = await showDatePicker(
-                            context: context,
-                            firstDate: _initialDaeTime,
-                            initialDate: _creationStore.startDateTime ??
-                                DateTime.now(),
-                            lastDate: DateTime.now()
-                                .add(Duration(days: 60)));
+                           context: context,
+                           firstDate: _initialDaeTime,
+                           initialDate: _creationStore.startDateTime ??
+                               DateTime.now(),
+                           lastDate: DateTime.now()
+                               .add(Duration(days: 60)));
                         if (date != null) {
-                          final time = await showTimePicker(
-                            context: context,
-                            initialTime:
-                            TimeOfDay.fromDateTime(_creationStore
-                                .startDateTime ?? DateTime.now()),
-                          );
-                          inputEventStartAction(DateTimeField.combine(date, time));
-                          return DateTimeField.combine(date, time);
-                        } else {
+                              final time = await showTimePicker(
+                                context: context,
+                                initialTime:
+                                  TimeOfDay.fromDateTime(_creationStore
+                                  .startDateTime ?? DateTime.now()),
+                              );
+                              inputEventStartAction(DateTimeField.combine(date, time));
+                              return DateTimeField.combine(date, time);
+                            } else {
                           return currentValue;
                         }
                       },
+                      validator: (value) => validateDates(value),
                       onChanged: (value) {
                         _formKey.currentState.setState(() {
                           _autoValidateDates = true;
                           _endDateEnable = value != null;
                         });
                       },
-                        validator: (value) => validateDates(value)
                     ),
                     const Padding(padding: EdgeInsets.only(bottom: 8.0)),
                     DateTimeField(
                       format: format,
                       enabled: _endDateEnable,
+                      autofocus: false,
+                      focusNode: FocusNode(canRequestFocus: false),
                       decoration: InputDecoration(
                           labelText: "Event End Date",
                           border: OutlineInputBorder()),
                       autovalidate: _autoValidateDates,
+                      initialValue: _creationStore.endDateTime,
                       onShowPicker: (context, currentValue) async {
                         final date = await showDatePicker(
                             context: context,
@@ -183,103 +190,176 @@ class _EventCreationViewState extends State<EventCreationView>
                           return currentValue;
                         }
                       },
-                      onChanged: (value) {
-                        _formKey.currentState.setState(() {
-                          _autoValidateDates = true;
-                        });
-                      },
                       validator: (value) => validateDates(value)
                     ),
                     const Padding(padding: EdgeInsets.only(bottom: 16.0)),
+                    //
+                    // Location
+                    Row(
+                      children: <Widget>[
+                        const Padding(padding: EdgeInsets.only(left: 8.0)),
+                        Expanded(
+                          child: Text("Location",
+                              style: Theme.of(context).textTheme.subtitle1),
+                        ),
+                        const Padding(padding: EdgeInsets.only(left: 8.0)),
+                      ],
+                    ),
+                    Card(
+                      child: Padding(
+                        padding: EdgeInsets.only(left: 16.0, right: 8.0),
+                        child: DropdownButtonFormField(
+                          decoration: InputDecoration.collapsed(
+                              hintText: "Building"),
+                          autovalidate: _autoValidate,
+                          value: _creationStore.selectedBuilding,
+                          items: _creationStore.buildings.map((Building building) {
+                            return new DropdownMenuItem(
+                              value: building,
+                              child: new Text(building.name),
+                            );
+                          }).toList(),
+                          onChanged: (value) => buildingSelectAction(value),
+                          validator: (value) =>
+                            value == null? "Please choose a Floor" : null,
+                        ),
+                      ),
+                    ),
+                    Card(
+                      child: Padding(
+                        padding: EdgeInsets.only(left: 16.0, right: 8.0),
+                        child: DropdownButtonFormField(
+                          decoration: InputDecoration.collapsed(
+                              hintText: "Floor"),
+                          autovalidate: _autoValidate,
+                          value: _creationStore.selectedFloor,
+                          items: _creationStore.floors.map((Floor floor) {
+                            return new DropdownMenuItem(
+                              value: floor,
+                              child: new Text(floor.floorName),
+                            );
+                          }).toList(),
+                          onChanged: (value) => floorSelectAction(value),
+                          validator: (value) =>
+                            value == null? "Please choose a Floor" : null,
+                        ),
+                      ),
+                    ),
+                    Card(
+                      child: Padding(
+                        padding: EdgeInsets.only(left: 16.0, right: 8.0),
+                        child: DropdownButtonFormField(
+                          decoration: InputDecoration.collapsed(
+                              hintText: "Room"),
+                          autovalidate: _autoValidate,
+                          value: _creationStore.selectedRoom,
+                          items: _creationStore.roomsInBuilding
+                              .map((Room room) {
+                            return new DropdownMenuItem(
+                              value: room,
+                              child: new Text(room.code),
+                            );
+                          }).toList(),
+                          onChanged: (value) => roomSelectAction(value),
+                          validator: (value) =>
+                            value == null? "Please choose a Room" : null
+                        ),
+                      ),
+                    ),
+                    const Padding(padding: EdgeInsets.only(bottom: 8.0)),
                     //
                     // Websites
                     Row(
                       children: <Widget>[
                         const Padding(padding: EdgeInsets.only(left: 8.0)),
                         Expanded(
-                          child: Text("Websites",
-                          style: Theme.of(context).textTheme.subtitle1),
+                          child: Row(
+                            children: <Widget>[
+                              Text("Websites",
+                                  style: Theme.of(context).textTheme.subtitle1),
+                              const Padding(padding: EdgeInsets.only(left: 8.0)),
+                              Text("${_creationStore.websites.length}/3",
+                                  style: Theme.of(context).textTheme
+                                      .subtitle1.copyWith(
+                                      fontWeight: FontWeight.w300
+                                  )),
+                            ],
+                          )
                         ),
-                        const Padding(padding: EdgeInsets.only(left: 150.0)),
                         IconButton(
                             icon: Icon(Icons.add),
                             onPressed: (){
-                              showDialog(
-                                  context: context,
-                                  builder: (_) {
-                                    return WebsiteAlertDialog();
-                                  });
+                              if(_creationStore.websites.length<3){
+                                showDialog(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    builder: (_) => WebsiteAlertDialog()
+                                );
+                              }
+                              else {
+                                showWebsiteWarning(context);
+                              }
                             },
                         ),
                       ],
                     ),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).cardColor,
-                        boxShadow: kElevationToShadow[2]
-                      ),
+                    Card(
                       child: ListView.separated(
                           physics: const NeverScrollableScrollPhysics(),
                           shrinkWrap: true,
                           itemCount: _creationStore.websites.length,
                           itemBuilder: (BuildContext context, int index) {
                             Website website = _creationStore.websites[index];
-                            return Material(
-                              color: Theme.of(context).cardColor,
-                              child: InkWell(
-                                onTap: (){},
-                                child: Padding(
-                                  padding: const EdgeInsets.only(top: 8.0,
-                                      bottom: 8.0, left: 16.0, right: 16.0),
-                                  child: Row(
-                                    children: <Widget>[
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: <Widget>[
-                                            Text (
-                                              website.description,
-                                              style: Theme.of(context).textTheme.subtitle2,
-                                            ),
-                                            Text (
-                                              website.URL,
-                                              style: Theme.of(context).textTheme.bodyText2,
-                                            )
-                                          ],
-                                        ),
+                            return InkWell(
+                              onTap: (){},
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 8.0,
+                                    bottom: 8.0, left: 16.0, right: 16.0),
+                                child: Row(
+                                  children: <Widget>[
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text (
+                                            website.description,
+                                            style: Theme.of(context).textTheme.subtitle2,
+                                          ),
+                                          Text (
+                                            website.URL,
+                                            style: Theme.of(context).textTheme.bodyText2,
+                                          )
+                                        ],
                                       ),
-                                      IconButton(
-                                        onPressed: (){
-                                          removeWebsiteAction(website);
-                                        },
-                                        icon: Icon(Icons.delete),
-                                      )
-                                    ],
-                                  ),
+                                    ),
+                                    IconButton(
+                                      onPressed: () =>
+                                        removeWebsiteAction(website),
+                                      icon: Icon(Icons.delete),
+                                    )
+                                  ],
                                 ),
                               ),
                             );
                           },
                           separatorBuilder: (BuildContext context, int index)
-                          => Divider()
+                            => Divider()
                       ),
                     ),
                     //
-                    const Padding(padding: EdgeInsets.only(bottom: 16.0)),
+                    const Padding(padding: EdgeInsets.only(bottom: 24.0)),
                     //
                     //Tags
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         const Padding(padding: EdgeInsets.only(left: 8.0)),
-                        Expanded(
-                          child: Text(
-                              "Select 3 to 10 Tags:",
-                              style:Theme.of(context).textTheme.subtitle1,
-                          ),
-                        )
+                        Text(
+                          "Select 3 to 10 Tags:",
+                          style:Theme.of(context).textTheme.subtitle1,
+                        ),
                       ],
                     ),
-                    const Padding(padding: EdgeInsets.only(bottom: 8.0)),
                     TagSelectionWidget(),
                     //
                   ]
@@ -290,6 +370,94 @@ class _EventCreationViewState extends State<EventCreationView>
     );
   }
 
+  void validateEventSubmit(BuildContext context){
+    if(_formKey.currentState.validate()
+        && _creationStore.selectedTags.length < 11
+        && _creationStore.selectedTags.length > 2){
+      showSubmitConfirmation(context).then((value) {
+        if(value){
+          submitEventAction();
+          Navigator.of(context).pop();
+        }
+      });
+    }
+    else{
+      if (_creationStore.selectedTags.length >10
+          || _creationStore.selectedTags.length < 3){
+        showTagWarning(context);
+      }
+      _formKey.currentState.save();
+      setState(() {
+        _autoValidate = true;
+      });
+    }
+  }
+
+  Future<bool> showSubmitConfirmation(BuildContext context){
+    return showDialog<bool>(context: context,
+        barrierDismissible: false,
+        builder: (_) {
+          return AlertDialog(
+            title: Text("Confirm Event"),
+            content: Text(
+                "Are you sure you want to sumbit this event? \nNo further "
+                    "changes can be made to the event, eexcept for cancelling."
+            ),
+            actions: <Widget>[
+              FlatButton(
+                textColor: Theme.of(context).primaryColor,
+                child: Text(
+                    "CANCEL"
+                ),
+                onPressed: () => Navigator.of(context).pop(false),
+              ),
+              Padding(padding: EdgeInsets.only(left: 16.0),),
+              RaisedButton(
+                textColor: Theme.of(context).canvasColor,
+                color: Theme.of(context).primaryColor,
+                child: Text(
+                    "CONFIRM"
+                ),
+                onPressed: () => Navigator.of(context).pop(true),
+              ),
+              Padding(padding: EdgeInsets.only(left: 8.0),)
+            ],
+          );
+        }
+    );
+  }
+
+  showGoBackWarning(BuildContext context){
+    showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('You have made some changes'),
+          content: Text('Would you like to save your progress in the '
+              'Event Creation temporerally?. \nIt will be discarted '
+              'upon restart of the application.'),
+          actions: [
+            FlatButton(
+              child: Text('Discard'),
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pop(context);
+                discardEventAction();
+              },
+            ),
+            Padding(padding: EdgeInsets.only(left: 16.0),),
+            RaisedButton(
+                textColor: Theme.of(context).canvasColor,
+                color: Theme.of(context).primaryColor,
+                child: Text('Save'),
+                onPressed: () {
+                  Navigator.pop(context);
+                }
+            ),
+            Padding(padding: EdgeInsets.only(left: 8.0),),
+          ],
+        )
+    );
+  }
 
   String validateDates(value){
     if(value == null){
@@ -312,9 +480,31 @@ class _EventCreationViewState extends State<EventCreationView>
     return null;
   }
 
+  void showWebsiteWarning(BuildContext context){
+    showDialog(context: context,
+        builder: (_) {
+          return AlertDialog(
+            title: Text("Links limit"),
+            content: Text(
+                "You have reached the limit of 3 links associated with an "
+                    "Event."
+            ),
+            actions: <Widget>[
+              FlatButton(
+                textColor: Theme.of(context).primaryColor,
+                child: Text(
+                    "CONFIRM"
+                ),
+                onPressed: () => Navigator.of(context).pop(),
+              )
+            ],
+          );
+        }
+    );
+  }
+
   void showTagWarning(BuildContext context){
       showDialog(context: context,
-      barrierDismissible: false,
       builder: (_) {
         return AlertDialog(
           title: Text("Incorrect number of Tags"),

@@ -25,11 +25,9 @@ class _TagSelectionWidgetState extends State<TagSelectionWidget>
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        Container(
-          decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              boxShadow: kElevationToShadow[2],
-              borderRadius: BorderRadius.circular(16.0)
+        Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
           ),
           child: Row(
             children: <Widget>[
@@ -47,13 +45,14 @@ class _TagSelectionWidgetState extends State<TagSelectionWidget>
             ],
           ),
         ),
-        const Padding(padding: EdgeInsets.all(4.0)),
         Container(
           decoration: BoxDecoration(
               color: Theme.of(context).cardColor,
               boxShadow: kElevationToShadow[2]
           ),
-          height: 500.0,
+          constraints: BoxConstraints(
+              maxHeight: 500.0,
+              minHeight: 50.0),
           child: Scrollbar(
             child: ListView.builder(
                 itemCount: _creationStore.searchTags.keys.length,

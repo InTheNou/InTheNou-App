@@ -15,59 +15,59 @@ class _WebsiteAlertDialogState extends State<WebsiteAlertDialog> {
   String _URL;
   bool _validate = false;
   final _formKey = GlobalKey<FormState>();
-
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text("Add a Website"),
       content: Form (
         key: _formKey,
-        child: Column (
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            TextFormField (
-              decoration: InputDecoration(
-                  labelText: "Link Name",
-                  border: OutlineInputBorder()),
-              autovalidate: _validate,
-              autocorrect: true,
-              maxLines: null,
-              maxLength: 50,
-              keyboardType: TextInputType.text,
-              validator: (String value) {
-                if (value.isEmpty){
-                  return "Name is required.";
-                }else if(value.length < 3){
-                  return "Name is too short";
-                }
-                return null;
-              },
-              onSaved: (String value){
-                _name = value;
-              },
-            ),
-            const Padding(padding: EdgeInsets.only(top: 8.0)),
-            TextFormField (
-              decoration: InputDecoration(
-                  labelText: "Link URL",
-                  border: OutlineInputBorder()),
-              autovalidate: _validate,
-              maxLines: null,
-              maxLength: 400,
-              keyboardType: TextInputType.text,
-              validator: (value) {
-                if (value.isEmpty){
-                  return "URL is required";
-                }else if(!Uri.parse(value).isAbsolute || !isURL(value)){
-                  return "Invalid URL";
-                }
-                return null;
-              },
-              onSaved: (value){
-                _URL = value;
-              },
-            )
-          ],
+        child: SingleChildScrollView(
+          child: Column (
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextFormField (
+                decoration: InputDecoration(
+                    labelText: "Link Name",
+                    border: OutlineInputBorder()),
+                autovalidate: _validate,
+                maxLines: null,
+                maxLength: 50,
+                keyboardType: TextInputType.text,
+                validator: (String value) {
+                  if (value.isEmpty){
+                    return "Name is required.";
+                  }else if(value.length < 3){
+                    return "Name is too short";
+                  }
+                  return null;
+                },
+                onSaved: (String value){
+                  _name = value;
+                },
+              ),
+              const Padding(padding: EdgeInsets.only(top: 8.0)),
+              TextFormField (
+                decoration: InputDecoration(
+                    labelText: "Link URL",
+                    border: OutlineInputBorder()),
+                autovalidate: _validate,
+                maxLines: null,
+                maxLength: 400,
+                keyboardType: TextInputType.text,
+                validator: (value) {
+                  if (value.isEmpty){
+                    return "URL is required";
+                  }else if(!Uri.parse(value).isAbsolute || !isURL(value)){
+                    return "Invalid URL";
+                  }
+                  return null;
+                },
+                onSaved: (value){
+                  _URL = value;
+                },
+              )
+            ],
+          ),
         ),
       ),
       actions: <Widget>[
