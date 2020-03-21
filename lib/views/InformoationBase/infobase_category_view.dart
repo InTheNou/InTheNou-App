@@ -1,4 +1,4 @@
-import 'package:InTheNou/stores/infobase_store.dart';
+import 'package:InTheNou/assets/values.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
@@ -10,15 +10,11 @@ class InfoBaseCategoryView extends StatefulWidget{
 }
 
 class InformationBaseState extends State<InfoBaseCategoryView> with flux.StoreWatcherMixin {
-  InfoBaseStore _infoBaseStore;
 
   @override
   void initState() {
     super.initState();
-
-    _infoBaseStore = listenToStore(infoBaseToken);
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -26,15 +22,46 @@ class InformationBaseState extends State<InfoBaseCategoryView> with flux.StoreWa
       appBar: AppBar(
         title: Text(INFORMATION_BASE),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(INFORMATION_BASE,style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
-        ),
-      ),
+      body: GridView.count(
+        padding: const EdgeInsets.all(20),
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        crossAxisCount: 2,
+        children: <Widget>[
+          RaisedButton(
+            color: Theme.of(context).primaryColor,
+            padding: EdgeInsets.all(16.0),
+            child: Text("Buildings",
+                style: Theme.of(context).textTheme.headline5.copyWith(
+                    color: Theme.of(context).canvasColor
+                )),
+            onPressed: () => Navigator.of(context).pushNamed(
+                '/infobase/search', arguments: InfoBaseSearchType.Building),
+          ),
+          RaisedButton(
+            color: Theme.of(context).primaryColor,
+            textColor: Theme.of(context).canvasColor,
+            child: Text("Rooms",
+                style: Theme.of(context).textTheme.headline5.copyWith(
+                    color: Theme.of(context).canvasColor
+                )),
+            padding: EdgeInsets.all(16.0),
+            onPressed: () => Navigator.of(context).pushNamed
+              ("/infobase/search", arguments: InfoBaseSearchType.Room),
+          ),
+          RaisedButton(
+            color: Theme.of(context).primaryColor,
+            textColor: Theme.of(context).canvasColor,
+            child: Text("Services",
+                style: Theme.of(context).textTheme.headline5.copyWith(
+                    color: Theme.of(context).canvasColor
+                )),
+            padding: EdgeInsets.all(16.0),
+            onPressed: () => Navigator.of(context).pushNamed
+              ("/infobase/search", arguments: InfoBaseSearchType.Service),
+          ),
+        ],
+      )
     );
   }
 

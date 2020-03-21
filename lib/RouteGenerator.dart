@@ -37,7 +37,13 @@ class RouteGenerator{
       case '/create_event':
         return MaterialPageRoute(builder: (_) => EventCreationView());
       case '/infobase/search':
-        return MaterialPageRoute(builder: (_) => InfoBaseSearchView());
+        if (args is InfoBaseSearchType) {
+          return MaterialPageRoute(
+            builder: (_) =>
+                InfoBaseSearchView(args),
+          );
+        }
+        return _errorRoute();
       case '/infobase/building':
         return MaterialPageRoute(builder: (_) => BuildingView());
       case '/infobase/floor':

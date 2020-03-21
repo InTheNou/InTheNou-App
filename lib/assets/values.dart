@@ -1,5 +1,5 @@
 import 'dart:math';
-
+import 'package:InTheNou/models/coordinate.dart';
 import 'package:InTheNou/models/floor.dart';
 
 enum FeedType{
@@ -9,6 +9,16 @@ enum FeedType{
 
 String feedTypeString(FeedType feedType) =>
     feedType == FeedType.PersonalFeed ? "PersonalFeed" : "GeneralFeed";
+
+enum InfoBaseSearchType{
+  Building,
+  Room,
+  Service
+}
+
+String infoBaseSearchString(InfoBaseSearchType type) =>
+    type == InfoBaseSearchType.Building ? "Buildings Search" :
+    type == InfoBaseSearchType.Room ? "Rooms Search" : "Services Search";
 
 enum PhoneType{
   C,
@@ -37,6 +47,7 @@ String telephoneTypeString(PhoneType telephoneType) {
       break;
   }
 }
+
 ///
 /// Helped method to convert the number [n] to its ordinal form.
 /// As in:
@@ -52,5 +63,11 @@ Floor ordinalNumber(int n){
   if (11 <= (n % 100) && (n % 100) <= 13)
     suffix = 'th';
   return new Floor(n.toString() + suffix, n);
+}
+
+String buildGoogleMapsLink(Coordinate coord){
+  String url = "http://maps.google.com/maps?daddr="
+      + "${coord.lat},${coord.long}&z=14" ;
+  return url;
 }
 
