@@ -1,4 +1,9 @@
+import 'package:InTheNou/models/phone_number.dart';
+import 'package:InTheNou/models/website.dart';
+import 'package:InTheNou/stores/infobase_store.dart';
+import 'package:InTheNou/views/widgets/link_with_icon_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_flux/flutter_flux.dart' as flux;
 
 class ServiceView extends StatefulWidget {
 
@@ -7,20 +12,195 @@ class ServiceView extends StatefulWidget {
 
 }
 
-class _ServiceViewState extends State<ServiceView> {
-  // TODO: add state variables and methods
+class _ServiceViewState extends State<ServiceView>
+    with flux.StoreWatcherMixin<ServiceView>{
+
+  InfoBaseStore _infoBaseStore;
+
+  @override
+  void initState() {
+    super.initState();
+    _infoBaseStore = listenToStore(infoBaseToken);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("ServiceView"),
+        title: Text(_infoBaseStore.detailService.name),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      body: SingleChildScrollView(
+        child: Row(
           children: <Widget>[
-            Text("ServiceView", style: Theme.of(context).textTheme.headline4,),
+            const Padding(padding: EdgeInsets.only(top: 16.0)),
+            Expanded(
+              child: Column(
+                children: <Widget>[
+                  //
+                  // Basic Info
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  _infoBaseStore.detailService.name,
+                                  style: Theme.of(context).textTheme.headline5,
+                                  softWrap: true,
+                                ),
+                                const Padding(padding: EdgeInsets.only(bottom:
+                                8.0)),
+                                Padding(
+                                  padding: EdgeInsets.only(top: 4.0, bottom: 4.0,
+                                      left: 8.0, right: 8.0),
+                                  child: Text(
+                                    _infoBaseStore.detailService
+                                        .description,
+                                    style: Theme.of(context).textTheme.subtitle1,
+                                    softWrap: true,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.only(top: 4.0, bottom: 4.0,
+                                      left: 8.0, right: 8.0),
+                                  child: RichText(
+                                    text: TextSpan(
+                                        style: Theme.of(context).textTheme.subtitle1,
+                                        children: <TextSpan>[
+                                          TextSpan(
+                                              text: "Room: "
+                                          ),
+                                          TextSpan(
+                                              text: _infoBaseStore.detailService.roomCode,
+                                              style: Theme.of(context).textTheme
+                                                  .subtitle1.copyWith(fontWeight:
+                                              FontWeight.bold)
+                                          )
+                                        ]
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                  //
+                  // Contact info
+                  Card(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Padding(
+                            padding: EdgeInsets.only(top: 8.0, bottom: 8.0,
+                                left: 8.0, right: 8.0),
+                            child: Text(
+                              "Contact Information",
+                              style: Theme.of(context).textTheme.subtitle2.copyWith(
+                                  fontWeight: FontWeight.w300
+                              ),
+                            )
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0,
+                              left: 8.0, right: 8.0),
+                          child: Row(
+                            children: <Widget>[
+                              Expanded(
+                                child: ListView.builder(
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    shrinkWrap: true,
+                                    itemCount: _infoBaseStore.detailService.websites.length,
+                                    itemBuilder: (context, index){
+                                      Website _website = _infoBaseStore
+                                          .detailService.websites[index];
+                                      return LinkWithIconWidget(
+                                          _website
+                                              .description+"fdfdsfdsfdsfsdfsdfsdffdfdfdfdfdsfdsfdsfsdfs",
+                                          _website.URL,
+                                          Icons.language
+                                      );
+                                    }),
+                              )
+                            ],
+                          )
+                        ),
+                        Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 8.0,
+                                      left: 8.0, right: 8.0),
+                                  child: ListView.builder(
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      shrinkWrap: true,
+                                      itemCount: _infoBaseStore
+                                          .detailService.numbers.length,
+                                      itemBuilder: (context, index){
+                                        PhoneNumber _phone = _infoBaseStore
+                                            .detailService.numbers[index];
+                                        return LinkWithIconWidget(
+                                            _phone.number,
+                                            "tel:${_phone.number}",
+                                            Icons.phone
+                                        );
+                                      })
+                              ),
+                            )
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                  //
+                  //Schedule
+                  Card(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Padding(
+                            padding: EdgeInsets.only(top: 8.0, bottom: 8.0,
+                                left: 8.0, right: 8.0),
+                            child: Text(
+                              "Schedule:",
+                              style: Theme.of(context).textTheme.subtitle2.copyWith(
+                                  fontWeight: FontWeight.w300
+                              ),
+                            )
+                        ),
+                        Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: ListView.builder(
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  itemCount: _infoBaseStore.detailService.schedule.length,
+                                  itemBuilder: (context, index){
+                                    String schedule = _infoBaseStore
+                                        .detailService.schedule[index];
+                                    return  ListTile(
+                                      title: Text(schedule,
+                                          style: Theme.of(context).textTheme.subtitle1),
+                                      leading: Icon(Icons.access_time),
+                                      dense: true,
+                                    );
+                                  },
+                              ),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            )
           ],
         ),
       ),

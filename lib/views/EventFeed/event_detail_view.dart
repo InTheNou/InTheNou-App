@@ -1,10 +1,11 @@
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/stores/event_store.dart';
-import 'package:flutter/gestures.dart';
+import 'package:InTheNou/views/widgets/link_with_icon_widget.dart';
+import 'package:InTheNou/views/widgets/multi_text_with_icon_widget.dart';
+import 'package:InTheNou/views/widgets/text_with_icon_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
-import 'package:url_launcher/url_launcher.dart';
 
 class EventDetailView extends StatefulWidget {
 
@@ -58,8 +59,6 @@ class _EventDetailViewState extends State<EventDetailView>
                               children: <Widget>[
                                 Text(
                                   detailEvent.title,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     color: Theme.of(context).primaryColor,
                                     fontSize: Theme.of(context).textTheme
@@ -69,9 +68,9 @@ class _EventDetailViewState extends State<EventDetailView>
                                 ),
                                 const Padding(padding: EdgeInsets.only(bottom:
                                 8.0)),
-                                LinkWithIcon(
+                                LinkWithIconWidget(
                                     detailEvent.room.code,
-                                    buildGoogleMapsLink(detailEvent),
+                                    buildGoogleMapsLink(detailEvent.room.coordinates),
                                     Icons.location_on),
                                 const Padding(padding: EdgeInsets.only(bottom: 4.0)),
                                 TextWithIcon(detailEvent.getDurationString(),
@@ -151,7 +150,7 @@ class _EventDetailViewState extends State<EventDetailView>
                               shrinkWrap: true,
                               itemCount: detailEvent.websites.length,
                               itemBuilder: (context, index) {
-                                return LinkWithIcon(
+                                return LinkWithIconWidget(
                                     detailEvent.websites[index].description,
                                     detailEvent.websites[index].URL,
                                     Icons.language);
@@ -295,109 +294,3 @@ class _EventDetailViewState extends State<EventDetailView>
   }
 }
 
-String buildGoogleMapsLink(Event event){
-  String url = "http://maps.google.com/maps?daddr="
-      + event.room.coordinates.lat.toString() +
-      "," + event.room.coordinates.long.toString()+"&z=14";
-  return url;
-}
-
-class TextWithIcon extends StatelessWidget{
-  String _text;
-  IconData _icon;
-
-  TextWithIcon(this._text, this._icon);
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-        children: <Widget>[
-        const Padding(padding: EdgeInsets.only(bottom: 4.0)),
-        Row(
-          children: <Widget>[
-            const Padding(padding: EdgeInsets.only(left: 8.0)),
-            Icon(_icon),
-            const Padding(padding: EdgeInsets.only(left: 16.0)),
-            Text(
-              _text,
-              style: Theme.of(context).textTheme.subtitle1,
-            ),
-          ],
-        ),
-        const Padding(padding: EdgeInsets.only(bottom: 4.0)),
-      ],
-    );
-  }
-}
-
-class MultiTextWithIcon extends StatelessWidget{
-  String _boldText;
-  String _normalText;
-  IconData _icon;
-
-  MultiTextWithIcon(this._normalText, this._boldText, this._icon);
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: <Widget>[
-        const Padding(padding: EdgeInsets.only(left: 8.0)),
-        Icon(_icon),
-        const Padding(padding: EdgeInsets.only(left: 16.0)),
-        RichText(
-          text: TextSpan(
-            style: Theme.of(context).textTheme.subtitle1,
-            children: <TextSpan>[
-              TextSpan(text: _normalText),
-              TextSpan(text: "\t\t\t"),
-              TextSpan(text: _boldText, style: TextStyle(
-                  fontWeight: FontWeight.bold)),
-            ],
-          ),
-        )
-      ],
-    );
-  }
-}
-
-class LinkWithIcon extends StatelessWidget{
-  String _description;
-  String _URL;
-  IconData _icon;
-
-  LinkWithIcon(this._description, this._URL, this._icon);
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        const Padding(padding: EdgeInsets.only(bottom: 4.0)),
-        Row(
-          children: <Widget>[
-            const Padding(padding: EdgeInsets.only(left: 8.0)),
-            Icon(
-                _icon),
-            const Padding(padding: EdgeInsets.only(left: 16.0)),
-            RichText(
-              text: TextSpan(
-                text: _description,
-                style: new TextStyle(
-                    color: Colors.blue,
-                    decoration: TextDecoration.underline,
-                    fontSize: Theme.of(context).textTheme.subtitle1.fontSize),
-                recognizer: new TapGestureRecognizer()
-                  ..onTap = () { _launchURL(_URL);
-                  },
-              ),
-            )
-          ],
-        ),
-        const Padding(padding: EdgeInsets.only(bottom: 4.0)),
-      ],
-    );
-  }
-  _launchURL(String URL) async {
-    if (await canLaunch(URL)) {
-      await launch(URL);
-    } else {
-      throw 'Could not launch $URL';
-    }
-  }
-}
