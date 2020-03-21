@@ -8,26 +8,75 @@ class SettingsView extends StatefulWidget {
 }
 
 class _SettingsViewState extends State<SettingsView> {
-  // TODO: add state variables and methods
+
+  List<int> defaultNotifTimes = [
+    5, 10, 15, 20, 30
+  ];
+
+  int selected = 30;
+  bool smartNotification = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("SettingsView"),
+        title: Text("Settings"),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text("SettingsView", style: Theme
-                .of(context)
-                .textTheme
-                .headline4,
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: <Widget>[
+          Card(
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: Text(
+                      "Default Notification"
+                  ),
+                ),
+                DropdownButton<int>(
+                  value: selected,
+                  style: Theme.of(context).textTheme.subtitle2,
+                  underline: Container(
+                    height: 2,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                  items: defaultNotifTimes
+                      .map<DropdownMenuItem<int>>((int value) {
+                    return DropdownMenuItem<int>(
+                      value: value,
+                      child: Text(value.toString()),
+                    );
+                  }).toList(),
+                  onChanged: (int newValue) {
+                    setState(() {
+                      selected = newValue;
+                    });
+                  },
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+          Card(
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: Text(
+                      "Smart Notification"
+                  ),
+                ),
+                Switch(
+                  value: smartNotification,
+                  onChanged: (value) {
+                    setState(() {
+                      smartNotification = value;
+                    });
+                  },
+                ),
+              ],
+            ),
+          )
+        ],
+      )
     );
   }
 }

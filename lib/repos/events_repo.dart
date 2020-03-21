@@ -117,5 +117,9 @@ class EventsRepo {
       });
     }
   }
+
+  void deleteEvent(Event event){
+    dummyEvents.remove(event);
+  }
 }
 

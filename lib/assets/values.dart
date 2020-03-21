@@ -48,6 +48,20 @@ String telephoneTypeString(PhoneType telephoneType) {
   }
 }
 
+enum UserPrivilege{
+  User,
+  EventCreator,
+  Moderator,
+  Administrator
+}
+
+String userPrivilegeString(UserPrivilege type) =>
+    type == UserPrivilege.User ? "User" :
+    type == UserPrivilege.EventCreator ? "Event Creator" :
+    type == UserPrivilege.Moderator ? "Moderator" : "Administrator";
+
+const EVENTS_TO_FETCH = 20;
+
 ///
 /// Helped method to convert the number [n] to its ordinal form.
 /// As in:
