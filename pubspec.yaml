@@ -28,6 +28,8 @@ dependencies:
   url_launcher: ^5.4.2
   datetime_picker_formfield: ^1.0.0
   validators: ^2.0.0
+  shared_preferences: ^0.5.6+3
+  flutter_auth_buttons: ^0.7.0
 
 dev_dependencies:
   flutter_test:
@@ -40,7 +42,7 @@ dev_dependencies:
 # The following section is specific to Flutter.
 flutter:
   assets:
-    - lib/assets/placeholder.png
+    - lib/assets/
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

@@ -31,7 +31,7 @@ class ProfileState extends State<ProfileView>
             IconButton(
               icon: Icon(Icons.settings),
               onPressed: () => Navigator.of(context).pushNamed("/profile/settings"),
-            )
+            ),
           ],
         ),
       body: Column(
@@ -72,7 +72,7 @@ class ProfileState extends State<ProfileView>
                               text: "Type of User: ",
                               children: <TextSpan>[
                                 TextSpan(
-                                    text: _userStore.user.type,
+                                    text: userRoleString(_userStore.user.role),
                                     style: Theme.of(context).textTheme.subtitle1.copyWith(
                                         fontWeight: FontWeight.bold
                                     )

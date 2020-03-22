@@ -92,19 +92,18 @@ class EventCreationStore extends flux.Store {
       _websites.remove(website);
     });
     triggerOnAction(selectedTagAction, (MapEntry<Tag, bool> tag){
+      if(_searchTags.containsKey(tag.key)){
+        _searchTags.update(tag.key, (value) => tag.value);
+        _allTags.update(tag.key, (value) => tag.value);
+      }
       if (tag.value){
         _selectedTags.add(tag.key);
-        if(_searchTags.containsKey(tag.key)){
-          _searchTags.update(tag.key, (value) => tag.value);
-        }
       } else {
         _selectedTags.remove(tag.key);
-        if(_searchTags.containsKey(tag.key)){
-          _searchTags.update(tag.key, (value) => tag.value);
-        }
       }
     });
     triggerOnAction(searchedTagAction, (String search){
+      _searchTags.clear();
       _allTags.forEach((key, value) {
         if(key.name.contains(search)){
           _searchTags.putIfAbsent(key, () => value);
