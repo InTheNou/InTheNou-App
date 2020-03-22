@@ -1,6 +1,7 @@
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/stores/event_store.dart';
+import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
@@ -14,6 +15,7 @@ class PersonalFeedState extends State<PersonalFeedView>
     with flux.StoreWatcherMixin<PersonalFeedView>{
 
   EventFeedStore _eventFeedStore;
+  UserStore _userStore;
   TextEditingController _searchQueryController = TextEditingController();
   ScrollController _scrollController;
 
@@ -32,6 +34,7 @@ class PersonalFeedState extends State<PersonalFeedView>
     super.initState();
 
     _eventFeedStore = listenToStore(EventFeedStore.eventFeedToken);
+    _userStore = UserStore();
     if (_eventFeedStore.eventCount(FeedType.PersonalFeed) == 0){
       getAllEventsAction(FeedType.PersonalFeed);
     }
@@ -149,7 +152,7 @@ class PersonalFeedState extends State<PersonalFeedView>
           },
         ),
         floatingActionButton: new Visibility(
-          visible: true,
+          visible: _userStore.user.userPrivilege != UserPrivilege.User,
           child: new FloatingActionButton(
             onPressed: (){
               Navigator.of(context).pushNamed('/create_event');
@@ -171,7 +174,6 @@ class PersonalFeedState extends State<PersonalFeedView>
         confirmDismissAction();
       }
     });
-
     dismissEventAction(event.UID);
   }
 

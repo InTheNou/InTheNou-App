@@ -1,5 +1,5 @@
 import 'package:InTheNou/assets/values.dart';
-import 'package:InTheNou/main.dart';
+import 'package:InTheNou/home_page.dart';
 import 'package:InTheNou/views/Account/account_creation_view.dart';
 import 'package:InTheNou/views/Account/login_view.dart';
 import 'package:InTheNou/views/EventFeed/event_creation_view.dart';
@@ -20,7 +20,7 @@ class RouteGenerator{
 
     final args = settings.arguments;
     switch (settings.name){
-      case "/":
+      case "/home":
         return MaterialPageRoute(builder: (_) => HomePage());
       case "/login":
         return MaterialPageRoute(builder: (_) => LoginView());

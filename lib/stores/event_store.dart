@@ -6,7 +6,6 @@ import 'package:flutter_flux/flutter_flux.dart' as flux;
 
 class EventFeedStore extends flux.Store{
 
-  static const EVENTS_TO_FETCH = 20;
   static final flux.StoreToken eventFeedToken = new flux.StoreToken(
       new EventFeedStore());
   static final EventsRepo _eventsRepo = new EventsRepo();

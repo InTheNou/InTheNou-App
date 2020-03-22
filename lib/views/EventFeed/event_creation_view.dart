@@ -451,6 +451,7 @@ class _EventCreationViewState extends State<EventCreationView>
                 child: Text('Save'),
                 onPressed: () {
                   Navigator.pop(context);
+                  Navigator.pop(context);
                 }
             ),
             Padding(padding: EdgeInsets.only(left: 8.0),),
