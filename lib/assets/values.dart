@@ -17,7 +17,6 @@ enum InfoBaseSearchType{
 }
 
 enum PhoneType{
-  C,
   E,
   F,
   L,
@@ -57,7 +56,6 @@ String infoBaseSearchString(InfoBaseSearchType type) =>
     type == InfoBaseSearchType.Room ? "Rooms Search" : "Services Search";
 
 String telephoneTypeString(PhoneType telephoneType) =>
-  telephoneType == PhoneType.C ? "C" :
   telephoneType == PhoneType.E ? "E" :
   telephoneType == PhoneType.F ? "F" :
   telephoneType == PhoneType.L ? "L" : "M";

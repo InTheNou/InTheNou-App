@@ -121,8 +121,7 @@ class _ServiceViewState extends State<ServiceView>
                                       Website _website = _infoBaseStore
                                           .detailService.websites[index];
                                       return LinkWithIconWidget(
-                                          _website
-                                              .description+"fdfdsfdsfdsfsdfsdfsdffdfdfdfdfdsfdsfdsfsdfs",
+                                          _website.description,
                                           _website.URL,
                                           Icons.language
                                       );
@@ -174,26 +173,11 @@ class _ServiceViewState extends State<ServiceView>
                               ),
                             )
                         ),
-                        Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: ListView.builder(
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  shrinkWrap: true,
-                                  itemCount: _infoBaseStore.detailService.schedule.length,
-                                  itemBuilder: (context, index){
-                                    String schedule = _infoBaseStore
-                                        .detailService.schedule[index];
-                                    return  ListTile(
-                                      title: Text(schedule,
-                                          style: Theme.of(context).textTheme.subtitle1),
-                                      leading: Icon(Icons.access_time),
-                                      dense: true,
-                                    );
-                                  },
-                              ),
-                            ),
-                          ],
+                        ListTile(
+                          title: Text(_infoBaseStore.detailService.schedule,
+                              style: Theme.of(context).textTheme.subtitle1),
+                          leading: Icon(Icons.access_time),
+                          dense: true,
                         )
                       ],
                     ),

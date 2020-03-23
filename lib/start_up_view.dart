@@ -35,13 +35,16 @@ class _StartUpViewState extends State<StartUpView>
       body: Center(
         child: Column(
           children: <Widget>[
-            Container(
-              height: 450,
-              width: 350,
-              child: Image.asset(
-                "lib/assets/InTheNou_logo.png",
-                fit: BoxFit.fitWidth,
-                semanticLabel: "InTheNou App Logo",
+            Flexible(
+              flex: 3,
+              child: Container(
+                height: 450,
+                width: 350,
+                child: Image.asset(
+                  "lib/assets/InTheNou_logo.png",
+                  fit: BoxFit.fitWidth,
+                  semanticLabel: "InTheNou App Logo",
+                ),
               ),
             ),
             Flexible(
@@ -60,16 +63,16 @@ class _StartUpViewState extends State<StartUpView>
               ),
             ),
             Expanded(
-              flex: 1,
-              child:  Image.asset(
-                "lib/assets/AlphaCode_logo.png",
-                width: 150,
-                semanticLabel: "AlphaCode Logo",
-              )
+                flex: 1,
+                child:  Image.asset(
+                  "lib/assets/AlphaCode_logo.png",
+                  width: 150,
+                  semanticLabel: "AlphaCode Logo",
+                )
             ),
           ],
         ),
-      ),
+      )
     );
   }
 }

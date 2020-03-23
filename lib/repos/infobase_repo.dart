@@ -70,20 +70,18 @@ class InfoBaseRepo {
   var dummyServices = <int,List<Service>>{
     0: new List.generate(20,(index) =>
     new Service(index,"Service B0 $index", "Nice service inside B0",
-        "S-"+(index%2).toString()+"$index", new List.generate(2, (index) =>
-        "Schedule $index "),
-        [PhoneNumber("787-123-4567", PhoneType.E),
-          PhoneNumber("787-123-4567", PhoneType.E)],
+        "S-"+(index%2).toString()+"$index", "Schedule $index \nSchedule $index",
+        [PhoneNumber("787-123-4567,1234", PhoneType.E),
+          PhoneNumber("787-123-4567", PhoneType.L)],
         new List<Website>.filled(2,
             new Website("https://portal.upr.edu/rum/portal.php?a=rea_login", "P"
                 "ortal"))
     )),
     1: new List.generate(20,(index) =>
     new Service(index+100,"Service B1 $index", "Nice service inside B1",
-      "S-"+(index%2).toString()+"$index", new List.generate(2, (index) =>
-        "Schedule $index "),
-      [PhoneNumber("787-123-4567", PhoneType.E),
-        PhoneNumber("787-123-4567", PhoneType.E)],
+      "S-"+(index%2).toString()+"$index", "Schedule $index \nSchedule $index",
+      [PhoneNumber("787-123-4567,1234", PhoneType.E),
+        PhoneNumber("787-123-4567", PhoneType.L)],
       new List<Website>.filled(2,
           new Website("https://portal.upr.edu/rum/portal.php?a=rea_login", "P"
               "ortal"))

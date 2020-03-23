@@ -7,7 +7,7 @@ class Service {
   String _name;
   String _description;
   String _roomCode;
-  List<String> _schedule;
+  String _schedule;
   List<PhoneNumber> _numbers;
   List<Website> _websites;
 
@@ -20,7 +20,7 @@ class Service {
   String get name => _name;
   String get description => _description;
   String get roomCode => _roomCode;
-  List<String> get schedule => _schedule;
+  String get schedule => _schedule;
   List<PhoneNumber> get numbers => _numbers;
   List<Website> get websites => _websites;
 

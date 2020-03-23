@@ -8,6 +8,8 @@ class Event {
   int _UID;
   String _title;
   String _description;
+  String _creator;
+  String _image;
   DateTime _startDateTime;
   DateTime _endDateTime;
   DateTime _timestamp;
@@ -16,7 +18,7 @@ class Event {
   List<Tag> _tags;
   bool followed;
 
-  Event(this._UID,this._title, this._description,
+  Event(this._UID,this._title, this._description, this._creator, this._image,
       this._startDateTime, this._endDateTime, this._timestamp,
       this._room, this._websites, this._tags, this.followed);
 
@@ -24,6 +26,7 @@ class Event {
     this._UID = event._UID;
     this._title = event._title;
     this._description = event._description;
+    this._creator = event._creator;
     this._startDateTime = event._startDateTime;
     this._endDateTime = event._endDateTime;
     this._timestamp = event._timestamp;
@@ -45,6 +48,11 @@ class Event {
     this._tags = new List(10);
   }
 
+  int get UID => _UID;
+  String get title => _title;
+  String get description => _description;
+  String get creator => _creator;
+  String get image => _image;
   DateTime get endDateTime => _endDateTime;
   DateTime get timestamp => _timestamp;
   Room get room => _room;
@@ -90,12 +98,6 @@ class Event {
       }
     }
   }
-
-  String get description => _description;
-
-  String get title => _title;
-
-  int get UID => _UID;
 
   @override
   String toString() {

@@ -71,11 +71,12 @@ class EventsRepo {
   String genSearchKeyword = "";
 
   List<Event> dummyEvents = List<Event>.generate(
-      2,
+      20,
           (i) =>  Event(i, "Event $i With a Big Name that take us a "
               "lot of space", "This is a very long "
               "description fo the event currantly displayed. This is to test "
-              "out how good it looks when it cuts off.",
+              "out how good it looks when it cuts off.", "Alguien Importante",
+          "https://images.pexels.com/photos/256541/pexels-photo-256541.jpeg",
           DateTime.now().add(new Duration(days: i, hours: i+2)),
           DateTime.now().add(new Duration(days: i, hours: i+5)),
           DateTime.now(),

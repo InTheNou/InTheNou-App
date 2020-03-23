@@ -15,7 +15,7 @@ class ServicesCard extends StatelessWidget {
         clipBehavior: Clip.antiAliasWithSaveLayer,
         child: InkWell(
             onTap: () {
-              Navigator.of(context).pushNamed("/infobase/room");
+              Navigator.of(context).pushNamed("/infobase/service");
               selectServiceAction(_service);
             },
             child: Padding(
@@ -26,7 +26,9 @@ class ServicesCard extends StatelessWidget {
                 children: <Widget>[
                   Text(
                     _service.roomCode,
-                    style: Theme.of(context).textTheme.bodyText2,
+                    style: Theme.of(context).textTheme.bodyText2.copyWith(
+                        color: Theme.of(context).accentColor
+                    ),
                   ),
                   const Padding(padding: EdgeInsets.only(top: 4.0)),
                   Text(

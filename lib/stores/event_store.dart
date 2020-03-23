@@ -165,6 +165,14 @@ class EventFeedStore extends flux.Store{
     }
   }
 
+  String searchKeyword(FeedType feed){
+    if (feed ==  FeedType.PersonalFeed) {
+      return _personalSearchKeyword;
+    } else {
+      return _generalSearchKeyword;
+    }
+  }
+
   Event feedEvent(FeedType feed, int index){
     if (feed == FeedType.PersonalFeed) {
       return _personalSearch[index];
@@ -183,8 +191,6 @@ class EventFeedStore extends flux.Store{
 
   List<Event> get personalSearch => new List.unmodifiable(_personalSearch);
   List<Event> get generalSearch => new List.unmodifiable(_generalSearch);
-  String get personalSearchKeyword => _personalSearchKeyword;
-  String get generalSearchKeyword => _generalSearchKeyword;
   Event get perEventDetail => _perEventDetail;
 
 }
