@@ -14,7 +14,6 @@ import 'package:InTheNou/models/website.dart';
 import 'package:InTheNou/repos/events_repo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_auth_buttons/flutter_auth_buttons.dart';
-import 'package:flutter_driver/flutter_driver.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:InTheNou/main.dart';

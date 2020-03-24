@@ -27,10 +27,10 @@ class RouteGenerator{
       case "/accountcreation":
         return MaterialPageRoute(builder: (_) => AccountCreationView());
       case "/eventdetail":
-        if (args is FeedType) {
+        if (args is MapEntry<FeedType, int>) {
           return MaterialPageRoute(
             builder: (_) =>
-                EventDetailView(args),
+                EventDetailView(args.key, args.value),
           );
         }
         return _errorRoute();

@@ -1,3 +1,4 @@
+import 'package:InTheNou/background/background_handler.dart';
 import 'package:InTheNou/repos/settings_repo.dart';
 import 'package:InTheNou/repos/user_repo.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
@@ -30,6 +31,7 @@ class SettingsStore extends flux.Store {
     triggerOnConditionalAction(toggleSmartAction, (bool toggle) {
       return _settingsRepo.toggleSmartNotification(toggle).then((value){
         _smartNotificationEnabled = toggle;
+        BackgroundHandler.onClickEnable(toggle);
         return true;
       });
     });

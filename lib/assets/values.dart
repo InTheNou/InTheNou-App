@@ -40,6 +40,9 @@ enum UserPrivilege{
 const EVENTS_TO_FETCH = 20;
 const DEFAULT_NOTIFICATION_TIME = 30;
 const SMART_NOTIFICATION_STATE = true;
+const AVERAGE_WALKING_SPEED = 3.0;
+const RECOMMENDATION_INTERVAL_MINUTES = 60;
+
 //Shared Preferences Keys
 const DEFAULT_NOTIFICATION_KEY = "defaultNotificationTime";
 const SMART_NOTIFICATION_KEY = "smartNotificationEnabled";
@@ -104,6 +107,12 @@ Floor ordinalNumber(int n){
 String buildGoogleMapsLink(Coordinate coord){
   String url = "http://maps.google.com/maps?daddr="
       + "${coord.lat},${coord.long}&z=14" ;
+  return url;
+}
+
+buildGoogleMapsLink2(Coordinate c1, Coordinate c2){
+  String url = "https://www.google.com/maps/dir/${c1.lat},${c1.long}/${c2.lat},"
+      "${c2.long}" ;
   return url;
 }
 
