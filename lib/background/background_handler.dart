@@ -15,8 +15,8 @@ class BackgroundHandler {
   /// [onBackgroundFetch]. The SmartNotification functionality gets handled
   /// every time this initiated and it it handled in [_doSmartNotification].
   /// In this method we can also schedule any other background tasks that we
-  /// wish to run, be it one-hot or recurring. Here we
-  /// initialize the Recommendation feature handled by [_doSmartNotification]
+  /// wish to run, be it one-hot or recurring. Here we initialize the
+  /// Recommendation feature handled by [_doSmartNotification]
   ///
   /// The variable [stopOnTerminate] makes these tasks to operate when the
   /// app is not active. [enableHeadless] makes it so that a headless
@@ -54,6 +54,7 @@ class BackgroundHandler {
     });
   }
 
+  static final Geolocator _geolocator = Geolocator();
   // This is the fetch-event callback.
   static void onBackgroundFetch(String taskId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -62,10 +63,14 @@ class BackgroundHandler {
 
     switch (taskId){
       case "flutter_background_fetch":
-        _doSmartNotification();
+        if(prefs.getBool(SMART_NOTIFICATION_KEY)){
+          _doSmartNotification();
+        }
         break;
       case "com.inthenou.app.reccomendation":
-        _doSmartNotification();
+        if(prefs.getBool(SMART_NOTIFICATION_KEY)){
+          _doSmartNotification();
+        }
         _doRecommendation();
         break;
     }
@@ -75,8 +80,10 @@ class BackgroundHandler {
   }
 
   static void _doSmartNotification() async{
+    DateTime timestamp = new DateTime.now();
     Coordinate userCoords;
-    await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy
+    _geolocator.forceAndroidLocationManager = true;
+    await _geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy
         .high)
         .then((value) {
       userCoords = Coordinate(value.latitude, value.longitude);

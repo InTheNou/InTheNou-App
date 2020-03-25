@@ -2,6 +2,7 @@ import 'package:InTheNou/home_page.dart';
 import 'package:InTheNou/stores/settings_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
+import 'package:geolocator/geolocator.dart';
 
 
 class SettingsView extends StatefulWidget {
@@ -93,7 +94,8 @@ class _SettingsViewState extends State<SettingsView>
                             right: 8.0),
                         child: new Switch(
                             value: toggle.data,
-                            onChanged: (value) => toggleSmartAction(value)
+                            onChanged: (value)  async =>
+                              checkPermissionAndUpdate(value)
                         ),
                       );
                     }),
@@ -128,5 +130,39 @@ class _SettingsViewState extends State<SettingsView>
         ],
       )
     );
+  }
+
+  ///
+  /// Here we check if the permission has been changed after the lat time the
+  /// setting was changed.
+  /// If the Permission has been revoked and the user
+  void checkPermissionAndUpdate(bool setting) async{
+    await Geolocator()
+        .checkGeolocationPermissionStatus().then(
+            (status) {
+          if(status == GeolocationStatus.denied ||
+              status == GeolocationStatus.unknown){
+            toggleSmartAction(false);
+            showDenied();
+          } else {
+            toggleSmartAction(setting);
+          }
+        });
+  }
+
+  void showDenied() async{
+    showDialog(context: context, builder: (_){
+      return AlertDialog(
+        title:Text("Smart Notifications"),
+        content: Text("Smart notifications can be turned on after the "
+            "Location Permission has been provided."),
+        actions: <Widget>[
+          FlatButton(
+              child: Text("CONFIRM"),
+              onPressed: () => Navigator.of(context).pop()
+          )
+        ],
+      );
+    });
   }
 }

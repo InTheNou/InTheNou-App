@@ -39,14 +39,17 @@ enum UserPrivilege{
 //Constants
 const EVENTS_TO_FETCH = 20;
 const DEFAULT_NOTIFICATION_TIME = 30;
-const SMART_NOTIFICATION_STATE = true;
+const SMART_NOTIFICATION_STATE = false;
 const AVERAGE_WALKING_SPEED = 3.0;
 const RECOMMENDATION_INTERVAL_MINUTES = 60;
+const ASK_LOCATION_PERMISSION = true;
+
 
 //Shared Preferences Keys
 const DEFAULT_NOTIFICATION_KEY = "defaultNotificationTime";
 const SMART_NOTIFICATION_KEY = "smartNotificationEnabled";
 const USER_SESSION_KEY = "userSession";
+const ASK_LOCATION_PERMISSION_KEY = "userSession";
 
 
 //------------------- Helper Methods --------------------
@@ -78,12 +81,13 @@ String userRoleString(UserRole type) =>
 Future<void> checkSharedPrefs() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   if(!prefs.containsKey(DEFAULT_NOTIFICATION_KEY)){
-    print("writing");
     prefs.setInt(DEFAULT_NOTIFICATION_KEY, DEFAULT_NOTIFICATION_TIME);
   }
   if(!prefs.containsKey(SMART_NOTIFICATION_KEY)) {
-    print("writing");
     prefs.setBool(SMART_NOTIFICATION_KEY, SMART_NOTIFICATION_STATE);
+  }
+  if(!prefs.containsKey(ASK_LOCATION_PERMISSION_KEY)) {
+    prefs.setBool(ASK_LOCATION_PERMISSION_KEY, ASK_LOCATION_PERMISSION);
   }
 
 }
