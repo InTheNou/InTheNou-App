@@ -84,6 +84,12 @@ class UserRepo {
     return getFollowedEventsFromSecretePlace();
   }
 
+  Future<List<Event>> getAllFollowedEvents() async{
+    // For now It's just getting it from a secrete place, it should just get it
+    // straight from the server
+    return getFollowedEventsFromSecretePlace();
+  }
+
   List<Event> getCreatedEvents(int userUID, int skip,
       int rows){
     // For now It's just getting it from a secrete place, it should just get it
@@ -94,8 +100,9 @@ class UserRepo {
     _eventRepo.deleteEvent(event);
     return true;
   }
-  List<Tag> getUserTags(int userUID){
-
+  Future<List<Tag>> getUserTags() async{
+    return [Tag("Tag1", 20), Tag("Tag2", 20), Tag("Tag3", 20), Tag("Tag4", 20),
+      Tag("Tag5", 20)];
   }
   bool requestAddTags(int userUID, List<String> tagNames){
 

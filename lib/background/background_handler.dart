@@ -1,14 +1,20 @@
+import 'dart:convert';
 import 'dart:math';
 import 'dart:async';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/background/notification_handler.dart';
+import 'package:InTheNou/models/event.dart';
+import 'package:InTheNou/models/tag.dart';
+import 'package:InTheNou/repos/user_repo.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:background_fetch/background_fetch.dart';
 import 'package:InTheNou/models/coordinate.dart';
 
 class BackgroundHandler {
 
+  static SharedPreferences _prefs;
   ///
   /// Configure the BackgroundFetch library. It creates a background process
   /// that is initialized every [minimumFetchInterval] and calls the function
@@ -57,18 +63,18 @@ class BackgroundHandler {
   static final Geolocator _geolocator = Geolocator();
   // This is the fetch-event callback.
   static void onBackgroundFetch(String taskId) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+    _prefs = await SharedPreferences.getInstance();
     DateTime timestamp = new DateTime.now();
     print("[BackgroundFetch] Event received: $taskId ${timestamp.toIso8601String()}");
 
     switch (taskId){
       case "flutter_background_fetch":
-        if(prefs.getBool(SMART_NOTIFICATION_KEY)){
+        if(_prefs.getBool(SMART_NOTIFICATION_KEY)){
           _doSmartNotification();
         }
         break;
       case "com.inthenou.app.reccomendation":
-        if(prefs.getBool(SMART_NOTIFICATION_KEY)){
+        if(_prefs.getBool(SMART_NOTIFICATION_KEY)){
           _doSmartNotification();
         }
         _doRecommendation();
@@ -80,35 +86,98 @@ class BackgroundHandler {
   }
 
   static void _doSmartNotification() async{
-    DateTime timestamp = new DateTime.now();
+    UserRepo _userRepo = UserRepo();
+    _prefs = await SharedPreferences.getInstance();
+
+    // Get all Smart Notifications that are scheduled already
+    List<String> json = _prefs.getStringList(SMART_NOTIFICATION_LIST) ?? new List();
+    List<SmartNotification> smartNotifications = new List();
+
+    Map smartMap;
+    json.forEach((element) {
+      smartMap = jsonDecode(element);
+      smartNotifications.add(SmartNotification.fromJson(smartMap));
+    });
+    List<Event> _events = await _userRepo.getAllFollowedEvents();
+
     Coordinate userCoords;
     _geolocator.forceAndroidLocationManager = true;
     await _geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy
-        .high)
-        .then((value) {
+        .high).then((value) {
       userCoords = Coordinate(value.latitude, value.longitude);
       }
     );
-    Coordinate eventCoords = new Coordinate(18.209641, -67.139923);
 
-    print("user: $userCoords");
-    print("event: $eventCoords");
-    double distance = greatCircleDistanceCalc(userCoords, eventCoords)*1.3;
-    double timeToWalk = timeToTravel(distance);
-    print("[SmartNotification] We calculated: $distance $timeToWalk");
-    print(buildGoogleMapsLink2(userCoords, eventCoords));
+    DateTime timestamp = new DateTime.now();
+    Duration timeToEvent;
 
-    NotificationHandler.scheduleSmartNotification("Event Name",
-        "Event Starts in 10 minutes",
-        "You are <b>$distance miles <b> way from the event, it will take you "
-            "<b>$timeToWalk minutes <b> to walk to the event.", DateTime.now()
-            .add(Duration(seconds: 5)), "1"
-    );
+    smartNotifications.forEach((notif) {
+      print(jsonEncode(notif));
+      _events.removeWhere((event) => event.UID == notif.eventUID);
+    });
+
+    _events.forEach((event) {
+      timeToEvent = event.startDateTime.difference(timestamp);
+      if (timeToEvent.inHours < 24 && !timeToEvent.isNegative){
+        print("user: $userCoords");
+        print("event: ${event.room.coordinates}");
+        double distance = greatCircleDistanceCalc(userCoords, event.room.coordinates);
+        double timeToWalk = timeToTravel(distance);
+        print("[SmartNotification] Starts in calculated: ${timeToEvent.toString()}");
+        print("[SmartNotification] We calculated: $distance $timeToWalk");
+        print(buildGoogleMapsLink2(userCoords, event.room.coordinates));
+
+        if(timeToEvent.inMinutes - 15 < timeToWalk){
+          smartNotifications.add(SmartNotification(
+              id: event.UID,
+              eventUID: event.UID));
+          json.add(jsonEncode(smartNotifications[smartNotifications.length-1]));
+
+          NumberFormat nf = NumberFormat("#####.##", "en_US");
+          NumberFormat nf2 = NumberFormat("#####", "en_US");
+          String timeToEvent = _getTimeToEvent(event.startDateTime,
+              event.startDateTime.subtract(Duration(minutes:timeToWalk.ceil())));
+          NotificationHandler.scheduleSmartNotification(
+              event.UID,
+              event.title,
+              timeToEvent,
+              timeToEvent + "\n" + "You are ${nf.format(distance)} miles away from the "
+                  "event, it will take you ${nf2.format(timeToWalk)} mins to "
+                  "walk to the event.",
+              event.startDateTime.subtract(Duration(minutes: timeToWalk.ceil())),
+              event.UID.toString()
+          );
+        }
+      }
+    });
+
+    _prefs.setStringList(SMART_NOTIFICATION_LIST,json);
+  }
+
+  static String _getTimeToEvent(DateTime eventTime, DateTime notificationTIme){
+    Duration time = eventTime.difference(notificationTIme);
+    if(time.inHours > 1){
+      return "Event starts in ${time.inHours} hrs and "
+          "${time.inMinutes-(time.inHours*60)} min";
+    } else{
+      return "Event starts in ${time.inMinutes} mins";
+    }
   }
 
   static void _doRecommendation(){
 //    NotificationHandler.scheduleSmartNotification("Reccomendation", "Reccomen"
 //        "dation description", DateTime.now(), "");
+  }
+
+  static List<Tag> _checkTagsSimilarity(List<Tag> eventTags,
+      List<Tag> userTags){
+    List<Tag> commonTags = new List();
+    userTags.forEach((tag) {
+      if(eventTags.contains(tag)){
+        commonTags.add(tag);
+      }
+    });
+    return commonTags;
   }
 
   static void onClickEnable(enabled) {
@@ -150,7 +219,7 @@ class BackgroundHandler {
         sin(deltaLong/2) * sin(deltaLong/2) * cos(uLat) * cos(eLat);
     double c = 2 * atan2(sqrt(a), sqrt(1-a));
     double distance = earthRad * c;
-    return distance;
+    return distance*1.3;
   }
 
   ///

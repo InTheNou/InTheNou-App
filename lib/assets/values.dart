@@ -49,7 +49,8 @@ const ASK_LOCATION_PERMISSION = true;
 const DEFAULT_NOTIFICATION_KEY = "defaultNotificationTime";
 const SMART_NOTIFICATION_KEY = "smartNotificationEnabled";
 const USER_SESSION_KEY = "userSession";
-const ASK_LOCATION_PERMISSION_KEY = "userSession";
+const ASK_LOCATION_PERMISSION_KEY = "askLocation";
+const SMART_NOTIFICATION_LIST = "smartNotificationList";
 
 
 //------------------- Helper Methods --------------------
@@ -91,6 +92,13 @@ Future<void> checkSharedPrefs() async {
   }
 
 }
+
+void clearSmartNotificationsPrefs() async{
+  SharedPreferences _prefs = await SharedPreferences.getInstance();
+  _prefs = await SharedPreferences.getInstance();
+  _prefs.setStringList(SMART_NOTIFICATION_LIST, null);
+}
+
 ///
 /// Helped method to convert the number [n] to its ordinal form.
 /// As in:

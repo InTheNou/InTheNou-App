@@ -7,8 +7,9 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 
 class NotificationHandler {
 
-  static void scheduleSmartNotification(String title, String description,
-    String bigDescription, DateTime scheduledDate, String payload) async {
+  static void scheduleSmartNotification(int id, String title,
+      String description, String bigDescription, DateTime scheduledDate,
+      String payload) async {
     var bigTextStyleInformation = BigTextStyleInformation(
         bigDescription,
         htmlFormatBigText: true,
@@ -27,24 +28,29 @@ class NotificationHandler {
         androidPlatformChannelSpecifics, null);
 
     await flutterLocalNotificationsPlugin.schedule(
-        DateTime.now().millisecond, title, description,
-        scheduledDate,
+        id, title, description, scheduledDate,
         platformChannelSpecifics, payload: payload);
 
   }
 
 }
 
-class ReceivedNotification {
+class SmartNotification {
   final int id;
-  final String title;
-  final String body;
-  final String payload;
+  final int eventUID;
 
-  ReceivedNotification({
+  SmartNotification({
     @required this.id,
-    @required this.title,
-    @required this.body,
-    @required this.payload,
+    @required this.eventUID,
   });
+
+  SmartNotification.fromJson(Map<String, dynamic> json)
+      : id = json['id'],
+        eventUID = json['eventUID'];
+
+  Map<String, dynamic> toJson() =>
+      {
+        'id': id,
+        'eventUID': eventUID,
+      };
 }
