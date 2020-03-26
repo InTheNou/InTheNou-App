@@ -1,4 +1,5 @@
 import 'package:InTheNou/assets/values.dart';
+import 'package:InTheNou/background/notification_handler.dart';
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/repos/events_repo.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
@@ -71,42 +72,44 @@ class EventFeedStore extends flux.Store{
         _generalSearchKeyword = "";
       }
     });
-    triggerOnAction(followEventAction, (int eventUID){
+    triggerOnAction(followEventAction, (Event event){
       // If the server was able to unfollow, modify the events currently showing
-      if (_eventsRepo.requestFollowEvent(0, eventUID)){
-        int i = _personalSearch.indexWhere((event) => event.UID == eventUID);
+      if (_eventsRepo.requestFollowEvent(0, event.UID)){
+        NotificationHandler.checkNotifications(event);
+        int i = _personalSearch.indexOf(event);
         if (i != -1){
           _personalSearch[i].followed = true;
         }
-        i = _generalSearch.indexWhere((event) => event.UID == eventUID);
+        i = _generalSearch.indexOf(event);
         if (i != -1){
           _generalSearch[i].followed = true;
         }
         // Also change the detailed in case they are showing
-        if (_perEventDetail != null && _perEventDetail.UID == eventUID){
+        if (_perEventDetail != null && _perEventDetail.UID == event.UID){
           _perEventDetail.followed = true;
         }
-        if (_genEventDetail != null && _genEventDetail.UID == eventUID){
+        if (_genEventDetail != null && _genEventDetail.UID == event.UID){
           _genEventDetail.followed = true;
         }
       }
     });
-    triggerOnAction(unFollowEventAction, (int eventUID){
+    triggerOnAction(unFollowEventAction, (Event event){
       // If the server was able to unfollow, modify the events currently showing
-      if (_eventsRepo.requestUnFollowEvent(0, eventUID)){
-        int i = _personalSearch.indexWhere((event) => event.UID == eventUID);
+      if (_eventsRepo.requestUnFollowEvent(0, event.UID)){
+        NotificationHandler.cancelNotification(event);
+        int i = _personalSearch.indexOf(event);
         if (i != -1){
           _personalSearch[i].followed = false;
         }
-        i = _generalSearch.indexWhere((event) => event.UID == eventUID);
+        i = _generalSearch.indexOf(event);
         if (i != -1){
           _generalSearch[i].followed = false;
         }
         // Also change the detailed in case they are showing
-        if (_perEventDetail != null && _perEventDetail.UID == eventUID){
+        if (_perEventDetail != null && _perEventDetail.UID == event.UID){
           _perEventDetail.followed = false;
         }
-        if (_genEventDetail != null && _genEventDetail.UID == eventUID){
+        if (_genEventDetail != null && _genEventDetail.UID == event.UID){
           _genEventDetail.followed = false;
         }
       }
@@ -204,9 +207,9 @@ final flux.Action<FeedType> clearSearchKeywordAction = new flux
 final flux.Action<FeedType> getAllEventsAction = new flux.Action<FeedType>();
 final flux.Action<MapEntry<FeedType, int>> openEventDetail =
     new flux.Action<MapEntry<FeedType, int>>();
-final flux.Action<int> followEventAction = new flux.Action<int>();
-final flux.Action<int> unFollowEventAction = new flux.Action<int>();
-final flux.Action<int> dismissEventAction = new flux.Action<int>();
+final flux.Action<Event> followEventAction = new flux.Action();
+final flux.Action<Event> unFollowEventAction = new flux.Action();
+final flux.Action<int> dismissEventAction = new flux.Action();
 final flux.Action undoDismissAction = new flux.Action();
 final flux.Action confirmDismissAction = new flux.Action();
 

@@ -118,8 +118,9 @@ class UserRepo {
 
   EventsRepo _eventRepo = new EventsRepo();
   List<Event> getFollowedEventsFromSecretePlace(){
-    return _eventRepo.getPerEvents(null,null,null,null).where((element)
-    => element.followed).toList();
+    return _eventRepo.getPerEvents(null,null,null,null).where((element){
+      return element.followed && element.startDateTime.isAfter(DateTime.now());
+    }).toList();
   }
   List<Event> getFollowedEventsFromSecretePlace2(){
     return _eventRepo.getPerEvents(null,null,null,null);

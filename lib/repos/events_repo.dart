@@ -87,7 +87,7 @@ class EventsRepo {
                   "https://portal.upr.edu/rum/portal.php?a=rea_login",
                   "link $i")),
               new List.generate(40, (i) => Tag("Tag$i",100)),
-              (i%2 == 0)
+              false
       )
   );
 

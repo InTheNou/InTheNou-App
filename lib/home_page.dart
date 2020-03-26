@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/background/background_handler.dart';
 import 'package:InTheNou/background/notification_handler.dart';
@@ -13,6 +14,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:location_permissions/location_permissions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'background/notification_handler.dart';
 
 NotificationAppLaunchDetails notificationAppLaunchDetails;
 
@@ -47,17 +49,16 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
     initializeNotifications();
     checkLocationPermission();
     navigationStore = listenToStore(navigationToken);
-    clearSmartNotificationsPrefs();
     flutterLocalNotificationsPlugin.cancelAll();
   }
 
-  /// In here we check if the permission has been granted using the [GeolocationStatus.
+  /// Checks if the permission has been granted using the [GeolocationStatus.
+  ///
   /// if it has not and the user has decided to not be asked again, then
   /// nothing is done.
-  ///
   /// If the user has not decided to not be asked again then we show the
   /// rationale for enabling the permission. Then we wait for the [PermissionStatus]
-  /// result and handle it in [handlePermissionResult]
+  /// result and handle it in [handlePermissionResult].
   void checkLocationPermission() async{
     prefs = await SharedPreferences.getInstance();
     // Check status of permission
@@ -94,7 +95,9 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
     });
   }
 
-  /// Here we take the [result] and depending on if it was granted we enable
+  ///Handles the user's choice of location permission.
+  ///
+  /// The [result] indicates if it was granted, based on this we enable
   /// or disable the Smart Notification using the [toggleSmartAction]  and
   /// show the appropriate dialog.
   void handlePermissionResult(PermissionStatus result){
@@ -126,19 +129,17 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
         });
   }
 
+  /// Notifies the user they have disabled Smart Notifications from not
+  /// allowing the location permission.
   ///
   /// If the user has chosen not to provide the Location Permission then we
   /// show them a warning that this disables the Smart Notification.
   /// If they desire not to be asked again for the permission this is also
-  /// taken into consideration/
+  /// taken into consideration.
   void showDenied() async{
-    await Geolocator().checkGeolocationPermissionStatus().then((value) {
-      print(value);
-      if(value == GeolocationStatus.denied ||
-          value == GeolocationStatus.unknown){
-        showDialog(context: context,
-            barrierDismissible: false,
-            builder: (_){
+    showDialog(context: context,
+        barrierDismissible: false,
+        builder: (_){
           return AlertDialog(
             title:Text("Smart Notifications"),
             content: Text("Smart notifications have been disabled.\n This "
@@ -161,12 +162,10 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
             ],
           );
         });
-      }
-    });
   }
 
   /// This methods gets ran evey time the app is started to make sure the
-  /// Notifications are initialized adn setup
+  /// Notifications are initialized adn setup.
   void initializeNotifications() async {
     notificationAppLaunchDetails = await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
     var initializationSettingsAndroid = AndroidInitializationSettings
@@ -181,16 +180,24 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
         onSelectNotification: onSelectNotification);
   }
 
+  /// Callback for when a Notification is clicked by the user.
   ///
-  /// Callback for when a Notification is clicked by the user. Here can
-  /// handle multiple types of notifications by analyzing the [payload]
+  /// Here can handle multiple types of notifications by analyzing the
+  /// [payload].
   Future onSelectNotification(String payload) async {
-    if(payload != null){
+    NotificationObject notification =
+    NotificationObject.fromJson(jsonDecode(payload));
+
+    if(notification.type == NotificationType.SmartNotification){
       Navigator.of(context).pushNamed("/eventdetail",
-          arguments: MapEntry(FeedType.GeneralFeed,int.parse(payload)));
+          arguments: MapEntry(FeedType.GeneralFeed,int.parse(notification.payload)));
       return;
     }
-    Navigator.of(context).pushNamed("/home");
+    if(notification.type == NotificationType.DefaultNotification){
+      Navigator.of(context).pushNamed("/eventdetail",
+          arguments: MapEntry(FeedType.GeneralFeed,int.parse(notification.payload)));
+      return;
+    }
   }
 
   @override

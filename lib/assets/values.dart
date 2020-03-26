@@ -36,6 +36,12 @@ enum UserPrivilege{
   Administrator
 }
 
+enum NotificationType{
+  SmartNotification,
+  DefaultNotification,
+  SummaryNotification
+}
+
 //Constants
 const EVENTS_TO_FETCH = 20;
 const DEFAULT_NOTIFICATION_TIME = 30;
@@ -51,6 +57,8 @@ const SMART_NOTIFICATION_KEY = "smartNotificationEnabled";
 const USER_SESSION_KEY = "userSession";
 const ASK_LOCATION_PERMISSION_KEY = "askLocation";
 const SMART_NOTIFICATION_LIST = "smartNotificationList";
+const DEFAULT_NOTIFICATION_LIST = "defaultNotificationList";
+const NOTIFICATION_ID_KEY = "notificationId";
 
 
 //------------------- Helper Methods --------------------
@@ -77,6 +85,16 @@ String userRoleString(UserRole type) =>
     type == UserRole.TeachingPersonnel ? "Teaching Personnel" :
     "Non Teaching Personnel";
 
+String notificationTypeString(NotificationType type) =>
+    type == NotificationType.SmartNotification ? "SmartNotification" :
+    type == NotificationType.DefaultNotification ? "DefaultNotification" :
+    "SummaryNotification";
+
+NotificationType notificationTypeFromString(String type) =>
+    type == "SmartNotification" ? NotificationType.SmartNotification :
+    type == "DefaultNotification" ? NotificationType.DefaultNotification :
+    NotificationType.SummaryNotification;
+
 ///  Check if shared preferences has been setup, if not then set the default
 /// values
 Future<void> checkSharedPrefs() async {
@@ -90,13 +108,17 @@ Future<void> checkSharedPrefs() async {
   if(!prefs.containsKey(ASK_LOCATION_PERMISSION_KEY)) {
     prefs.setBool(ASK_LOCATION_PERMISSION_KEY, ASK_LOCATION_PERMISSION);
   }
+  if(!prefs.containsKey(NOTIFICATION_ID_KEY)) {
+    prefs.setInt(NOTIFICATION_ID_KEY, 0);
+  }
 
 }
 
-void clearSmartNotificationsPrefs() async{
+void clearNotificationsPrefs() async{
   SharedPreferences _prefs = await SharedPreferences.getInstance();
   _prefs = await SharedPreferences.getInstance();
   _prefs.setStringList(SMART_NOTIFICATION_LIST, null);
+  _prefs.setStringList(DEFAULT_NOTIFICATION_LIST, null);
 }
 
 ///

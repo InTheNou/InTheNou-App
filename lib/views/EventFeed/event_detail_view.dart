@@ -161,10 +161,9 @@ class _EventDetailViewState extends State<EventDetailView>
                                                     width: detailEvent.followed ? 1.5 : 0.0
                                                 ),
                                                 onPressed: () {
-                                                  print("i'm getting here");
                                                   detailEvent.followed ?
-                                                  unFollowEventAction(detailEvent.UID) :
-                                                  followEventAction(detailEvent.UID);
+                                                  unFollowEventAction(detailEvent) :
+                                                  followEventAction(detailEvent);
                                                 },
                                               )
                                           )
