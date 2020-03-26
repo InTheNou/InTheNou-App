@@ -95,8 +95,8 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
                                           ),
                                           onPressed: () {
                                             _event.followed ?
-                                            unFollowEventAction(_event.UID) :
-                                            followEventAction(_event.UID);
+                                            unFollowEventAction(_event) :
+                                            followEventAction(_event);
                                             refreshFollowedEventsAction();
                                           },
                                         )

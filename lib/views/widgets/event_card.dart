@@ -18,7 +18,7 @@ class EventCard extends StatelessWidget {
             openEventDetail(MapEntry(_feedType, _event.UID));
             Navigator.of(context).pushNamed(
                 '/eventdetail',
-                arguments: _feedType
+                arguments: MapEntry(_feedType,null)
             );
           },
           child: Padding(
@@ -79,8 +79,8 @@ class EventCard extends StatelessWidget {
                                   ),
                                   onPressed: () {
                                     _event.followed ?
-                                    unFollowEventAction(_event.UID) :
-                                    followEventAction(_event.UID);
+                                    unFollowEventAction(_event) :
+                                    followEventAction(_event);
                                   },
                                 )
                             )

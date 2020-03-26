@@ -4,7 +4,7 @@ import 'package:InTheNou/assets/colors.dart';
 import 'package:InTheNou/start_up_view.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   checkSharedPrefs();
   runApp(InTheNouApp());
@@ -24,5 +24,7 @@ class InTheNouApp extends StatelessWidget {
       home: StartUpView(),
     );
   }
+
+
 }
 

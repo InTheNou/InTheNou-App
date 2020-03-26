@@ -71,14 +71,14 @@ class EventsRepo {
   String genSearchKeyword = "";
 
   List<Event> dummyEvents = List<Event>.generate(
-      20,
+      10,
           (i) =>  Event(i, "Event $i With a Big Name that take us a "
               "lot of space", "This is a very long "
               "description fo the event currantly displayed. This is to test "
               "out how good it looks when it cuts off.", "Alguien Importante",
           "https://images.pexels.com/photos/256541/pexels-photo-256541.jpeg",
-          DateTime.now().add(new Duration(days: i, hours: i+2)),
-          DateTime.now().add(new Duration(days: i, hours: i+5)),
+          DateTime.now().add(new Duration(minutes: i*2+5)),
+          DateTime.now().add(new Duration(minutes: i*20)),
           DateTime.now(),
           new Room(0, "S-200", "Stefani", 2, "Stefani is Cool", 20,
               "Alguien.importante@upr.edu", new Coordinate(18.209641, -67.139923)
@@ -87,7 +87,7 @@ class EventsRepo {
                   "https://portal.upr.edu/rum/portal.php?a=rea_login",
                   "link $i")),
               new List.generate(40, (i) => Tag("Tag$i",100)),
-              (i%2 == 0)
+              false
       )
   );
 

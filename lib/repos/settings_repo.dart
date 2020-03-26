@@ -5,7 +5,13 @@ class SettingsRepo {
 
   Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
-  SettingsRepo();
+  static final SettingsRepo _instance = SettingsRepo._internal();
+
+  factory SettingsRepo() {
+    return _instance;
+  }
+
+  SettingsRepo._internal();
 
   Future<int> changeDefaultNotificationTime(int time) async {
     final SharedPreferences prefs = await _prefs;

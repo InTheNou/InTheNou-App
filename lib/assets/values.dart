@@ -36,14 +36,29 @@ enum UserPrivilege{
   Administrator
 }
 
+enum NotificationType{
+  SmartNotification,
+  DefaultNotification,
+  SummaryNotification
+}
+
 //Constants
 const EVENTS_TO_FETCH = 20;
 const DEFAULT_NOTIFICATION_TIME = 30;
-const SMART_NOTIFICATION_STATE = true;
+const SMART_NOTIFICATION_STATE = false;
+const AVERAGE_WALKING_SPEED = 3.0;
+const RECOMMENDATION_INTERVAL_MINUTES = 60;
+const ASK_LOCATION_PERMISSION = true;
+
+
 //Shared Preferences Keys
 const DEFAULT_NOTIFICATION_KEY = "defaultNotificationTime";
 const SMART_NOTIFICATION_KEY = "smartNotificationEnabled";
 const USER_SESSION_KEY = "userSession";
+const ASK_LOCATION_PERMISSION_KEY = "askLocation";
+const SMART_NOTIFICATION_LIST = "smartNotificationList";
+const DEFAULT_NOTIFICATION_LIST = "defaultNotificationList";
+const NOTIFICATION_ID_KEY = "notificationId";
 
 
 //------------------- Helper Methods --------------------
@@ -70,20 +85,42 @@ String userRoleString(UserRole type) =>
     type == UserRole.TeachingPersonnel ? "Teaching Personnel" :
     "Non Teaching Personnel";
 
+String notificationTypeString(NotificationType type) =>
+    type == NotificationType.SmartNotification ? "SmartNotification" :
+    type == NotificationType.DefaultNotification ? "DefaultNotification" :
+    "SummaryNotification";
+
+NotificationType notificationTypeFromString(String type) =>
+    type == "SmartNotification" ? NotificationType.SmartNotification :
+    type == "DefaultNotification" ? NotificationType.DefaultNotification :
+    NotificationType.SummaryNotification;
+
 ///  Check if shared preferences has been setup, if not then set the default
 /// values
 Future<void> checkSharedPrefs() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   if(!prefs.containsKey(DEFAULT_NOTIFICATION_KEY)){
-    print("writing");
     prefs.setInt(DEFAULT_NOTIFICATION_KEY, DEFAULT_NOTIFICATION_TIME);
   }
   if(!prefs.containsKey(SMART_NOTIFICATION_KEY)) {
-    print("writing");
     prefs.setBool(SMART_NOTIFICATION_KEY, SMART_NOTIFICATION_STATE);
+  }
+  if(!prefs.containsKey(ASK_LOCATION_PERMISSION_KEY)) {
+    prefs.setBool(ASK_LOCATION_PERMISSION_KEY, ASK_LOCATION_PERMISSION);
+  }
+  if(!prefs.containsKey(NOTIFICATION_ID_KEY)) {
+    prefs.setInt(NOTIFICATION_ID_KEY, 0);
   }
 
 }
+
+void clearNotificationsPrefs() async{
+  SharedPreferences _prefs = await SharedPreferences.getInstance();
+  _prefs = await SharedPreferences.getInstance();
+  _prefs.setStringList(SMART_NOTIFICATION_LIST, null);
+  _prefs.setStringList(DEFAULT_NOTIFICATION_LIST, null);
+}
+
 ///
 /// Helped method to convert the number [n] to its ordinal form.
 /// As in:
@@ -104,6 +141,12 @@ Floor ordinalNumber(int n){
 String buildGoogleMapsLink(Coordinate coord){
   String url = "http://maps.google.com/maps?daddr="
       + "${coord.lat},${coord.long}&z=14" ;
+  return url;
+}
+
+buildGoogleMapsLink2(Coordinate c1, Coordinate c2){
+  String url = "https://www.google.com/maps/dir/${c1.lat},${c1.long}/${c2.lat},"
+      "${c2.long}" ;
   return url;
 }
 
