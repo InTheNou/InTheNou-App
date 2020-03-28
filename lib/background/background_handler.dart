@@ -48,7 +48,7 @@ class BackgroundHandler {
 
     BackgroundFetch.scheduleTask(TaskConfig(
         taskId: "com.inthenou.app.reccomendation",
-        delay: 60000,
+        delay: RECOMMENDATION_INTERVAL_MINUTES*60000,
         periodic: true,
         forceAlarmManager: true,
         stopOnTerminate: false,
@@ -166,7 +166,6 @@ class BackgroundHandler {
       } else{
         event.recommended = false;
       }
-      print("${event.UID} ${event.recommended} $weight  ${commonTags.length}");
     });
 
     print(recommendedEvents.length);
@@ -198,7 +197,7 @@ class BackgroundHandler {
   }
 
   static double calcWeightedSum(List<Tag> commonTags, int eventTagsNumber){
-    double relevanceValue = eventTagsNumber/RELEVANCE_VALUE_FACTOR;
+    double relevanceValue = RELEVANCE_VALUE_FACTOR/eventTagsNumber;
     double sum = 0;
     commonTags.forEach((tag) {
       sum += (tag.weight/100)*relevanceValue;

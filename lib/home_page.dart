@@ -51,7 +51,6 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
     initializeNotifications();
     checkLocationPermission();
     navigationStore = listenToStore(navigationToken);
-    flutterLocalNotificationsPlugin.cancelAll();
   }
 
   /// Checks if the permission has been granted using the [GeolocationStatus.

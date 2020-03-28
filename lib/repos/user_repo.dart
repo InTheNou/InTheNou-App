@@ -113,8 +113,9 @@ class UserRepo {
   // debug stuff
   User dummyUser = new User("Alguien", "Importante",
       "alguien.importante@upr.edu",UserRole.Student,
-      [Tag("ADMI",50), Tag("ADOF",50), Tag("AGRO",50), Tag
-        ("ALEM",50), Tag("ANTR",50)],
+      [Tag("ADMI",INITIAL_TAG_WEIGHT), Tag("ADOF",INITIAL_TAG_WEIGHT),
+        Tag("AGRO",INITIAL_TAG_WEIGHT), Tag("ALEM",INITIAL_TAG_WEIGHT),
+        Tag("ANTR",INITIAL_TAG_WEIGHT)],
       UserPrivilege.EventCreator);
 
   EventsRepo _eventRepo = new EventsRepo();
