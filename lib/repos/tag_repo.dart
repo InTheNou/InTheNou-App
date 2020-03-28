@@ -23,8 +23,9 @@ class TagRepo {
   }
 
   // Debug stuff
-  List<Tag> dummyTags = new List.generate(20, (index) =>
-  new Tag("Tag$index", 20));
-
+  List<Tag> dummyTags = [Tag("ADMI",50), Tag("ADOF",50), Tag("AGRO",50), Tag
+    ("ALEM",50), Tag("ANTR",50), Tag("ARTE",50), Tag("ASTR",50), Tag("BIND",50),
+    Tag("BIOL",50), Tag("BOTA",50), Tag("CFIT",50), Tag("CHIN",50), Tag("CIAN",50)
+    , Tag("CIBI",50), Tag("CIFI",50), Tag("CIIC",50), Tag("CIMA",50)];
 
 }

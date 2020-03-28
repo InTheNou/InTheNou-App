@@ -1,3 +1,4 @@
+import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/stores/event_store.dart';
 import 'package:InTheNou/views/widgets/event_card.dart';
@@ -84,7 +85,7 @@ class GeneralFeedState extends State<GeneralFeedView>
         },
       );
     }
-    return Text(feedTypeString(FeedType.GeneralFeed));
+    return Text(Utils.feedTypeString(FeedType.GeneralFeed));
   }
 
   /// Method called whenever the AppBar is being drawn, if the search button

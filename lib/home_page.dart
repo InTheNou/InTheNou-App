@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/background/background_handler.dart';
 import 'package:InTheNou/background/notification_handler.dart';
@@ -46,6 +47,7 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
     super.initState();
     BackgroundHandler.initPlatformState();
     BackgroundFetch.registerHeadlessTask(BackgroundHandler.onBackgroundFetch);
+    Utils.checkSharedPrefs();
     initializeNotifications();
     checkLocationPermission();
     navigationStore = listenToStore(navigationToken);

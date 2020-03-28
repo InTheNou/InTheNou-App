@@ -1,4 +1,4 @@
-import 'package:InTheNou/assets/values.dart';
+import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/models/building.dart';
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/models/floor.dart';
@@ -114,7 +114,7 @@ class EventCreationStore extends flux.Store {
 
   void createFloors(Building building){
     _floors = new List.generate(building.numFloors,
-            (index) => ordinalNumber(index+1));
+            (index) => Utils.ordinalNumber(index+1));
   }
 
   void reset(){

@@ -1,4 +1,4 @@
-import 'package:InTheNou/assets/values.dart';
+import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/models/service.dart';
 import 'package:InTheNou/stores/infobase_store.dart';
 import 'package:InTheNou/views/widgets/link_with_icon_widget.dart';
@@ -118,7 +118,8 @@ class _RoomViewState extends State<RoomView>
                               Expanded(
                                 child: LinkWithIconWidget(
                                     "location",
-                                    buildGoogleMapsLink(_infoBaseStore.detailRoom.coordinates),
+                                    Utils.buildGoogleMapsLink(_infoBaseStore
+                                        .detailRoom.coordinates),
                                     Icons.location_on
                                 ),
                               )

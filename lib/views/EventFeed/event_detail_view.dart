@@ -1,4 +1,5 @@
 import 'package:InTheNou/assets/colors.dart';
+import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/stores/event_store.dart';
@@ -121,7 +122,8 @@ class _EventDetailViewState extends State<EventDetailView>
                                         Icons.account_circle),
                                     LinkWithIconWidget(
                                         detailEvent.room.code,
-                                        buildGoogleMapsLink(detailEvent.room.coordinates),
+                                        Utils.buildGoogleMapsLink(detailEvent
+                                            .room.coordinates),
                                         Icons.location_on),
                                     const Padding(padding: EdgeInsets.only(bottom: 4.0)),
                                     TextWithIcon(detailEvent.getDurationString(),

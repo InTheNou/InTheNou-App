@@ -1,3 +1,4 @@
+import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/stores/event_store.dart';
 import 'package:InTheNou/stores/user_store.dart';
@@ -96,7 +97,7 @@ class PersonalFeedState extends State<PersonalFeedView>
         },
       );
     }
-    return Text(feedTypeString(FeedType.PersonalFeed));
+    return Text(Utils.feedTypeString(FeedType.PersonalFeed));
   }
 
   /// Method called whenever the AppBar is being drawn, if the search button

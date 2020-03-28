@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/coordinate.dart';
 import 'package:InTheNou/models/event.dart';
@@ -188,7 +189,7 @@ class NotificationHandler {
         priority: Priority.High,
         visibility: NotificationVisibility.Public,
         style: AndroidNotificationStyle.BigText,
-        groupKey: DEFAULT_NOTIFICATION_KEY,
+        groupKey: SMART_NOTIFICATION_GID,
         styleInformation: bigTextStyleInformation);
     var platformChannelSpecifics = NotificationDetails(
         androidPlatformChannelSpecifics, null);
@@ -242,7 +243,7 @@ class NotificationHandler {
         priority: Priority.High,
         visibility: NotificationVisibility.Public,
         style: AndroidNotificationStyle.Default,
-        groupKey: SMART_NOTIFICATION_KEY,
+        groupKey: DEFAULT_NOTIFICATION_GID,
         styleInformation: defaultStyleInformation);
     var platformChannelSpecifics = NotificationDetails(
         androidPlatformChannelSpecifics, null);
@@ -250,6 +251,29 @@ class NotificationHandler {
     await flutterLocalNotificationsPlugin.schedule(
         notification.id, title, description, notification.time,
         platformChannelSpecifics, payload: jsonEncode(notification));
+  }
+
+  /// Setup of the notification and schedules it
+  static void scheduleRecommendationNotification(
+      NotificationObject notification, String title, String description) async {
+    var defaultStyleInformation = DefaultStyleInformation(true, true);
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+        'com.inthenou.app.channel.reccomendation',
+        'Recommendation Notification',
+        'Notifications of Events that have been recommended based on interest.',
+        importance: Importance.Max,
+        priority: Priority.High,
+        visibility: NotificationVisibility.Public,
+        style: AndroidNotificationStyle.Default,
+        groupKey: RECOMMENDATION_NOTIFICATION_GID,
+        styleInformation: defaultStyleInformation);
+    var platformChannelSpecifics = NotificationDetails(
+        androidPlatformChannelSpecifics, null);
+
+    await flutterLocalNotificationsPlugin.show(
+        notification.id, title, description,
+        platformChannelSpecifics,
+        payload: jsonEncode(notification));
   }
 
   // Helper Methods
@@ -326,14 +350,14 @@ class NotificationObject {
   });
 
   NotificationObject.fromJson(Map<String, dynamic> json)
-      : type = notificationTypeFromString(json['type']),
+      : type = Utils.notificationTypeFromString(json['type']),
         id = json['id'],
         time = DateTime.parse(json["time"]),
         payload = json['payload'];
 
   Map<String, dynamic> toJson() =>
       {
-        'type': notificationTypeString(type),
+        'type': Utils.notificationTypeString(type),
         'id': id,
         'time': time.toIso8601String(),
         'payload': payload,

@@ -1,3 +1,4 @@
+import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/tag.dart';
 import 'package:InTheNou/stores/user_store.dart';
@@ -66,7 +67,7 @@ class _AccountCreationViewState extends State<AccountCreationView>
                         items: _userStore.userRoles.map((UserRole role) {
                           return DropdownMenuItem<UserRole>(
                               value: role,
-                              child: Text(userRoleString(role)));
+                              child: Text(Utils.userRoleString(role)));
                         }).toList(),
                         onChanged: (value) => selectRoleAction(value),
                         validator: (value) =>

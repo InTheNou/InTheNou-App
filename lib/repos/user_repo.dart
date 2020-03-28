@@ -101,8 +101,7 @@ class UserRepo {
     return true;
   }
   Future<List<Tag>> getUserTags() async{
-    return [Tag("Tag1", 20), Tag("Tag2", 20), Tag("Tag3", 20), Tag("Tag4", 20),
-      Tag("Tag5", 20)];
+    return dummyUser.tags;
   }
   bool requestAddTags(int userUID, List<String> tagNames){
 
@@ -113,8 +112,10 @@ class UserRepo {
 
   // debug stuff
   User dummyUser = new User("Alguien", "Importante",
-      "alguien.importante@upr.edu",UserRole.Student, new List.generate(10, (index)
-      => new Tag("Tag$index", 10)), UserPrivilege.EventCreator);
+      "alguien.importante@upr.edu",UserRole.Student,
+      [Tag("ADMI",50), Tag("ADOF",50), Tag("AGRO",50), Tag
+        ("ALEM",50), Tag("ANTR",50)],
+      UserPrivilege.EventCreator);
 
   EventsRepo _eventRepo = new EventsRepo();
   List<Event> getFollowedEventsFromSecretePlace(){

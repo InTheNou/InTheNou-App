@@ -1,3 +1,4 @@
+import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/building.dart';
 import 'package:InTheNou/models/room.dart';
@@ -46,7 +47,7 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
     return Scaffold(
       appBar: AppBar(
         title: _infoBaseStore.isSearching ? _buildSearchField() :
-          Text(infoBaseSearchString(widget.searchType)),
+          Text(Utils.infoBaseSearchString(widget.searchType)),
         actions: _buildActions(),
       ),
       body: Column(

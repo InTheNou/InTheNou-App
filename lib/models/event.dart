@@ -17,10 +17,11 @@ class Event {
   List<Website> _websites;
   List<Tag> _tags;
   bool followed;
+  bool recommended;
 
   Event(this._UID,this._title, this._description, this._creator, this._image,
       this._startDateTime, this._endDateTime, this._timestamp,
-      this._room, this._websites, this._tags, this.followed);
+      this._room, this._websites, this._tags, this.followed, this.recommended);
 
   Event.copy (Event event){
     this._UID = event._UID;
@@ -40,12 +41,14 @@ class Event {
       this._endDateTime, this._room, this._websites, this._tags){
     this._UID = -1;
     this.followed = false;
+    this.recommended = null;
   }
 
   Event.result(this._UID, this._title, this._description, this._startDateTime,
       this._endDateTime, this._room, this.followed) {
     this._timestamp = null;
     this._tags = new List(10);
+    this.recommended = null;
   }
 
   int get UID => _UID;
@@ -101,7 +104,7 @@ class Event {
 
   @override
   String toString() {
-    return 'Event{_UID: $_UID, _title: $_title, _description: $_description, _startDateTime: $_startDateTime, _endDateTime: $_endDateTime, _timestamp: $_timestamp, _room: $_room, _websites: $_websites, _tags: $_tags, followed: $followed}';
+    return 'Event{_UID: $_UID, _title: $_title, _description: $_description, _creator: $_creator, _image: $_image, _startDateTime: $_startDateTime, _endDateTime: $_endDateTime, _timestamp: $_timestamp, _room: $_room, _websites: $_websites, _tags: $_tags, followed: $followed, recommended: $recommended}';
   }
 
 

@@ -1,3 +1,4 @@
+import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/home_page.dart';
 import 'package:InTheNou/stores/settings_store.dart';
 import 'package:flutter/material.dart';
@@ -119,6 +120,7 @@ class _SettingsViewState extends State<SettingsView>
                     onTap: () {
                       logoutAction();
                       navigateToAction(0);
+                      Utils.clearAllPreferences();
                       Navigator.pushNamedAndRemoveUntil(
                         context, "/login", (Route<dynamic> route) => false,);
                     }

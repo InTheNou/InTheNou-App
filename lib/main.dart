@@ -1,12 +1,12 @@
 import 'package:InTheNou/RouteGenerator.dart';
-import 'package:InTheNou/assets/values.dart';
+import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/colors.dart';
 import 'package:InTheNou/start_up_view.dart';
 import 'package:flutter/material.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  checkSharedPrefs();
+  Utils.checkSharedPrefs();
   runApp(InTheNouApp());
 }
 

@@ -1,4 +1,4 @@
-import 'package:InTheNou/assets/values.dart';
+import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/models/floor.dart';
 import 'package:InTheNou/stores/infobase_store.dart';
 import 'package:flutter/cupertino.dart';
@@ -137,7 +137,7 @@ class _BuildingViewState extends State<BuildingView>
                             shrinkWrap: true,
                             itemCount: _infoBaseStore.detailBuilding.numFloors,
                             itemBuilder: (context, index){
-                              Floor _floor = ordinalNumber(index+1);
+                              Floor _floor = Utils.ordinalNumber(index+1);
                               return  InkWell(
                                 onTap: () => {
                                   Navigator.of(context).pushNamed

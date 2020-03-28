@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:async';
+import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/background/notification_handler.dart';
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/models/tag.dart';
+import 'package:InTheNou/repos/events_repo.dart';
 import 'package:InTheNou/repos/user_repo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:background_fetch/background_fetch.dart';
@@ -46,7 +48,7 @@ class BackgroundHandler {
 
     BackgroundFetch.scheduleTask(TaskConfig(
         taskId: "com.inthenou.app.reccomendation",
-        delay: 5*60000,
+        delay: 60000,
         periodic: true,
         forceAlarmManager: true,
         stopOnTerminate: false,
@@ -134,20 +136,74 @@ class BackgroundHandler {
   }
 
 
-  static void _doRecommendation(){
-//    NotificationHandler.scheduleSmartNotification("Reccomendation", "Reccomen"
-//        "dation description", DateTime.now(), "");
+  static void _doRecommendation() async{
+    EventsRepo _eventRepo = new EventsRepo();
+    UserRepo _userRepo = new UserRepo();
+    _prefs = await SharedPreferences.getInstance();
+
+    String lastDate = _prefs.getString(LAST_RECOMMENDATION_DATE_KEY);
+
+    List<Event> newEvents = await _eventRepo.getNewEvents(lastDate);
+    List<Tag> userTags = await _userRepo.getUserTags();
+    List<Event> recommendedEvents = new List();
+
+    List<Tag> commonTags;
+    // Remove all events that have been ran through the recommendation
+    newEvents.removeWhere((event) => event.recommended != null);
+    newEvents.forEach((event) {
+      commonTags = _checkTagsSimilarity(event.tags, userTags);
+
+      double weight = 0;
+      if(commonTags.length >= 2){
+        weight = calcWeightedSum(commonTags, event.tags.length);
+        if(weight >= WEIGHTED_SUM_THRESHOLD){
+          event.recommended = true;
+          recommendedEvents.add(event);
+        }
+        else {
+          event.recommended = false;
+        }
+      } else{
+        event.recommended = false;
+      }
+      print("${event.UID} ${event.recommended} $weight  ${commonTags.length}");
+    });
+
+    print(recommendedEvents.length);
+
+    if(recommendedEvents.length > 0){
+      _eventRepo.requestRecommendation(recommendedEvents);
+
+      NotificationHandler.scheduleRecommendationNotification
+        (NotificationObject(id: 0,
+          type: NotificationType.RecommendationNotification,
+          time: DateTime.now(),
+          payload: ""), "You have ${recommendedEvents.length} new Events",
+          "There are ${recommendedEvents.length} new Events recommended to you "
+              "based on your interests. Check em out!");
+    }
+
+    _prefs.setString(LAST_RECOMMENDATION_DATE_KEY,
+        Utils.formatTimeStamp(DateTime.now()));
   }
 
-  static List<Tag> _checkTagsSimilarity(List<Tag> eventTags,
-      List<Tag> userTags){
+  static List<Tag> _checkTagsSimilarity(List<Tag> eventTags, List<Tag> userTags){
     List<Tag> commonTags = new List();
     userTags.forEach((tag) {
-      if(eventTags.contains(tag)){
+      if(eventTags.any((element) => element.name == tag.name)){
         commonTags.add(tag);
       }
     });
     return commonTags;
+  }
+
+  static double calcWeightedSum(List<Tag> commonTags, int eventTagsNumber){
+    double relevanceValue = eventTagsNumber/RELEVANCE_VALUE_FACTOR;
+    double sum = 0;
+    commonTags.forEach((tag) {
+      sum += (tag.weight/100)*relevanceValue;
+    });
+    return sum;
   }
 
   /// Cleans up old notifications that have been delivered

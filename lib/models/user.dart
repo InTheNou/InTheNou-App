@@ -1,3 +1,4 @@
+import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/tag.dart';
 
@@ -34,8 +35,9 @@ class User {
   @override
   String toString() {
     return 'User{_firstName: $_firstName, _lastName: $_lastName, '
-        '_email: $_email, _role: ${userRoleString(_role)}, _tags: $_tags, '
-        '_userPrivilege: ${userPrivilegeString(_userPrivilege)}';
+        '_email: $_email, _role: ${Utils.userRoleString(_role)}, '
+        '_tags: $_tags, '
+        '_userPrivilege: ${Utils.userPrivilegeString(_userPrivilege)}';
   }
 
 

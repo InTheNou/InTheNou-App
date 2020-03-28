@@ -1,3 +1,4 @@
+import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/cupertino.dart';
@@ -72,7 +73,8 @@ class ProfileState extends State<ProfileView>
                               text: "Type of User: ",
                               children: <TextSpan>[
                                 TextSpan(
-                                    text: userRoleString(_userStore.user.role),
+                                    text: Utils.userRoleString(_userStore.user
+                                        .role),
                                     style: Theme.of(context).textTheme.subtitle1.copyWith(
                                         fontWeight: FontWeight.bold
                                     )
@@ -86,7 +88,8 @@ class ProfileState extends State<ProfileView>
                               text: "TPrivilege level: ",
                               children: <TextSpan>[
                                 TextSpan(
-                                    text: userPrivilegeString(_userStore.user.userPrivilege),
+                                    text: Utils.userPrivilegeString(_userStore
+                                        .user.userPrivilege),
                                     style: Theme.of(context).textTheme.subtitle1.copyWith(
                                         fontWeight: FontWeight.bold
                                     )
