@@ -45,7 +45,7 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
   @override
   void initState() {
     super.initState();
-    BackgroundHandler.initPlatformState();
+    BackgroundHandler.initBackgroundTasks();
     BackgroundFetch.registerHeadlessTask(BackgroundHandler.onBackgroundFetch);
     Utils.checkSharedPrefs();
     initializeNotifications();

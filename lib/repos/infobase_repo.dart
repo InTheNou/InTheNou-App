@@ -54,7 +54,8 @@ class InfoBaseRepo {
   List<Building> dummyBuildings = new List.generate(2,
           (index) => new Building(index, "Building $index",
               "Cool Building $index",
-              2, "academic", new Coordinate(18.209641, -67.139923)));
+              2, "academic", new Coordinate(18.209641, -67.139923),
+              "https://pbs.twimg.com/media/DN8sEJpUEAAyuyF?format=jpg&name=large"));
 
   var dummyRooms = <int,List<Room>>{
       0: new List.generate(20,(index) =>
@@ -74,8 +75,8 @@ class InfoBaseRepo {
         [PhoneNumber("787-123-4567,1234", PhoneType.E),
           PhoneNumber("787-123-4567", PhoneType.L)],
         new List<Website>.filled(2,
-            new Website("https://portal.upr.edu/rum/portal.php?a=rea_login", "P"
-                "ortal"))
+            new Website("https://portal.upr.edu/rum/portal.php?a=rea_login",
+                "Portal"))
     )),
     1: new List.generate(20,(index) =>
     new Service(index+100,"Service B1 $index", "Nice service inside B1",

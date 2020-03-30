@@ -21,7 +21,7 @@ class _CreatedEventsViewState extends State<CreatedEventsView>
   @override
   void initState() {
     super.initState();
-    _userStore = listenToStore(userStoreToken);
+    _userStore = listenToStore(UserStore.userStoreToken);
   }
 
   @override
@@ -126,7 +126,7 @@ class _CreatedEventsViewState extends State<CreatedEventsView>
               onPressed: () {
                 Navigator.of(context).pop();
                 cancelEventAction(_event);
-                refreshCreatedEventsAction();
+                refreshCreatedAction();
               },
             )
           ],

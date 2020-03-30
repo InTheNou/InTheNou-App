@@ -20,13 +20,13 @@ class _FloorViewState extends State<FloorView>
   @override
   void initState() {
     super.initState();
-    _infoBaseStore = listenToStore(infoBaseToken);
+    _infoBaseStore = listenToStore(InfoBaseStore.infoBaseToken);
   }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("FloorView"),
+        title: Text(_infoBaseStore.selectedFloor.floorName + " Floor"),
       ),
       body: Column(
         children: <Widget>[

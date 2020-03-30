@@ -40,7 +40,7 @@ class NotificationHandler {
     _prefs.setStringList(SMART_NOTIFICATION_LIST,jsonNotifications);
 
     // Create Default notification
-    makeDefaultNotification(event);
+    _makeDefaultNotification(event);
   }
 
   /// Cancels Smart and Default notifications associated with this event
@@ -97,6 +97,28 @@ class NotificationHandler {
     });
   }
 
+  /// Cleans up old notifications that have been delivered
+  static void cleanupNotifications() async{
+    _prefs = await SharedPreferences.getInstance();
+
+    // Gets all Notifications that are scheduled already
+    List<String> jsonSmart = _prefs.getStringList
+      (SMART_NOTIFICATION_LIST) ?? new List();
+    List<String> jsonDefault = _prefs.getStringList
+      (DEFAULT_NOTIFICATION_LIST) ?? new List();
+
+    // Remove all notifications that have been delivered
+    DateTime now = DateTime.now();
+    jsonSmart.removeWhere((json)
+    => NotificationObject.fromJson(jsonDecode(json)).time.difference(now).isNegative
+    );
+    jsonDefault.removeWhere((json)
+    => NotificationObject.fromJson(jsonDecode(json)).time.difference(now).isNegative
+    );
+    _prefs.setStringList(SMART_NOTIFICATION_LIST,jsonSmart);
+    _prefs.setStringList(DEFAULT_NOTIFICATION_LIST,jsonDefault);
+  }
+
   /// Verifies if an event needs to be have a notification scheduled and does
   /// so if determined.
   ///
@@ -107,7 +129,7 @@ class NotificationHandler {
   /// determined if the scheduled can be deferred to the next time the Smart
   /// Notification tasks is initiated (in 15 minutes). In the case that it
   /// would be toot late to notify the user, then the Notification is
-  /// scheduled using[NotificationHandler.scheduleSmartNotification]
+  /// scheduled using[NotificationHandler._scheduleSmartNotification]
   static Future<List<String>> doSmartNotification(List<Event> events,
       List<String> jsonNotifications) async{
 
@@ -154,7 +176,7 @@ class NotificationHandler {
           NumberFormat nf2 = NumberFormat("#####", "en_US");
           DateFormat df = new DateFormat("K:mm a");
           String startOfEvent = "The event starts at ${df.format(event.startDateTime)}";
-          NotificationHandler.scheduleSmartNotification(
+          NotificationHandler._scheduleSmartNotification(
               notificationID,
               event.title,
               startOfEvent,
@@ -171,7 +193,7 @@ class NotificationHandler {
   }
 
   /// Setup of the notification and schedules it
-  static void scheduleSmartNotification(int id, String title,
+  static void _scheduleSmartNotification(int id, String title,
       String description, String bigDescription, DateTime scheduledDate,
       String payload) async {
     var bigTextStyleInformation = BigTextStyleInformation(
@@ -203,7 +225,7 @@ class NotificationHandler {
   /// Creates the Default notification for the [event]
   ///
   /// Calculates the time to send the notification based on the user setting
-  static void makeDefaultNotification(Event event) async{
+  static void _makeDefaultNotification(Event event) async{
     _prefs = await SharedPreferences.getInstance();
     int defaultTime = _prefs.getInt(DEFAULT_NOTIFICATION_KEY);
     int notificationID = _prefs.getInt(NOTIFICATION_ID_KEY);
@@ -222,7 +244,7 @@ class NotificationHandler {
 
     DateFormat df = new DateFormat("K:mm a");
     String startOfEvent = "The event starts at ${df.format(event.startDateTime)}";
-    scheduleDefaultNotification(notification,
+    _scheduleDefaultNotification(notification,
       event.title, startOfEvent
     );
 
@@ -232,7 +254,7 @@ class NotificationHandler {
   }
 
   /// Setup of the notification and schedules it
-  static void scheduleDefaultNotification(NotificationObject notification,
+  static void _scheduleDefaultNotification(NotificationObject notification,
       String title, String description) async {
     var defaultStyleInformation = DefaultStyleInformation(true, true);
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(

@@ -21,7 +21,7 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
   @override
   void initState() {
     super.initState();
-    _userStore = listenToStore(userStoreToken);
+    _userStore = listenToStore(UserStore.userStoreToken);
   }
 
   @override
@@ -97,7 +97,7 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
                                             _event.followed ?
                                             unFollowEventAction(_event) :
                                             followEventAction(_event);
-                                            refreshFollowedEventsAction();
+                                            refreshFollowedAction();
                                           },
                                         )
                                     )

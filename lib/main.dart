@@ -18,7 +18,14 @@ class InTheNouApp extends StatelessWidget {
       title: 'IntheNou',
       theme: ThemeData(
           primarySwatch: primaryColor,
-          accentColor: secondaryColor
+          accentColor: secondaryColor,
+          cardTheme: CardTheme(color: ThemeData.fallback().cardColor,
+              clipBehavior: Clip.antiAlias,
+              elevation: 1.0,
+              margin: const EdgeInsets.all(4.0),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0))
+          )
       ),
       onGenerateRoute: RouteGenerator.generateRoute,
       home: StartUpView(),

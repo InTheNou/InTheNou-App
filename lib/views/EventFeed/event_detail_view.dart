@@ -30,7 +30,6 @@ class _EventDetailViewState extends State<EventDetailView>
   @override
   void initState() {
     _eventFeedStore = listenToStore(EventFeedStore.eventFeedToken);
-    print(widget._initialEvent);
     if(widget._initialEvent != null){
       openEventDetail(MapEntry(widget._feedType, widget._initialEvent))
           .then((value) {
@@ -124,7 +123,7 @@ class _EventDetailViewState extends State<EventDetailView>
                                         detailEvent.room.code,
                                         Utils.buildGoogleMapsLink(detailEvent
                                             .room.coordinates),
-                                        Icons.location_on),
+                                        Icon(Icons.location_on)),
                                     const Padding(padding: EdgeInsets.only(bottom: 4.0)),
                                     TextWithIcon(detailEvent.getDurationString(),
                                         Icons.today),
@@ -203,7 +202,7 @@ class _EventDetailViewState extends State<EventDetailView>
                                         return LinkWithIconWidget(
                                             detailEvent.websites[index].description,
                                             detailEvent.websites[index].URL,
-                                            Icons.language);
+                                            Icon(Icons.language));
                                       }
                                   ),
                                 ],

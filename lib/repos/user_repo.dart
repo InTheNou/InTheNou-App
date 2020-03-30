@@ -96,18 +96,12 @@ class UserRepo {
     // straight from the server
     return getFollowedEventsFromSecretePlace2();
   }
-  bool requestDeleteEvents(int userUID, Event event){
+  bool requestDeleteEvents(Event event){
     _eventRepo.deleteEvent(event);
     return true;
   }
   Future<List<Tag>> getUserTags() async{
     return dummyUser.tags;
-  }
-  bool requestAddTags(int userUID, List<String> tagNames){
-
-  }
-  bool requestRemoveTags(int userUID, List<String> tagNames){
-
   }
 
   // debug stuff

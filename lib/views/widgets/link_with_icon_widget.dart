@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LinkWithIconWidget extends StatelessWidget{
-  String _description;
-  String _URL;
-  IconData _icon;
+  final String _description;
+  final String _URL;
+  final Widget _icon;
 
   LinkWithIconWidget(this._description, this._URL, this._icon);
 
@@ -16,8 +16,7 @@ class LinkWithIconWidget extends StatelessWidget{
       child: Row(
         children: <Widget>[
           const Padding(padding: EdgeInsets.only(left: 8.0)),
-          Icon(
-              _icon),
+          _icon,
           const Padding(padding: EdgeInsets.only(left: 16.0)),
           Expanded(
             flex: 1,

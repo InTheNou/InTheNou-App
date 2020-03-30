@@ -9,6 +9,9 @@ import 'package:flutter_flux/flutter_flux.dart' as flux;
 
 class UserStore extends flux.Store{
 
+  static final flux.StoreToken userStoreToken = new flux.StoreToken(new
+    UserStore());
+
   User _user;
   List<Event> _followedEvents = new List();
   List<Event> _createdEvents = new List();
@@ -37,24 +40,18 @@ class UserStore extends flux.Store{
     _allTags = _tagRepo.getAllTagsAsMap();
     _searchTags = _tagRepo.getAllTagsAsMap();
 
-    triggerOnAction(refreshFollowedEventsAction, (_){
+    triggerOnAction(refreshFollowedAction, (_){
       _followedEvents = _userRepo.getFollowedEvents(0, 0, EVENTS_TO_FETCH);
     });
-    triggerOnAction(refreshCreatedEventsAction, (_){
+    triggerOnAction(refreshCreatedAction, (_){
       _createdEvents = _userRepo.getCreatedEvents(0, 0, EVENTS_TO_FETCH);
     });
     triggerOnAction(cancelEventAction, (Event event){
-      _userRepo.requestDeleteEvents(0, event);
+      _userRepo.requestDeleteEvents(event);
     });
     triggerOnAction(callAuthAction, (_){
       //TODO: Add call to auth service in integration
 
-    });
-    triggerOnConditionalAction(getUserAction, (_) {
-      return _userRepo.getUserInfo().then((value) {
-        _user = value;
-        return true;
-      });
     });
     triggerOnAction(selectRoleAction, (UserRole role) {
       _selectedRole = role;
@@ -119,15 +116,12 @@ class UserStore extends flux.Store{
 
 }
 //Profile Actions
-final flux.Action refreshFollowedEventsAction = new flux.Action();
-final flux.Action refreshCreatedEventsAction = new flux.Action();
+final flux.Action refreshFollowedAction = new flux.Action();
+final flux.Action refreshCreatedAction = new flux.Action();
 final flux.Action<Event> cancelEventAction = new flux.Action();
 //AccountCreation and Auth Actions
 final flux.Action callAuthAction = new flux.Action();
-final flux.Action getUserAction = new flux.Action();
 final flux.Action<UserRole> selectRoleAction = new flux.Action();
 final flux.Action<String> searchedTagAction = new flux.Action();
 final flux.Action<MapEntry<Tag,bool>> toggleTagAction = new flux.Action();
 final flux.Action createUserAction = new flux.Action();
-
-final flux.StoreToken userStoreToken = new flux.StoreToken(new UserStore());

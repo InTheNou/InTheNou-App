@@ -1,3 +1,4 @@
+import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/phone_number.dart';
 import 'package:InTheNou/models/website.dart';
 import 'package:InTheNou/stores/infobase_store.dart';
@@ -20,7 +21,7 @@ class _ServiceViewState extends State<ServiceView>
   @override
   void initState() {
     super.initState();
-    _infoBaseStore = listenToStore(infoBaseToken);
+    _infoBaseStore = listenToStore(InfoBaseStore.infoBaseToken);
   }
 
   @override
@@ -55,8 +56,8 @@ class _ServiceViewState extends State<ServiceView>
                                 const Padding(padding: EdgeInsets.only(bottom:
                                 8.0)),
                                 Padding(
-                                  padding: EdgeInsets.only(top: 4.0, bottom: 4.0,
-                                      left: 8.0, right: 8.0),
+                                  padding: const EdgeInsets.fromLTRB(8.0, 4.0,
+                                      8.0, 4.0),
                                   child: Text(
                                     _infoBaseStore.detailService
                                         .description,
@@ -65,8 +66,8 @@ class _ServiceViewState extends State<ServiceView>
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsets.only(top: 4.0, bottom: 4.0,
-                                      left: 8.0, right: 8.0),
+                                  padding: const EdgeInsets.fromLTRB(8.0, 4.0,
+                                      8.0, 4.0),
                                   child: RichText(
                                     text: TextSpan(
                                         style: Theme.of(context).textTheme.subtitle1,
@@ -98,8 +99,8 @@ class _ServiceViewState extends State<ServiceView>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Padding(
-                            padding: EdgeInsets.only(top: 8.0, bottom: 8.0,
-                                left: 8.0, right: 8.0),
+                            padding: const EdgeInsets.fromLTRB(8.0, 4.0,
+                                8.0, 4.0),
                             child: Text(
                               "Contact Information",
                               style: Theme.of(context).textTheme.subtitle2.copyWith(
@@ -108,8 +109,8 @@ class _ServiceViewState extends State<ServiceView>
                             )
                         ),
                         Padding(
-                          padding: const EdgeInsets.only(bottom: 8.0,
-                              left: 8.0, right: 8.0),
+                          padding: const EdgeInsets.fromLTRB(8.0, 4.0,
+                              8.0, 2.0),
                           child: Row(
                             children: <Widget>[
                               Expanded(
@@ -121,38 +122,32 @@ class _ServiceViewState extends State<ServiceView>
                                       Website _website = _infoBaseStore
                                           .detailService.websites[index];
                                       return LinkWithIconWidget(
-                                          _website.description,
+                                          _website.description ?? _website.URL,
                                           _website.URL,
-                                          Icons.language
+                                          Icon(Icons.language)
                                       );
                                     }),
                               )
                             ],
                           )
                         ),
-                        Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: Padding(
-                                  padding: const EdgeInsets.only(bottom: 8.0,
-                                      left: 8.0, right: 8.0),
-                                  child: ListView.builder(
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      shrinkWrap: true,
-                                      itemCount: _infoBaseStore
-                                          .detailService.numbers.length,
-                                      itemBuilder: (context, index){
-                                        PhoneNumber _phone = _infoBaseStore
-                                            .detailService.numbers[index];
-                                        return LinkWithIconWidget(
-                                            _phone.number,
-                                            "tel:${_phone.number}",
-                                            Icons.phone
-                                        );
-                                      })
-                              ),
-                            )
-                          ],
+                        Padding(
+                            padding: const EdgeInsets.fromLTRB(8.0, 2.0,
+                                8.0, 4.0),
+                            child: ListView.builder(
+                                physics: const NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                itemCount: _infoBaseStore
+                                    .detailService.numbers.length,
+                                itemBuilder: (context, index){
+                                  PhoneNumber _phone = _infoBaseStore
+                                      .detailService.numbers[index];
+                                  return LinkWithIconWidget(
+                                      _phone.number,
+                                      "tel:${_phone.number}",
+                                      selectPhoneIcon(_phone.type)
+                                  );
+                                })
                         )
                       ],
                     ),
@@ -189,5 +184,29 @@ class _ServiceViewState extends State<ServiceView>
         ),
       ),
     );
+  }
+
+  Widget selectPhoneIcon(PhoneType type){
+    switch (type){
+      case PhoneType.E:
+        return Icon(Icons.phone);
+        break;
+      case PhoneType.F:
+        return ImageIcon(
+          AssetImage("lib/assets/deskphone.png"),
+        );
+        break;
+      case PhoneType.L:
+        return ImageIcon(
+          AssetImage("lib/assets/phone-classic.png"),
+        );
+        break;
+      case PhoneType.M:
+        return Icon(Icons.smartphone);
+        break;
+      default:
+        return Icon(Icons.phone);
+        break;
+    }
   }
 }

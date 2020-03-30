@@ -28,7 +28,7 @@ class BackgroundHandler {
   /// operate when the app is not active.
   /// [BackgroundFetchConfig.enableHeadless] makes it so that a headless
   /// background task [onBackgroundFetch] is executed.
-  static Future<void> initPlatformState() async {
+  static Future<void> initBackgroundTasks() async {
     BackgroundFetch.configure(BackgroundFetchConfig(
       minimumFetchInterval: 15,
       forceAlarmManager: true,
@@ -81,7 +81,7 @@ class BackgroundHandler {
     switch (taskId){
       case "flutter_background_fetch":
         if(_prefs.getBool(SMART_NOTIFICATION_KEY)){
-          _prepareForNotification();
+          _prepareForSmartNotification();
         }
         break;
       case "com.inthenou.app.reccomendation":
@@ -91,7 +91,7 @@ class BackgroundHandler {
         _doRecommendation();
         break;
       case "com.inthenou.app.cleanup":
-        cleanupNotifications();
+        NotificationHandler.cleanupNotifications();
         break;
     }
 
@@ -107,7 +107,7 @@ class BackgroundHandler {
   /// [NotificationObject] and json.
   /// Upon receiving the json list back it removes any that have already
   /// been delivered to the user.
-  static void _prepareForNotification() async{
+  static void _prepareForSmartNotification() async{
     UserRepo _userRepo = UserRepo();
     _prefs = await SharedPreferences.getInstance();
 
@@ -203,28 +203,6 @@ class BackgroundHandler {
       sum += (tag.weight/100)*relevanceValue;
     });
     return sum;
-  }
-
-  /// Cleans up old notifications that have been delivered
-  static void cleanupNotifications() async{
-    _prefs = await SharedPreferences.getInstance();
-
-    // Gets all Notifications that are scheduled already
-    List<String> jsonSmart = _prefs.getStringList
-      (SMART_NOTIFICATION_LIST) ?? new List();
-    List<String> jsonDefault = _prefs.getStringList
-      (DEFAULT_NOTIFICATION_LIST) ?? new List();
-
-    // Remove all notifications that have been delivered
-    DateTime now = DateTime.now();
-    jsonSmart.removeWhere((json)
-      => NotificationObject.fromJson(jsonDecode(json)).time.difference(now).isNegative
-    );
-    jsonDefault.removeWhere((json)
-      => NotificationObject.fromJson(jsonDecode(json)).time.difference(now).isNegative
-    );
-    _prefs.setStringList(SMART_NOTIFICATION_LIST,jsonSmart);
-    _prefs.setStringList(DEFAULT_NOTIFICATION_LIST,jsonDefault);
   }
 
   static void onClickEnable(enabled) {

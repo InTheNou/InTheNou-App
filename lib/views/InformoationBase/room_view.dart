@@ -20,7 +20,7 @@ class _RoomViewState extends State<RoomView>
   @override
   void initState() {
   super.initState();
-    _infoBaseStore = listenToStore(infoBaseToken);
+    _infoBaseStore = listenToStore(InfoBaseStore.infoBaseToken);
   }
 
   @override
@@ -51,8 +51,7 @@ class _RoomViewState extends State<RoomView>
                           ),
                           const Padding(padding: EdgeInsets.only(bottom: 8.0)),
                           Padding(
-                            padding: EdgeInsets.only(top: 4.0, bottom: 4.0,
-                                left: 8.0, right: 8.0),
+                            padding: const EdgeInsets.fromLTRB(8.0,4.0,8.0,4.0),
                             child: RichText(
                               text: TextSpan(
                                   style: Theme.of(context).textTheme.subtitle1,
@@ -71,8 +70,7 @@ class _RoomViewState extends State<RoomView>
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsets.only(top: 4.0, bottom: 4.0,
-                                left: 8.0, right: 8.0),
+                            padding: const EdgeInsets.fromLTRB(8.0,4.0,8.0,4.0),
                             child: RichText(
                               text: TextSpan(
                                   style: Theme.of(context).textTheme.subtitle1,
@@ -92,8 +90,7 @@ class _RoomViewState extends State<RoomView>
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsets.only(top: 4.0, bottom: 4.0,
-                                left: 8.0, right: 8.0),
+                            padding: const EdgeInsets.fromLTRB(8.0,4.0,8.0,4.0),
                             child: RichText(
                               text: TextSpan(
                                   style: Theme.of(context).textTheme
@@ -120,7 +117,7 @@ class _RoomViewState extends State<RoomView>
                                     "location",
                                     Utils.buildGoogleMapsLink(_infoBaseStore
                                         .detailRoom.coordinates),
-                                    Icons.location_on
+                                    Icon(Icons.location_on)
                                 ),
                               )
                             ],
@@ -136,8 +133,7 @@ class _RoomViewState extends State<RoomView>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Padding(
-                            padding: EdgeInsets.only(top: 8.0, bottom: 8.0,
-                                left: 8.0, right: 8.0),
+                            padding: const EdgeInsets.all(8.0),
                             child: Text(
                               "Contact Information",
                               style: Theme.of(context).textTheme.subtitle2.copyWith(
@@ -146,13 +142,12 @@ class _RoomViewState extends State<RoomView>
                             )
                         ),
                         Padding(
-                          padding: const EdgeInsets.only(bottom: 8.0,
-                              left: 8.0, right: 8.0),
+                          padding: const EdgeInsets.fromLTRB(8.0,4.0,8.0,4.0),
                           // Adding the mailto: makes it a clickable email link
                           child: LinkWithIconWidget(
                               _infoBaseStore.detailRoom.custodian,
                               "mailto:<${_infoBaseStore.detailRoom.custodian}>",
-                              Icons.mail
+                              Icon(Icons.mail)
                           ),
                         )
                       ],
@@ -165,8 +160,7 @@ class _RoomViewState extends State<RoomView>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Padding(
-                            padding: EdgeInsets.only(top: 8.0, bottom: 8.0,
-                                left: 8.0, right: 8.0),
+                            padding: const EdgeInsets.all(8.0),
                             child: Text(
                               "Services",
                               style: Theme.of(context).textTheme.subtitle2.copyWith(

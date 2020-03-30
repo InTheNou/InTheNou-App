@@ -54,6 +54,9 @@ const NOTIFICATION_ID_START = 20;
 
 const INITIAL_TAG_WEIGHT = 50;
 
+const List<int> defaultTimes = [
+  5, 10, 15, 20, 30
+];
 
 //Shared Preferences Keys
 const DEFAULT_NOTIFICATION_KEY = "defaultNotificationTime";

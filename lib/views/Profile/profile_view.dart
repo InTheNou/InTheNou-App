@@ -1,5 +1,4 @@
 import 'package:InTheNou/assets/utils.dart';
-import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +19,7 @@ class ProfileState extends State<ProfileView>
   @override
   void initState() {
     super.initState();
-    _userStore = listenToStore(userStoreToken);
+    _userStore = listenToStore(UserStore.userStoreToken);
   }
 
   @override
@@ -118,7 +117,7 @@ class ProfileState extends State<ProfileView>
                           onTap: ()  {
                             Navigator.of(context)
                               .pushNamed("/profile/followed_events");
-                            refreshFollowedEventsAction();
+                            refreshFollowedAction();
                           },
                           child: ListTile(
                             title: Text("Followed Events"),
@@ -130,7 +129,7 @@ class ProfileState extends State<ProfileView>
                           onTap: () {
                             Navigator.of(context)
                                 .pushNamed("/profile/created_events");
-                            refreshCreatedEventsAction();
+                            refreshCreatedAction();
                           },
                           child: ListTile(
                             title: Text("Created Events"),

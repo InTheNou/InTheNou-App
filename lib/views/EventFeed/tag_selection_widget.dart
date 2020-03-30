@@ -18,7 +18,7 @@ class _TagSelectionWidgetState extends State<TagSelectionWidget>
   @override
   void initState() {
     super.initState();
-    _creationStore = listenToStore(eventCreationStoreToken);
+    _creationStore = listenToStore(EventCreationStore.eventCreationStoreToken);
   }
 
   @override

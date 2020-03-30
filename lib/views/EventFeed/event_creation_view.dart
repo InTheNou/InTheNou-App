@@ -34,7 +34,7 @@ class _EventCreationViewState extends State<EventCreationView>
 
   @override
   void initState() {
-    _creationStore = listenToStore(eventCreationStoreToken);
+    _creationStore = listenToStore(EventCreationStore.eventCreationStoreToken);
     getBuildingsAction();
     getAllTagsAction();
     // In case the user had decided to save the draft and they had entered at
@@ -54,18 +54,18 @@ class _EventCreationViewState extends State<EventCreationView>
             child: Text(
               "SUBMIT"
             ),
-            onPressed: () => validateEventSubmit(context)
+            onPressed: () => validateEventSubmit()
           )
         ],
         leading: IconButton(
           icon: Icon(Icons.clear),
-          onPressed: () => showGoBackWarning(context),
+          onPressed: () => showExitWarning(),
         ),
       ),
       body: SingleChildScrollView(
         child: Form(
             key: _formKey,
-            onWillPop: () => showGoBackWarning(context),
+            onWillPop: () => showExitWarning(),
             child: Padding(
               padding: const EdgeInsets.only(top: 16.0, bottom: 8.0,
                   left: 8.0, right: 8.0),
@@ -144,7 +144,8 @@ class _EventCreationViewState extends State<EventCreationView>
                                   TimeOfDay.fromDateTime(_creationStore
                                   .startDateTime ?? DateTime.now()),
                               );
-                              inputEventStartAction(DateTimeField.combine(date, time));
+                              inputEventDateAction(MapEntry(true,
+                                  DateTimeField.combine(date, time)));
                               return DateTimeField.combine(date, time);
                             } else {
                           return currentValue;
@@ -184,7 +185,8 @@ class _EventCreationViewState extends State<EventCreationView>
                             TimeOfDay.fromDateTime(_creationStore.endDateTime
                             ?? DateTime.now()),
                           );
-                          inputEventEndAction(DateTimeField.combine(date, time));
+                          inputEventDateAction(MapEntry(false,
+                              DateTimeField.combine(date, time)));
                           return DateTimeField.combine(date, time);
                         } else {
                           return currentValue;
@@ -297,7 +299,7 @@ class _EventCreationViewState extends State<EventCreationView>
                                 );
                               }
                               else {
-                                showWebsiteWarning(context);
+                                showWebsiteWarning();
                               }
                             },
                         ),
@@ -334,7 +336,7 @@ class _EventCreationViewState extends State<EventCreationView>
                                     ),
                                     IconButton(
                                       onPressed: () =>
-                                        removeWebsiteAction(website),
+                                          modifyWebsiteAction(MapEntry(false,website)),
                                       icon: Icon(Icons.delete),
                                     )
                                   ],
@@ -370,11 +372,11 @@ class _EventCreationViewState extends State<EventCreationView>
     );
   }
 
-  void validateEventSubmit(BuildContext context){
+  void validateEventSubmit(){
     if(_formKey.currentState.validate()
         && _creationStore.selectedTags.length < 11
         && _creationStore.selectedTags.length > 2){
-      showSubmitConfirmation(context).then((value) {
+      showSubmitConfirmation().then((value) {
         if(value){
           submitEventAction();
           Navigator.of(context).pop();
@@ -384,7 +386,7 @@ class _EventCreationViewState extends State<EventCreationView>
     else{
       if (_creationStore.selectedTags.length >10
           || _creationStore.selectedTags.length < 3){
-        showTagWarning(context);
+        showTagWarning();
       }
       _formKey.currentState.save();
       setState(() {
@@ -393,7 +395,7 @@ class _EventCreationViewState extends State<EventCreationView>
     }
   }
 
-  Future<bool> showSubmitConfirmation(BuildContext context){
+  Future<bool> showSubmitConfirmation(){
     return showDialog<bool>(context: context,
         barrierDismissible: false,
         builder: (_) {
@@ -427,7 +429,7 @@ class _EventCreationViewState extends State<EventCreationView>
     );
   }
 
-  showGoBackWarning(BuildContext context){
+  showExitWarning(){
     showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
@@ -481,7 +483,7 @@ class _EventCreationViewState extends State<EventCreationView>
     return null;
   }
 
-  void showWebsiteWarning(BuildContext context){
+  void showWebsiteWarning(){
     showDialog(context: context,
         builder: (_) {
           return AlertDialog(
@@ -504,7 +506,7 @@ class _EventCreationViewState extends State<EventCreationView>
     );
   }
 
-  void showTagWarning(BuildContext context){
+  void showTagWarning(){
       showDialog(context: context,
       builder: (_) {
         return AlertDialog(

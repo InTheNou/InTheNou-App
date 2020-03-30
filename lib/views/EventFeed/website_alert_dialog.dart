@@ -85,7 +85,7 @@ class _WebsiteAlertDialogState extends State<WebsiteAlertDialog> {
           onPressed: (){
             if (_formKey.currentState.validate()) {
               _formKey.currentState.save();
-              addWebsiteAction(new Website(_URL, _name));
+              modifyWebsiteAction(MapEntry(true, new Website(_URL, _name)));
               Navigator.of(context).pop();
             }
             else {

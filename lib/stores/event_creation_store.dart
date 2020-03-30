@@ -11,6 +11,9 @@ import 'package:flutter_flux/flutter_flux.dart' as flux;
 
 class EventCreationStore extends flux.Store {
 
+  static final flux.StoreToken eventCreationStoreToken = new flux.StoreToken(
+      new EventCreationStore());
+
   static final InfoBaseRepo _infoBaseRepo = new InfoBaseRepo();
   static final EventsRepo _eventsRepo = new EventsRepo();
 
@@ -35,8 +38,9 @@ class EventCreationStore extends flux.Store {
 
   EventCreationStore() {
     triggerOnAction(submitEventAction, (_){
-      _newEvent = new Event.newEvent(_title, _description, _startDateTime,
-          _endDateTime, _selectedRoom, _websites, _selectedTags);
+      _newEvent = new Event(0,_title, _description,"", "", _startDateTime,
+          _endDateTime,DateTime.now(), _selectedRoom, _websites,
+        _selectedTags, false, null);
       _eventsRepo.createEvent(0, _newEvent);
       reset();
     });
@@ -63,11 +67,12 @@ class EventCreationStore extends flux.Store {
     triggerOnAction(inputEventDescriptionAction, (String description){
       _description = description;
     });
-    triggerOnAction(inputEventStartAction, (DateTime dateTime){
-      _startDateTime = dateTime;
-    });
-    triggerOnAction(inputEventEndAction, (DateTime dateTime){
-      _endDateTime = dateTime;
+    triggerOnAction(inputEventDateAction, (MapEntry<bool, DateTime> dateTime){
+      if(dateTime.key){
+        _startDateTime = dateTime.value;
+      } else{
+        _endDateTime = dateTime.value;
+      }
     });
     triggerOnAction(buildingSelectAction, (Building building){
       _selectedBuilding = building;
@@ -85,11 +90,12 @@ class EventCreationStore extends flux.Store {
     triggerOnAction(roomSelectAction, (Room room){
       _selectedRoom = room;
     });
-    triggerOnAction(addWebsiteAction, (Website website){
-      _websites.add(website);
-    });
-    triggerOnAction(removeWebsiteAction, (Website website){
-      _websites.remove(website);
+    triggerOnAction(modifyWebsiteAction, (MapEntry website){
+      if(website.key){
+        _websites.add(website.value);
+      } else{
+        _websites.remove(website.value);
+      }
     });
     triggerOnAction(selectedTagAction, (MapEntry<Tag, bool> tag){
       if(_searchTags.containsKey(tag.key)){
@@ -155,17 +161,13 @@ final flux.Action getAllTagsAction = new flux.Action();
 final flux.Action<String> inputEventTitleAction = new flux.Action<String>();
 final flux.Action<String> inputEventDescriptionAction = new flux
     .Action<String>();
-final flux.Action<DateTime> inputEventStartAction = new flux.Action<DateTime>();
-final flux.Action<DateTime> inputEventEndAction = new flux.Action<DateTime>();
+final flux.Action<MapEntry<bool, DateTime>> inputEventDateAction = new flux
+    .Action();
 final flux.Action<Building> buildingSelectAction = new flux.Action<Building>();
 final flux.Action<Floor> floorSelectAction = new flux.Action<Floor>();
 final flux.Action<Room> roomSelectAction = new flux.Action<Room>();
-final flux.Action<Website> addWebsiteAction = new flux.Action<Website>();
-final flux.Action<Website> removeWebsiteAction = new flux.Action<Website>();
-
+final flux.Action<MapEntry<bool, Website>> modifyWebsiteAction = new flux
+    .Action();
 final flux.Action<MapEntry<Tag, bool>> selectedTagAction =
     new flux.Action<MapEntry<Tag, bool>>();
 final flux.Action<String> searchedTagAction = new flux.Action<String>();
-
-final flux.StoreToken eventCreationStoreToken = new flux.StoreToken(
-    new EventCreationStore());

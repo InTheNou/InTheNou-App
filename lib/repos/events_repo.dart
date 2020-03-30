@@ -80,9 +80,10 @@ class EventsRepo {
     return true;
   }
 
-  void createEvent(int userUID, Event event){
+  bool createEvent(int userUID, Event event){
     dummyEvents.add(event);
     runLocalSearch();
+    return true;
   }
 
   //---------------------- DEBUGGING STUFF ----------------------

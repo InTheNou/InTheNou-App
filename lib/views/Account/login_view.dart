@@ -18,7 +18,7 @@ class _LoginViewState extends State<LoginView>
   @override
   void initState() {
     super.initState();
-    _userStore = listenToStore(userStoreToken);
+    _userStore = listenToStore(UserStore.userStoreToken);
   }
 
   @override
