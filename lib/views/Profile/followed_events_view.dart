@@ -30,7 +30,20 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
       appBar: AppBar(
         title: Text("FollowedEventsView"),
       ),
-      body: ListView.builder(
+      body: buildBody(),
+    );
+  }
+
+  Widget buildBody(){
+    if(_userStore.isFollowedLoading){
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    } else {
+      if(_userStore.followedEventError !=null){
+        showErrorDialog(_userStore.followedEventError);
+      }
+      return  ListView.builder(
           itemCount: _userStore.followedEvents.length,
           itemBuilder: (context, index){
             Event _event = _userStore.followedEvents[index];
@@ -39,10 +52,10 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
                 margin: EdgeInsets.only(top: 8.0),
                 child: InkWell(
                   onTap: () {
-                    openEventDetail(MapEntry(FeedType.GeneralFeed, _event.UID));
+                    openEventDetail(_event.UID);
                     Navigator.of(context).pushNamed(
                         '/eventdetail',
-                        arguments: FeedType.GeneralFeed
+                        arguments: _event.UID
                     );
                   },
                   child: Padding(
@@ -78,31 +91,35 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
                                   overflow: TextOverflow.ellipsis,
                                   style: Theme.of(context).textTheme.subtitle2
                               ),
-                              const Padding(padding: EdgeInsets.only(bottom: 8.0)),
-                              Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: <Widget>[
-                                    ButtonTheme(
-                                        minWidth: 120.0,
-                                        child: OutlineButton(
-                                          child: Text(_event.followed ?
-                                          "UNFOLLOW":'FOLLOW'
-                                          ),
-                                          textColor: Theme.of(context).primaryColor,
-                                          borderSide: BorderSide(
-                                              color: Theme.of(context).primaryColor,
-                                              width: _event.followed ? 1.5 : 0.0
-                                          ),
-                                          onPressed: () {
-                                            _event.followed ?
-                                            unFollowEventAction(_event) :
-                                            followEventAction(_event);
-                                            refreshFollowedAction();
-                                          },
-                                        )
-                                    )
-                                  ]
-                              ),
+//                              const Padding(padding: EdgeInsets.only(bottom: 8.0)),
+//                              Row(
+//                                  mainAxisAlignment: MainAxisAlignment.end,
+//                                  children: <Widget>[
+//                                    ButtonTheme(
+//                                        minWidth: 120.0,
+//                                        child: OutlineButton(
+//                                          child: Text(_event.followed ?
+//                                          "UNFOLLOW":'FOLLOW'
+//                                          ),
+//                                          textColor: Theme.of(context).primaryColor,
+//                                          borderSide: BorderSide(
+//                                              color: Theme.of(context).primaryColor,
+//                                              width: _event.followed ? 1.5 : 0.0
+//                                          ),
+//                                          onPressed: () {
+//                                            _event.followed ?
+//                                              unFollowEventAction
+//                                                (MapEntry(FeedType.Detail, _event
+//                                              )) :
+//                                              followEventAction
+//                                                (MapEntry(FeedType.Detail, _event
+//                                              ));
+//                                            refreshFollowedAction();
+//                                          },
+//                                        )
+//                                    )
+//                                  ]
+//                              ),
                             ],
                           ),
                         ),
@@ -111,7 +128,28 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
                   ),
                 )
             );
-          })
-    );
+          });
+    }
+  }
+
+  Future showErrorDialog(String errorText) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await showDialog<String>(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text('Error'),
+          content: Text(errorText),
+          actions: <Widget>[
+            FlatButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                clearErrorAction(FeedType.PersonalFeed);
+              },
+            ),
+          ],
+        ),
+      );
+    });
   }
 }

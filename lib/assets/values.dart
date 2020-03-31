@@ -4,7 +4,8 @@
 
 enum FeedType{
   GeneralFeed,
-  PersonalFeed
+  PersonalFeed,
+  Detail
 }
 
 enum InfoBaseSearchType{

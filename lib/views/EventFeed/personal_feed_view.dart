@@ -52,15 +52,7 @@ class PersonalFeedState extends State<PersonalFeedView>
             title: _buildTitle(),
             actions: _buildActions()
         ),
-        body: ListView.builder(
-          key: ValueKey(FeedType.PersonalFeed),
-          controller: _scrollController,
-          itemCount: _eventFeedStore.eventCount(FeedType.PersonalFeed),
-          itemBuilder: (context, index) {
-            return EventCard(_eventFeedStore.feedEvent(FeedType.PersonalFeed, index),
-                FeedType.PersonalFeed);
-          },
-        ),
+        body: buildBody(),
         floatingActionButton: new Visibility(
           visible: _userStore.user.userPrivilege != UserPrivilege.User,
           child: new FloatingActionButton(
@@ -72,6 +64,48 @@ class PersonalFeedState extends State<PersonalFeedView>
           ),
         ),
     );
+  }
+
+  Widget buildBody(){
+    if(_eventFeedStore.isFeedLoading(FeedType.PersonalFeed)){
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    } else {
+      if(_eventFeedStore.getError(FeedType.PersonalFeed) !=null){
+        showErrorDialog(_eventFeedStore.getError(FeedType.PersonalFeed));
+      }
+      return  ListView.builder(
+          key: ValueKey(FeedType.PersonalFeed),
+          controller: _scrollController,
+          itemCount: _eventFeedStore.eventCount(FeedType.PersonalFeed),
+          itemBuilder: (context, index) {
+            return EventCard(_eventFeedStore.feedEvent(FeedType.PersonalFeed, index),
+              FeedType.PersonalFeed);
+          }
+      );
+    }
+  }
+
+  Future showErrorDialog(String errorText) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await showDialog<String>(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+            title: const Text('Error'),
+            content: Text(errorText),
+            actions: <Widget>[
+              FlatButton(
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  clearErrorAction(FeedType.PersonalFeed);
+                },
+              ),
+            ],
+        ),
+      );
+    });
   }
 
   /// Method called whenever the AppBar is being drawn, if the search button

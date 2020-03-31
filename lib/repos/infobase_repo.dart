@@ -73,7 +73,7 @@ class InfoBaseRepo {
     new Service(index,"Service B0 $index", "Nice service inside B0",
         "S-"+(index%2).toString()+"$index", "Schedule $index \nSchedule $index",
         [PhoneNumber("787-123-4567,1234", PhoneType.E),
-          PhoneNumber("787-123-4567", PhoneType.L)],
+          PhoneNumber("787-123-4567", PhoneType.F)],
         new List<Website>.filled(2,
             new Website("https://portal.upr.edu/rum/portal.php?a=rea_login",
                 "Portal"))

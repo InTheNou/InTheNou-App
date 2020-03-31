@@ -89,7 +89,7 @@ class NotificationHandler {
     _prefs = await SharedPreferences.getInstance();
     List<String> jsonSmart = _prefs.getStringList
       (SMART_NOTIFICATION_LIST) ?? new List();
-
+    flutterLocalNotificationsPlugin.cancelAll();
     Map notificationMap;
     jsonSmart.forEach((notification) {
       notificationMap = jsonDecode(notification);

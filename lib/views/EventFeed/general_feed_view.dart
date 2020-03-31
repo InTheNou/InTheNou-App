@@ -50,16 +50,50 @@ class GeneralFeedState extends State<GeneralFeedView>
             title: _buildTitle(),
             actions: _buildActions()
         ),
-        body: ListView.builder(
+        body: buildBody(),
+    );
+  }
+
+  Widget buildBody(){
+    if(_eventFeedStore.isFeedLoading(FeedType.GeneralFeed)){
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    } else {
+      if(_eventFeedStore.getError(FeedType.GeneralFeed) !=null){
+        showErrorDialog(_eventFeedStore.getError(FeedType.GeneralFeed));
+      }
+      return  ListView.builder(
           key: ValueKey(FeedType.GeneralFeed),
           controller: _scrollController,
           itemCount: _eventFeedStore.eventCount(FeedType.GeneralFeed),
           itemBuilder: (context, index) {
             return EventCard(_eventFeedStore.feedEvent(FeedType.GeneralFeed, index),
                 FeedType.GeneralFeed);
-          },
-        )
-    );
+          }
+      );
+    }
+  }
+
+  Future showErrorDialog(String errorText) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await showDialog<String>(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text('Error'),
+          content: Text(errorText),
+          actions: <Widget>[
+            FlatButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                clearErrorAction(FeedType.GeneralFeed);
+              },
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   /// Method called whenever the AppBar is being drawn, if the search button

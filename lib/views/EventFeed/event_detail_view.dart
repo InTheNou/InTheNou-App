@@ -12,10 +12,9 @@ import 'package:flutter_flux/flutter_flux.dart' as flux;
 
 class EventDetailView extends StatefulWidget {
 
-  final FeedType _feedType;
   final int _initialEvent;
 
-  EventDetailView( this._feedType, this._initialEvent);
+  EventDetailView(this._initialEvent);
 
   @override
   _EventDetailViewState createState() => new _EventDetailViewState();
@@ -31,18 +30,21 @@ class _EventDetailViewState extends State<EventDetailView>
   void initState() {
     _eventFeedStore = listenToStore(EventFeedStore.eventFeedToken);
     if(widget._initialEvent != null){
-      openEventDetail(MapEntry(widget._feedType, widget._initialEvent))
+      openEventDetail(widget._initialEvent)
           .then((value) {
-        detailEvent = _eventFeedStore.detailedEvent(widget._feedType);
+        detailEvent = _eventFeedStore.eventDetail;
       });
     } else{
-      detailEvent = _eventFeedStore.detailedEvent(widget._feedType);
+      detailEvent = _eventFeedStore.eventDetail;
     }
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    if(_eventFeedStore.getError(FeedType.Detail) !=null){
+      showErrorDialog(_eventFeedStore.getError(FeedType.Detail));
+    }
     if(detailEvent == null){
       return Container(
         color: Theme.of(context).primaryColor
@@ -118,7 +120,7 @@ class _EventDetailViewState extends State<EventDetailView>
                                     8.0)),
                                     TextWithIcon(
                                         detailEvent.creator,
-                                        Icons.account_circle),
+                                        Icon(Icons.account_circle)),
                                     LinkWithIconWidget(
                                         detailEvent.room.code,
                                         Utils.buildGoogleMapsLink(detailEvent
@@ -126,7 +128,7 @@ class _EventDetailViewState extends State<EventDetailView>
                                         Icon(Icons.location_on)),
                                     const Padding(padding: EdgeInsets.only(bottom: 4.0)),
                                     TextWithIcon(detailEvent.getDurationString(),
-                                        Icons.today),
+                                        Icon(Icons.today)),
                                     const Padding(padding: EdgeInsets.only(
                                         bottom: 8.0)),
                                     Text(
@@ -163,8 +165,12 @@ class _EventDetailViewState extends State<EventDetailView>
                                                 ),
                                                 onPressed: () {
                                                   detailEvent.followed ?
-                                                  unFollowEventAction(detailEvent) :
-                                                  followEventAction(detailEvent);
+                                                  unFollowEventAction
+                                                  (MapEntry(FeedType.Detail, detailEvent
+                                                  )) :
+                                                  followEventAction
+                                                  (MapEntry(FeedType.Detail, detailEvent
+                                                  ));
                                                 },
                                               )
                                           )
@@ -308,6 +314,27 @@ class _EventDetailViewState extends State<EventDetailView>
     }
   }
 
+  Future showErrorDialog(String errorText) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await showDialog<String>(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text('Error'),
+          content: Text(errorText),
+          actions: <Widget>[
+            FlatButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                clearErrorAction(FeedType.Detail);
+              },
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
   void showDismissDialog(BuildContext context){
     showDialog<void>(
       context: context,
@@ -334,7 +361,7 @@ class _EventDetailViewState extends State<EventDetailView>
               onPressed: (){
                 Navigator.of(context).pop();
                 dismissEventAction(detailEvent.UID);
-                confirmDismissAction();
+                confirmDismissAction(FeedType.Detail);
                 Navigator.of(context).pop();
               },
             )

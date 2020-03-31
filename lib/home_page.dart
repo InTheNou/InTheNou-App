@@ -51,6 +51,8 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
     initializeNotifications();
     checkLocationPermission();
     navigationStore = listenToStore(navigationToken);
+    NotificationHandler.cancelAllSmartNotifications();
+    Utils.clearNotificationsPrefs();
   }
 
   /// Checks if the permission has been granted using the [GeolocationStatus.
@@ -191,12 +193,12 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
 
     if(notification.type == NotificationType.SmartNotification){
       Navigator.of(context).pushNamed("/eventdetail",
-          arguments: MapEntry(FeedType.GeneralFeed,int.parse(notification.payload)));
+          arguments: int.parse(notification.payload));
       return;
     }
     if(notification.type == NotificationType.DefaultNotification){
       Navigator.of(context).pushNamed("/eventdetail",
-          arguments: MapEntry(FeedType.GeneralFeed,int.parse(notification.payload)));
+          arguments: int.parse(notification.payload));
       return;
     }
   }

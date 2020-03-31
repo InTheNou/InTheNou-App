@@ -26,25 +26,43 @@ class UserStore extends flux.Store{
     UserRole.TeachingPersonnel,
     UserRole.NonTeachingPersonnel];
 
+  bool _isFollowedLoading = false;
+  bool _isCreatedLoading = false;
+  String _followedEventError;
+  String _createdEventError;
+
   UserRepo _userRepo = new UserRepo();
   TagRepo _tagRepo = new TagRepo();
 
-  static final UserStore _instance = UserStore._internal();
-
-  factory UserStore() {
-    return _instance;
-  }
-
-  UserStore._internal() {
+  UserStore() {
     _user = _userRepo.getUser();
     _allTags = _tagRepo.getAllTagsAsMap();
     _searchTags = _tagRepo.getAllTagsAsMap();
 
-    triggerOnAction(refreshFollowedAction, (_){
-      _followedEvents = _userRepo.getFollowedEvents(0, 0, EVENTS_TO_FETCH);
+    triggerOnConditionalAction(refreshFollowedAction, (_){
+      _isFollowedLoading = true;
+      return _userRepo.getFollowedEvents(0, EVENTS_TO_FETCH).then(
+              (List<Event> value) {
+        _followedEvents = value;
+        _isFollowedLoading = false;
+        return true;
+      }).catchError((error){
+        _followedEventError = error.toString();
+        _isFollowedLoading = false;
+        return true;
+      });
     });
-    triggerOnAction(refreshCreatedAction, (_){
-      _createdEvents = _userRepo.getCreatedEvents(0, 0, EVENTS_TO_FETCH);
+    triggerOnConditionalAction(refreshCreatedAction, (_){
+      _isCreatedLoading = true;
+      return _userRepo.getCreatedEvents(0, 0, EVENTS_TO_FETCH).then((value) {
+        _createdEvents = value;
+        _isCreatedLoading = false;
+        return true;
+      }).catchError((error){
+        _createdEventError = error.toString();
+        _isCreatedLoading = false;
+        return true;
+      });
     });
     triggerOnAction(cancelEventAction, (Event event){
       _userRepo.requestDeleteEvents(event);
@@ -113,6 +131,11 @@ class UserStore extends flux.Store{
   List<UserRole> get userRoles => _userRoles;
   Map<Tag, bool> get searchTags => _searchTags;
   List<Tag> get selectedTags => _selectedTags;
+
+  String get followedEventError => _followedEventError;
+  String get createdEventError => _createdEventError;
+  bool get isFollowedLoading => _isFollowedLoading;
+  bool get isCreatedLoading => _isCreatedLoading;
 
 }
 //Profile Actions

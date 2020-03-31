@@ -77,24 +77,23 @@ class UserRepo {
   }
 
 
-  List<Event> getFollowedEvents(int userUID, int skip,
-    int rows){
+  Future<List<Event>> getFollowedEvents(int skip, int rows) async{
     // For now It's just getting it from a secrete place, it should just get it
     // straight from the server
-    return getFollowedEventsFromSecretePlace();
+    return getFollowedEventsFromSecretPlace();
   }
 
   Future<List<Event>> getAllFollowedEvents() async{
     // For now It's just getting it from a secrete place, it should just get it
     // straight from the server
-    return getFollowedEventsFromSecretePlace();
+    return getFollowedEventsFromSecretPlace();
   }
 
-  List<Event> getCreatedEvents(int userUID, int skip,
-      int rows){
+  Future<List<Event>> getCreatedEvents(int userUID, int skip,
+      int rows) async{
     // For now It's just getting it from a secrete place, it should just get it
     // straight from the server
-    return getFollowedEventsFromSecretePlace2();
+    return getFollowedEventsFromSecretPlace2();
   }
   bool requestDeleteEvents(Event event){
     _eventRepo.deleteEvent(event);
@@ -113,13 +112,20 @@ class UserRepo {
       UserPrivilege.EventCreator);
 
   EventsRepo _eventRepo = new EventsRepo();
-  List<Event> getFollowedEventsFromSecretePlace(){
-    return _eventRepo.getPerEvents(null,null,null,null).where((element){
-      return element.followed && element.startDateTime.isAfter(DateTime.now());
-    }).toList();
+  Future<List<Event>> getFollowedEventsFromSecretPlace() async{
+    return _eventRepo.getGenEvents(0,10000000).then((List<Event> value) {
+      return value.where((element){
+        return element.followed;
+      }).toList();
+    });
+
   }
-  List<Event> getFollowedEventsFromSecretePlace2(){
-    return _eventRepo.getPerEvents(null,null,null,null);
+  Future<List<Event>> getFollowedEventsFromSecretPlace2() async{
+    return _eventRepo.getGenEvents(0,10000000).then((List<Event> value) {
+      return value.where((element){
+        return element.followed && element.startDateTime.isAfter(DateTime.now());
+      }).toList();
+    });
   }
 
 }

@@ -15,10 +15,10 @@ class EventCard extends StatelessWidget {
         key: ValueKey(_event.UID),
         child: InkWell(
           onTap: () {
-            openEventDetail(MapEntry(_feedType, _event.UID));
+            openEventDetail(_event.UID);
             Navigator.of(context).pushNamed(
                 '/eventdetail',
-                arguments: MapEntry(_feedType,null)
+                arguments: _event.UID
             );
           },
           child: Padding(
@@ -79,8 +79,10 @@ class EventCard extends StatelessWidget {
                                   ),
                                   onPressed: () {
                                     _event.followed ?
-                                    unFollowEventAction(_event) :
-                                    followEventAction(_event);
+                                    unFollowEventAction
+                                      (MapEntry(_feedType, _event)):
+                                    followEventAction
+                                      (MapEntry(_feedType, _event));
                                   },
                                 )
                             )
@@ -103,7 +105,7 @@ class EventCard extends StatelessWidget {
           reason == SnackBarClosedReason.hide ||
           reason == SnackBarClosedReason.remove ||
           reason == SnackBarClosedReason.timeout){
-        confirmDismissAction();
+        confirmDismissAction(_feedType);
       }
     });
 

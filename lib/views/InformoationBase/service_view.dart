@@ -3,6 +3,7 @@ import 'package:InTheNou/models/phone_number.dart';
 import 'package:InTheNou/models/website.dart';
 import 'package:InTheNou/stores/infobase_store.dart';
 import 'package:InTheNou/views/widgets/link_with_icon_widget.dart';
+import 'package:InTheNou/views/widgets/text_with_icon_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
@@ -142,11 +143,7 @@ class _ServiceViewState extends State<ServiceView>
                                 itemBuilder: (context, index){
                                   PhoneNumber _phone = _infoBaseStore
                                       .detailService.numbers[index];
-                                  return LinkWithIconWidget(
-                                      _phone.number,
-                                      "tel:${_phone.number}",
-                                      selectPhoneIcon(_phone.type)
-                                  );
+                                  return createPhoneEntry(_phone);
                                 })
                         )
                       ],
@@ -186,26 +183,44 @@ class _ServiceViewState extends State<ServiceView>
     );
   }
 
-  Widget selectPhoneIcon(PhoneType type){
-    switch (type){
+
+  Widget createPhoneEntry(PhoneNumber phoneNumber){
+    switch (phoneNumber.type){
       case PhoneType.E:
-        return Icon(Icons.phone);
+        return LinkWithIconWidget(
+            phoneNumber.number,
+            "tel:${phoneNumber.number}",
+            Icon(Icons.phone)
+        );
         break;
       case PhoneType.F:
-        return ImageIcon(
-          AssetImage("lib/assets/deskphone.png"),
+        return TextWithIcon(
+          "Fax: "+ phoneNumber.number,
+          ImageIcon(
+              AssetImage("lib/assets/deskphone.png")),
         );
         break;
       case PhoneType.L:
-        return ImageIcon(
-          AssetImage("lib/assets/phone-classic.png"),
+        return LinkWithIconWidget(
+          phoneNumber.number,
+          "tel:${phoneNumber.number}",
+          ImageIcon(
+              AssetImage("lib/assets/phone-classic.png")),
         );
         break;
       case PhoneType.M:
-        return Icon(Icons.smartphone);
+        return LinkWithIconWidget(
+            phoneNumber.number,
+            "tel:${phoneNumber.number}",
+            Icon(Icons.smartphone)
+        );
         break;
       default:
-        return Icon(Icons.phone);
+        return LinkWithIconWidget(
+            phoneNumber.number,
+            "tel:${phoneNumber.number}",
+            Icon(Icons.phone)
+        );
         break;
     }
   }

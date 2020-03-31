@@ -85,13 +85,15 @@ class _EventCreationViewState extends State<EventCreationView>
                       validator: (value) {
                         if (value.isEmpty){
                           return "Title must be provided";
-                        }else if(value.length < 3){
+                        } else if(value.trim().length < 3){
+                          return "Invalid Title";
+                        } else if(value.length < 3){
                           return "Title is too short";
                         }
                         return null;
                       },
-                      onChanged: (String description) =>
-                          inputEventTitleAction(description),
+                      onChanged: (String title) =>
+                          inputEventTitleAction(title.trim()),
                     ),
                     const Padding(padding: EdgeInsets.only(bottom: 8.0)),
                     //
@@ -107,15 +109,17 @@ class _EventCreationViewState extends State<EventCreationView>
                       textInputAction: TextInputAction.done,
                       initialValue: _creationStore.description,
                       validator: (value) {
-                        if (value == null){
+                        if (value.isEmpty){
                           return "Description must be provided";
-                        }else if(value.length < 3){
+                        } else if(value.trim().length < 3){
+                          return "Invalid Description";
+                        } else if(value.length < 3){
                           return "Description is too short";
                         }
                         return null;
                       },
                       onChanged: (String description) =>
-                          inputEventDescriptionAction(description),
+                          inputEventDescriptionAction(description.trim()),
                     ),
                     const Padding(padding: EdgeInsets.only(bottom: 8.0)),
                     //
@@ -291,7 +295,7 @@ class _EventCreationViewState extends State<EventCreationView>
                         IconButton(
                             icon: Icon(Icons.add),
                             onPressed: (){
-                              if(_creationStore.websites.length<3){
+                              if(_creationStore.websites.length<10){
                                 showDialog(
                                     context: context,
                                     barrierDismissible: false,
@@ -489,7 +493,7 @@ class _EventCreationViewState extends State<EventCreationView>
           return AlertDialog(
             title: Text("Links limit"),
             content: Text(
-                "You have reached the limit of 3 links associated with an "
+                "You have reached the limit of 10 links associated with an "
                     "Event."
             ),
             actions: <Widget>[

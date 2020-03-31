@@ -115,9 +115,9 @@ class ProfileState extends State<ProfileView>
                       children: <Widget>[
                         InkWell(
                           onTap: ()  {
+                            refreshFollowedAction();
                             Navigator.of(context)
                               .pushNamed("/profile/followed_events");
-                            refreshFollowedAction();
                           },
                           child: ListTile(
                             title: Text("Followed Events"),

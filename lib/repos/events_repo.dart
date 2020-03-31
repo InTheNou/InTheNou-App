@@ -10,6 +10,7 @@ import 'package:InTheNou/models/website.dart';
 class EventsRepo {
 
   static final EventsRepo _instance = EventsRepo._internal();
+  Random rand = Random();
 
   factory EventsRepo() {
     return _instance;
@@ -17,61 +18,152 @@ class EventsRepo {
 
   EventsRepo._internal();
 
-  List<Event> getGenEvents(int userUID, DateTime currentTime, int skipEvents,
-      int numEvents){
-    return new List.from(dummyEvents);
+  /// Calls teh back-end to get the Events for the General Feed
+  ///
+  /// The method returns all active and non-dismissed Events in the system. The
+  /// parameter [skipEvents] can be supplied to let the back-end know the
+  /// first event that needs to be returned, this along with [numEvents]
+  /// permits performing pagination and only showing a few Events at a time.
+  /// To get all the Events at once just supply a very bit number to [numEvents]
+  Future<List<Event>> getGenEvents (int skipEvents, int numEvents) async{
+    return Future.delayed(Duration(seconds: 2)).then((onValue) {
+//      if(rand.nextBool()){
+//        return Future.error("Error happened!");
+//      }
+      return new List.from(dummyEvents);
+    });
   }
 
-  List<Event> getPerEvents(int userUID, DateTime currentTime, int skipEvents,
-      int numEvents){
-    return new List.from(dummyEvents.where((event) =>
-      event.recommended != null && event.recommended));
+  /// Calls teh back-end to get the Events for the Personal Feed.
+  ///
+  /// The method returns all active Recommended and non-dismissed [Event]s in
+  /// the system. The parameter [skipEvents] can be supplied to let the
+  /// back-end know the first event that needs to be returned, this along
+  /// with [numEvents] permits performing pagination and only showing a few
+  /// Events at a time.
+  /// To get all the Events at once just supply a very bit number to
+  /// [numEvents].
+  Future<List<Event>> getPerEvents(int skipEvents, int numEvents) async{
+    return Future.delayed(Duration(seconds: 2)).then((onValue) {
+//      if(rand.nextBool()){
+//        return Future.error("Error happened!");
+//      }
+      return new List.from(dummyEvents.where((event) =>
+        event.recommended != null && event.recommended));
+    });
   }
 
+  /// Contacts the back-end to get [Event]s created after [lastDate].
+  ///
+  /// The parameter [lastDate] is a DateTime object in String form, with the
+  /// format yyyy-MM-dd hh:mm:ss.
+  /// This method is used in the Recommendation Feature.
   Future<List<Event>> getNewEvents(String lastDate) async{
     DateTime date = DateTime.parse(lastDate);
     return new List.from(dummyEvents.where((event) =>
         event.startDateTime.isAfter(date)));
   }
 
-  List<Event> searchGenEvents(int userUID, String keyword,
-      DateTime currentTime, int skipEvents, int numEvents){
-    genSearchKeyword = keyword;
-    runLocalSearch();
-    return new List.from(genSearch);
+  /// Calls the back-end with a search query for the General Feed
+  ///
+  /// The method returns all active and non-dismissed Events in the system
+  /// that match the [keyword] in their [Event._title] or
+  /// [Event._description]. The parameter [skipEvents] can be supplied to let the
+  /// back-end know the first event that needs to be returned, this along
+  /// with [numEvents] permits performing pagination and only showing a few
+  /// Events at a time.
+  /// To get all the Events at once just supply a very bit number to [numEvents]
+  Future<List<Event>> searchGenEvents(String keyword, int skipEvents,
+      int numEvents) async{
+    return Future.delayed(Duration(seconds: 2)).then((onValue) {
+      genSearchKeyword = keyword;
+      runLocalSearch();
+      return new List.from(genSearch);
+    });
   }
 
-  List<Event> searchPerEvents(int userUID, String keyword,
-      DateTime currentTime, int skipEvents, int numEvents){
-    perSearchKeyword = keyword;
-    runLocalSearch();
-    return new List.from(perSearch);
+  /// Calls the back-end with a search query for the Personal Feed
+  ///
+  /// The method returns all Recommended and non-dismissed Events in the
+  /// system that match the [keyword] in their [Event._title] or
+  /// [Event._description]. The parameter [skipEvents] can be supplied to let
+  /// the back-end know the first event that needs to be returned, this along
+  /// with [numEvents] permits performing pagination and only showing a few
+  /// Events at a time.
+  /// To get all the Events at once just supply a very bit number to [numEvents]
+  Future<List<Event>> searchPerEvents(String keyword, int skipEvents,
+      int numEvents) async{
+    return Future.delayed(Duration(seconds: 2)).then((onValue) {
+      perSearchKeyword = keyword;
+      runLocalSearch();
+      return new List.from(perSearch);
+    });
   }
 
-  Event getEvent(int userUID, int eventUID){
+  /// Calls the back-end to get all the information on a specific [Event].
+  ///
+  /// Given the [Event._UID] through the [eventUID] parameter, the back-end
+  /// will return detailed information about the [Event] that matches the UID.
+  Future<Event> getEvent(int eventUID) async{
     return dummyEvents.firstWhere((element) =>
       element.UID == eventUID);
   }
 
-  bool requestFollowEvent(int userUID, int eventUID){
-    int index = dummyEvents.indexWhere((event) => event.UID == eventUID);
-    dummyEvents[index].followed = true;
-    return true;
+  /// Requests for an [Event] to be marked as Followed in the back-end.
+  ///
+  /// Given the [Event._UID] through the [eventUID] parameter, the back-end
+  /// marks it as being Followed by this user by setting [Event.followed]
+  Future<bool> requestFollowEvent(int eventUID) async{
+    return Future.delayed(Duration(seconds: 2)).then((onValue) {
+//      if(rand.nextBool()){
+//        return Future.error("Internal Error Following Event please try again"
+//            " later.");
+//      }
+      int index = dummyEvents.indexWhere((event) => event.UID == eventUID);
+      dummyEvents[index].followed = true;
+      return true;
+    });
   }
 
-  bool requestUnFollowEvent(int userUID, int eventUID){
-    int index = dummyEvents.indexWhere((event) => event.UID == eventUID);
-    dummyEvents[index].followed = false;
-    return true;
+  /// Requests for an [Event] to be marked as UnFollowed in the back-end.
+  ///
+  /// Given the [Event._UID] through the [eventUID] parameter, the back-end
+  /// marks it as being UnFollowed by this user by setting [Event.followed]
+  Future<bool> requestUnFollowEvent(int eventUID) async{
+    return Future.delayed(Duration(seconds: 2)).then((onValue) {
+//      if(rand.nextBool()){
+//        return Future.error("Internal Error UnFollowing Event please try again"
+//            " later.");
+//      }
+      int index = dummyEvents.indexWhere((event) => event.UID == eventUID);
+      dummyEvents[index].followed = false;
+      return true;
+    });
   }
 
-  bool requestDismissEvent(int userUID, int eventUID){
-    int index = dummyEvents.indexWhere((event) => event.UID == eventUID);
-    dummyEvents.removeAt(index);
-    return true;
+  /// Requests for an [Event] to be marked as Dismissed in the back-end.
+  ///
+  /// Given the [Event._UID] through the [eventUID] parameter, the back-end
+  /// marks it as being Dismissed by this user. Events marked with being
+  /// Dismissed will not be returned by other queries.
+  Future<bool> requestDismissEvent(int eventUID) async{
+    return Future.delayed(Duration(seconds: 2)).then((onValue) {
+//      if(rand.nextBool()){
+//        return Future.error("Error Dismissing Event please try again later.");
+//      }
+      int index = dummyEvents.indexWhere((event) => event.UID == eventUID);
+      dummyEvents.removeAt(index);
+      return true;
+    });
   }
 
-  bool requestRecommendation(List<Event> events){
+  /// Requests for an [Event] to be marked as Recommended in the back-end.
+  ///
+  /// Given a list of Events through the [events] parameter, the back-end
+  /// marks them as being Recommended to this user, setting
+  /// [Event.recommended]. Events marked as such will show up in the Personal
+  /// Feed.
+  Future<bool> requestRecommendation(List<Event> events) async{
     int index;
     events.forEach((event) {
       index = dummyEvents.indexOf(event);
@@ -80,7 +172,14 @@ class EventsRepo {
     return true;
   }
 
-  bool createEvent(int userUID, Event event){
+  /// Requests for an [Event] to be created in the system.
+  ///
+  /// Given a new Event through the [event] parameter, the back-end
+  /// creates an Event in the system with this current user as the
+  /// [Event._creator].
+  /// An Event created this way will show up in the General Feed, and the
+  /// Personal Feed if recommended to a user.
+  Future<bool> createEvent(Event event) async{
     dummyEvents.add(event);
     runLocalSearch();
     return true;

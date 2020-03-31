@@ -30,7 +30,20 @@ class _CreatedEventsViewState extends State<CreatedEventsView>
       appBar: AppBar(
         title: Text("Created Events"),
       ),
-      body:  ListView.builder(
+      body: buildBody(),
+    );
+  }
+
+  Widget buildBody(){
+    if(_userStore.isCreatedLoading){
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    } else {
+      if(_userStore.createdEventError !=null){
+        showErrorDialog(_userStore.createdEventError);
+      }
+      return ListView.builder(
           itemCount: _userStore.createdEvents.length,
           itemBuilder: (context, index){
             Event _event = _userStore.createdEvents[index];
@@ -39,10 +52,10 @@ class _CreatedEventsViewState extends State<CreatedEventsView>
                 margin: EdgeInsets.only(top: 8.0),
                 child: InkWell(
                   onTap: () {
-                    openEventDetail(MapEntry(FeedType.GeneralFeed, _event.UID));
+                    openEventDetail(_event.UID);
                     Navigator.of(context).pushNamed(
                         '/eventdetail',
-                        arguments: FeedType.GeneralFeed
+                        arguments: null
                     );
                   },
                   child: Padding(
@@ -85,12 +98,12 @@ class _CreatedEventsViewState extends State<CreatedEventsView>
                                     ButtonTheme(
                                         minWidth: 120.0,
                                         child: RaisedButton(
-                                          child: Text("CANCEL"),
-                                          color: Theme.of(context).accentColor,
-                                          textColor: Theme.of(context).canvasColor,
-                                          onPressed: () =>
-                                              showCancelConfirmation(context,
-                                                  _event)
+                                            child: Text("CANCEL"),
+                                            color: Theme.of(context).accentColor,
+                                            textColor: Theme.of(context).canvasColor,
+                                            onPressed: () =>
+                                                showCancelConfirmation(context,
+                                                    _event)
                                         )
                                     )
                                   ]
@@ -103,8 +116,29 @@ class _CreatedEventsViewState extends State<CreatedEventsView>
                   ),
                 )
             );
-          }),
-    );
+          });
+    }
+  }
+
+  Future showErrorDialog(String errorText) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await showDialog<String>(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text('Error'),
+          content: Text(errorText),
+          actions: <Widget>[
+            FlatButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                clearErrorAction(FeedType.PersonalFeed);
+              },
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   void showCancelConfirmation(BuildContext context, Event _event){

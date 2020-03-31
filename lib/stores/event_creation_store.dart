@@ -41,7 +41,7 @@ class EventCreationStore extends flux.Store {
       _newEvent = new Event(0,_title, _description,"", "", _startDateTime,
           _endDateTime,DateTime.now(), _selectedRoom, _websites,
         _selectedTags, false, null);
-      _eventsRepo.createEvent(0, _newEvent);
+      _eventsRepo.createEvent(_newEvent);
       reset();
     });
     triggerOnAction(discardEventAction, (_){

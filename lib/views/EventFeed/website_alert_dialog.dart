@@ -34,15 +34,15 @@ class _WebsiteAlertDialogState extends State<WebsiteAlertDialog> {
                 maxLength: 50,
                 keyboardType: TextInputType.text,
                 validator: (String value) {
-                  if (value.isEmpty){
-                    return "Name is required.";
-                  }else if(value.length < 3){
+                  if(value.length>0 && value.length < 3){
                     return "Name is too short";
+                  } else if(value.length>0 && value.trim().length < 3){
+                    return "Invalid Name";
                   }
                   return null;
                 },
                 onSaved: (String value){
-                  _name = value;
+                  _name = value.trim();
                 },
               ),
               const Padding(padding: EdgeInsets.only(top: 8.0)),
