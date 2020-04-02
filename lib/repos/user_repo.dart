@@ -123,7 +123,8 @@ class UserRepo {
   Future<List<Event>> getFollowedEventsFromSecretPlace2() async{
     return _eventRepo.getGenEvents(0,10000000).then((List<Event> value) {
       return value.where((element){
-        return element.followed && element.startDateTime.isAfter(DateTime.now());
+        return element.creator == "alguien.importante@upr.edu"
+            && element.startDateTime.isAfter(DateTime.now());
       }).toList();
     });
   }

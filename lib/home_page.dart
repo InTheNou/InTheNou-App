@@ -33,8 +33,8 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
   SharedPreferences prefs;
 
   final List<Widget> _children = [
-    PersonalFeedView(),
-    GeneralFeedView(),
+    GeneralFeedView(type: FeedType.PersonalFeed),
+    GeneralFeedView(type: FeedType.GeneralFeed),
     InfoBaseCategoryView(),
     ProfileView()
   ];
@@ -216,11 +216,11 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            title: new Text("Feed"),
+            title: new Text("Personal Feed"),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.search),
-            title: new Text('Search Events'),
+            title: new Text('General Feed'),
           ),
           BottomNavigationBarItem(
               icon: Icon(Icons.business),

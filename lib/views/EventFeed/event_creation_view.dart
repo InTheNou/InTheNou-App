@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
+import 'package:validators/validators.dart';
 
 
 class EventCreationView extends StatefulWidget {
@@ -120,6 +121,27 @@ class _EventCreationViewState extends State<EventCreationView>
                       },
                       onChanged: (String description) =>
                           inputEventDescriptionAction(description.trim()),
+                    ),
+                    const Padding(padding: EdgeInsets.only(bottom: 8.0)),
+                    //
+                    TextFormField(
+                      decoration: InputDecoration(
+                          labelText: "Event Image",
+                          border: OutlineInputBorder()),
+                      autovalidate: _autoValidate,
+                      maxLines: 1,
+                      maxLength: 400,
+                      textInputAction: TextInputAction.next,
+                      initialValue: _creationStore.title,
+                      validator: (value) {
+                        if(value.isNotEmpty &&
+                            (!Uri.parse(value).isAbsolute || !isURL(value))){
+                          return "Invalid Image";
+                        }
+                        return null;
+                      },
+                      onChanged: (String image) =>
+                          inputEventImageAction(image),
                     ),
                     const Padding(padding: EdgeInsets.only(bottom: 8.0)),
                     //
@@ -474,10 +496,6 @@ class _EventCreationViewState extends State<EventCreationView>
       if(_creationStore.endDateTime.difference
         (_creationStore.startDateTime).inDays > 7){
         return "Event Duration too long";
-      }
-      if(_creationStore.endDateTime.difference
-        (_creationStore.startDateTime).inMinutes < 10){
-        return "Event Duration too short";
       }
       if (_creationStore.startDateTime.isAfter
         (_creationStore.endDateTime)){

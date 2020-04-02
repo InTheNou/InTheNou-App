@@ -190,14 +190,15 @@ class EventsRepo {
   String genSearchKeyword = "";
 
   List<Event> dummyEvents = List<Event>.generate(
-      30,
+      10,
           (i) {
             List<int> randList = Utils.getRandomNumberList(10, 0,
                 eventTags.length);
         return Event(i, "Event $i With a Big Name that take us a "
           "lot of space", "This is a very long "
           "description fo the event currantly displayed. This is to test "
-          "out how good it looks when it cuts off.", "Alguien Importante",
+          "out how good it looks when it cuts off.", "alguien.importante@upr"
+            ".edu",
           "https://images.pexels.com/photos/256541/pexels-photo-256541.jpeg",
           DateTime.now().add(new Duration(minutes: i*2+5)),
           DateTime.now().add(new Duration(minutes: i*20)),

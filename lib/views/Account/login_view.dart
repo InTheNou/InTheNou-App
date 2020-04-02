@@ -6,6 +6,8 @@ import 'package:flutter_flux/flutter_flux.dart' as flux;
 
 class LoginView extends StatefulWidget {
 
+  LoginView() : super(key: ValueKey("LoginView"));
+
   @override
   _LoginViewState createState() => new _LoginViewState();
 
@@ -50,6 +52,7 @@ class _LoginViewState extends State<LoginView>
             Flexible(
               flex: 3,
               child: GoogleSignInButton(
+                key: ValueKey("LogInButton"),
                 onPressed: () =>
                 // Call the Auth service and wait for the user to be
                 // redirected back

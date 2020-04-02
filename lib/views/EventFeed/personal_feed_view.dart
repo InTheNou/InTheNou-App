@@ -17,26 +17,29 @@ class PersonalFeedState extends State<PersonalFeedView>
 
   EventFeedStore _eventFeedStore;
   UserStore _userStore;
-  TextEditingController _searchQueryController = TextEditingController();
+  TextEditingController _searchQueryController;
   ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
 
+    /// if it's the first time the feed is loaded, get all the Events
     _eventFeedStore = listenToStore(EventFeedStore.eventFeedToken);
     _userStore = UserStore();
-    // if it's the first time the feed is loaded, get all the Events
     if (_eventFeedStore.eventCount(FeedType.PersonalFeed) == 0 &&
         !_eventFeedStore.isSearching(FeedType.PersonalFeed)){
       getAllEventsAction(FeedType.PersonalFeed);
     }
-    //Save the scroll position the uer is in to recall if the screen is switched
+    /// Save the scroll position the uer is in to recall if the screen is
+    /// switched
     _scrollController = ScrollController(
         initialScrollOffset: _eventFeedStore.perScrollPos);
     _scrollController.addListener(() {
       _eventFeedStore.perScrollPos = _scrollController.offset;
     });
+    _searchQueryController =TextEditingController(
+        text:_eventFeedStore.searchKeyword(FeedType.PersonalFeed));
   }
 
   @override
@@ -74,6 +77,22 @@ class PersonalFeedState extends State<PersonalFeedView>
     } else {
       if(_eventFeedStore.getError(FeedType.PersonalFeed) !=null){
         showErrorDialog(_eventFeedStore.getError(FeedType.PersonalFeed));
+      }
+      if(_eventFeedStore.isSearching(FeedType.PersonalFeed)
+          && _eventFeedStore.eventCount(FeedType.PersonalFeed) == 0){
+        return Center(
+          child: Text("No resulsts Found",
+              style: Theme.of(context).textTheme.headline5.copyWith(
+                  fontWeight: FontWeight.w200
+              )),
+        );
+      } else if(_eventFeedStore.eventCount(FeedType.PersonalFeed) == 0){
+        return Center(
+          child: Text("No Events at this time",
+              style: Theme.of(context).textTheme.headline5.copyWith(
+                fontWeight: FontWeight.w200
+              )),
+        );
       }
       return  ListView.builder(
           key: ValueKey(FeedType.PersonalFeed),
@@ -121,9 +140,9 @@ class PersonalFeedState extends State<PersonalFeedView>
         decoration: InputDecoration(
           hintText: "Search Events...",
           border: InputBorder.none,
-          hintStyle: TextStyle(color: Colors.white30),
+          filled: true,
+          fillColor: Colors.white,
         ),
-        style: TextStyle(color: Colors.white, fontSize: 16.0),
         onSubmitted: (query) {
           _scrollController.animateTo(0.0,
               curve: Curves.ease, duration: Duration(seconds: 1));
@@ -148,10 +167,12 @@ class PersonalFeedState extends State<PersonalFeedView>
     }
     return <Widget>[
       IconButton(
+        key: ValueKey("RefreshFeed"),
         icon: const Icon(Icons.refresh),
         onPressed: _refresh,
       ),
       IconButton(
+        key: ValueKey("SearchFeed"),
         icon: const Icon(Icons.search),
         onPressed: _startSearch,
       ),
@@ -173,8 +194,10 @@ class PersonalFeedState extends State<PersonalFeedView>
   void _clearSearchKeyword() {
     if(_searchQueryController == null ||
         _searchQueryController.text.isEmpty){
-      _scrollController.animateTo(0.0,
-          curve: Curves.ease, duration: Duration(seconds: 2));
+      if(_scrollController.hasClients){
+        _scrollController.animateTo(0.0,
+            curve: Curves.ease, duration: Duration(seconds: 2));
+      }
       setFeedSearching(new MapEntry(FeedType.PersonalFeed, false));
       getAllEventsAction(FeedType.PersonalFeed);
       return;

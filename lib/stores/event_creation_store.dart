@@ -20,6 +20,7 @@ class EventCreationStore extends flux.Store {
   Event _newEvent;
   String _title;
   String _description;
+  String _image;
   DateTime _startDateTime;
   DateTime _endDateTime;
   List<Building> _buildings = new List();
@@ -38,7 +39,8 @@ class EventCreationStore extends flux.Store {
 
   EventCreationStore() {
     triggerOnAction(submitEventAction, (_){
-      _newEvent = new Event(0,_title, _description,"", "", _startDateTime,
+      _newEvent = new Event(0,_title, _description,_image, "alguien"
+          ".importante@upr.edu", _startDateTime,
           _endDateTime,DateTime.now(), _selectedRoom, _websites,
         _selectedTags, false, null);
       _eventsRepo.createEvent(_newEvent);
@@ -66,6 +68,9 @@ class EventCreationStore extends flux.Store {
     });
     triggerOnAction(inputEventDescriptionAction, (String description){
       _description = description;
+    });
+    triggerOnAction(inputEventImageAction, (String image){
+      _image = image;
     });
     triggerOnAction(inputEventDateAction, (MapEntry<bool, DateTime> dateTime){
       if(dateTime.key){
@@ -160,6 +165,8 @@ final flux.Action getBuildingsAction = new flux.Action();
 final flux.Action getAllTagsAction = new flux.Action();
 final flux.Action<String> inputEventTitleAction = new flux.Action<String>();
 final flux.Action<String> inputEventDescriptionAction = new flux
+    .Action<String>();
+final flux.Action<String> inputEventImageAction = new flux
     .Action<String>();
 final flux.Action<MapEntry<bool, DateTime>> inputEventDateAction = new flux
     .Action();
