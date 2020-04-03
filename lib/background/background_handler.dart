@@ -7,6 +7,7 @@ import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/models/tag.dart';
 import 'package:InTheNou/repos/events_repo.dart';
 import 'package:InTheNou/repos/user_repo.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:background_fetch/background_fetch.dart';
 
@@ -48,7 +49,7 @@ class BackgroundHandler {
 
     BackgroundFetch.scheduleTask(TaskConfig(
         taskId: "com.inthenou.app.reccomendation",
-        delay: RECOMMENDATION_INTERVAL_MINUTES*60000,
+        delay: 60000,
         periodic: true,
         forceAlarmManager: true,
         stopOnTerminate: false,
@@ -108,6 +109,20 @@ class BackgroundHandler {
   /// Upon receiving the json list back it removes any that have already
   /// been delivered to the user.
   static void _prepareForSmartNotification() async{
+
+    Geolocator().checkGeolocationPermissionStatus().then((value) {
+      if(value == GeolocationStatus.denied ||
+          value == GeolocationStatus.unknown){
+        NotificationHandler.shoPermissionNotification(NotificationObject(
+          id: ALERT_NOTIFICATION_ID,
+          payload: "",
+          time: DateTime.now(),
+          type: NotificationType.Alert
+        ), "Location Permission", "test","test");
+      }
+      return;
+    });
+print("hello");
     UserRepo _userRepo = UserRepo();
     _prefs = await SharedPreferences.getInstance();
 
@@ -168,8 +183,6 @@ class BackgroundHandler {
       }
     });
 
-    print(recommendedEvents.length);
-
     if(recommendedEvents.length > 0){
       _eventRepo.requestRecommendation(recommendedEvents);
 
@@ -177,7 +190,8 @@ class BackgroundHandler {
         (NotificationObject(id: 0,
           type: NotificationType.RecommendationNotification,
           time: DateTime.now(),
-          payload: ""), "You have ${recommendedEvents.length} new Events",
+          payload: ""),"Event Recommendations!",
+          "You have ${recommendedEvents.length} new Events",
           "There are ${recommendedEvents.length} new Events recommended to you "
               "based on your interests. Check em out!");
     }

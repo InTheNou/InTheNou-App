@@ -20,7 +20,7 @@ void main() {
     final personalFeed = find.byValueKey("PersonalFeed");
 
     FlutterDriver driver;
-
+//adb shell pm revoke com.inthenou.app android.permission.ACCESS_FINE_LOCATION
     // Connect to the Flutter driver before running any tests.
     setUpAll(() async {
       await Process.run("adb" , ['shell' ,'pm', 'grant',

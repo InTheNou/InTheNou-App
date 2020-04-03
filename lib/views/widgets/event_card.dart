@@ -1,12 +1,12 @@
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/event.dart';
-import 'package:InTheNou/stores/event_store.dart';
+import 'package:InTheNou/stores/event_feed_store.dart';
 import 'package:flutter/material.dart';
 
 class EventCard extends StatelessWidget {
 
-  Event _event;
-  FeedType _feedType;
+  final Event _event;
+  final FeedType _feedType;
   EventCard(this._event, this._feedType);
 
   @override
@@ -15,7 +15,6 @@ class EventCard extends StatelessWidget {
         key: ValueKey(_event.UID),
         child: InkWell(
           onTap: () {
-            openEventDetail(_event.UID);
             Navigator.of(context).pushNamed(
                 '/eventdetail',
                 arguments: _event.UID
@@ -62,7 +61,9 @@ class EventCard extends StatelessWidget {
                               textColor: Theme.of(context).accentColor,
                               highlightedBorderColor: Theme.of(context).accentColor,
                               onPressed: () {
-                                dismissEvent(_event, context);
+                                _event.followed ?
+                                _showDismissUnableDialog(context) :
+                                _dismissEvent(_event, context);
                               },
                             ),
                             Padding(padding: EdgeInsets.only(left: 30.0)),
@@ -98,8 +99,14 @@ class EventCard extends StatelessWidget {
     );
   }
 
-  void dismissEvent(Event event, BuildContext context){
-    Scaffold.of(context).showSnackBar(snackBar).closed
+  /// Creates a Snackbar to undo the Dismissal of [event].
+  ///
+  /// Calls [dismissEventAction] with the [Event._UID] of [event] to modify
+  /// the list of events in th feed locally. Also shows the [SnackBar]
+  /// [_undoSnackbar] that calls the backend to do the proper dismissal of
+  /// th event if the snackbar action is not used.
+  void _dismissEvent(Event event, BuildContext context){
+    Scaffold.of(context).showSnackBar(_undoSnackbar).closed
         .then((SnackBarClosedReason reason) {
       if (reason == SnackBarClosedReason.dismiss ||
           reason == SnackBarClosedReason.hide ||
@@ -112,7 +119,12 @@ class EventCard extends StatelessWidget {
     dismissEventAction(event.UID);
   }
 
-  final snackBar = SnackBar(
+  /// Creates a [SnackBar] that undoes Dismissing an event.
+  ///
+  /// Gives the user the option to bring back the Event they just dismissed
+  /// by calling [undoDismissAction] and add the event back to the list
+  /// locally.
+  final _undoSnackbar = SnackBar(
     content: Text('Undo Dismiss'),
     action: SnackBarAction(
       label: 'Undo',
@@ -121,5 +133,32 @@ class EventCard extends StatelessWidget {
       },
     ),
   );
+
+  /// Creates an [AlertDialog] to prevent the uer from dismissing a followed
+  /// event.
+  ///
+  ///
+  void _showDismissUnableDialog(BuildContext context){
+    showDialog<void>(
+        context: context,
+        barrierDismissible: true,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Unable to Dismiss"),
+            content: Text(
+                "Please unfollow the Event before dismissing it.",
+                style: Theme.of(context).textTheme.subtitle1
+            ),
+            actions: <Widget>[
+              FlatButton(
+                  child: Text("OK"),
+                  textColor: Theme.of(context).primaryColor,
+                  onPressed: () => Navigator.of(context).pop()
+              )
+            ],
+          );
+        }
+    );
+  }
 
 }

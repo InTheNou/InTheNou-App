@@ -105,8 +105,13 @@ class EventsRepo {
   /// Given the [Event._UID] through the [eventUID] parameter, the back-end
   /// will return detailed information about the [Event] that matches the UID.
   Future<Event> getEvent(int eventUID) async{
-    return dummyEvents.firstWhere((element) =>
-      element.UID == eventUID);
+    try{
+      return dummyEvents.firstWhere((element) =>
+        element.UID == eventUID);
+    } catch (e){
+      return Future.error("The Selected Event has been deleted.");
+    }
+
   }
 
   /// Requests for an [Event] to be marked as Followed in the back-end.
@@ -114,7 +119,7 @@ class EventsRepo {
   /// Given the [Event._UID] through the [eventUID] parameter, the back-end
   /// marks it as being Followed by this user by setting [Event.followed]
   Future<bool> requestFollowEvent(int eventUID) async{
-    return Future.delayed(Duration(seconds: 2)).then((onValue) {
+    return Future.delayed(Duration(seconds: 1)).then((onValue) {
 //      if(rand.nextBool()){
 //        return Future.error("Internal Error Following Event please try again"
 //            " later.");
@@ -130,7 +135,7 @@ class EventsRepo {
   /// Given the [Event._UID] through the [eventUID] parameter, the back-end
   /// marks it as being UnFollowed by this user by setting [Event.followed]
   Future<bool> requestUnFollowEvent(int eventUID) async{
-    return Future.delayed(Duration(seconds: 2)).then((onValue) {
+    return Future.delayed(Duration(seconds: 1)).then((onValue) {
 //      if(rand.nextBool()){
 //        return Future.error("Internal Error UnFollowing Event please try again"
 //            " later.");
@@ -194,10 +199,9 @@ class EventsRepo {
           (i) {
             List<int> randList = Utils.getRandomNumberList(10, 0,
                 eventTags.length);
-        return Event(i, "Event $i With a Big Name that take us a "
-          "lot of space", "This is a very long "
+        return Event(i, "Event $i", "This is a very long "
           "description fo the event currantly displayed. This is to test "
-          "out how good it looks when it cuts off.", "alguien.importante@upr"
+          "out how good it looks when it cuts off.", "alguien.importante1@upr"
             ".edu",
           "https://images.pexels.com/photos/256541/pexels-photo-256541.jpeg",
           DateTime.now().add(new Duration(minutes: i*2+5)),

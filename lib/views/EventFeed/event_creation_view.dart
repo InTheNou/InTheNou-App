@@ -48,7 +48,7 @@ class _EventCreationViewState extends State<EventCreationView>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("EventCreationView"),
+        title: Text("Event Creation"),
         actions: <Widget>[
           FlatButton(
             textColor: Colors.white,
@@ -126,7 +126,7 @@ class _EventCreationViewState extends State<EventCreationView>
                     //
                     TextFormField(
                       decoration: InputDecoration(
-                          labelText: "Event Image",
+                          labelText: "Event Image (Optional)",
                           border: OutlineInputBorder()),
                       autovalidate: _autoValidate,
                       maxLines: 1,
@@ -303,10 +303,10 @@ class _EventCreationViewState extends State<EventCreationView>
                         Expanded(
                           child: Row(
                             children: <Widget>[
-                              Text("Websites",
+                              Text("Website Links (Optional)",
                                   style: Theme.of(context).textTheme.subtitle1),
                               const Padding(padding: EdgeInsets.only(left: 8.0)),
-                              Text("${_creationStore.websites.length}/3",
+                              Text("${_creationStore.websites.length}/10",
                                   style: Theme.of(context).textTheme
                                       .subtitle1.copyWith(
                                       fontWeight: FontWeight.w300

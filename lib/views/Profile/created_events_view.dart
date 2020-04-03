@@ -1,6 +1,6 @@
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/event.dart';
-import 'package:InTheNou/stores/event_store.dart';
+import 'package:InTheNou/stores/event_feed_store.dart';
 import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
@@ -52,10 +52,9 @@ class _CreatedEventsViewState extends State<CreatedEventsView>
                 margin: EdgeInsets.only(top: 8.0),
                 child: InkWell(
                   onTap: () {
-                    openEventDetail(_event.UID);
                     Navigator.of(context).pushNamed(
                         '/eventdetail',
-                        arguments: null
+                        arguments: _event.UID
                     );
                   },
                   child: Padding(

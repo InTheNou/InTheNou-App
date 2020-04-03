@@ -4,7 +4,7 @@ import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/coordinate.dart';
 import 'package:InTheNou/models/event.dart';
-import 'package:InTheNou/stores/event_store.dart';
+import 'package:InTheNou/stores/event_feed_store.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
@@ -277,8 +277,15 @@ class NotificationHandler {
 
   /// Setup of the notification and schedules it
   static void scheduleRecommendationNotification(
-      NotificationObject notification, String title, String description) async {
-    var defaultStyleInformation = DefaultStyleInformation(true, true);
+      NotificationObject notification, String title, String description,
+      String bigDescription) async {
+    var bigTextStyleInformation = BigTextStyleInformation(
+        bigDescription,
+        htmlFormatBigText: true,
+        contentTitle: '<b>$title</b>',
+        htmlFormatContentTitle: true,
+        summaryText: '<b>Recommendation</b>',
+        htmlFormatSummaryText: true);
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
         'com.inthenou.app.channel.reccomendation',
         'Recommendation Notification',
@@ -286,9 +293,9 @@ class NotificationHandler {
         importance: Importance.Max,
         priority: Priority.High,
         visibility: NotificationVisibility.Public,
-        style: AndroidNotificationStyle.Default,
+        style: AndroidNotificationStyle.BigText,
         groupKey: RECOMMENDATION_NOTIFICATION_GID,
-        styleInformation: defaultStyleInformation);
+        styleInformation: bigTextStyleInformation);
     var platformChannelSpecifics = NotificationDetails(
         androidPlatformChannelSpecifics, null);
 
@@ -298,6 +305,33 @@ class NotificationHandler {
         payload: jsonEncode(notification));
   }
 
+  static void shoPermissionNotification(
+      NotificationObject notification, String title, String description,
+      String bigDescription) async {
+    var bigTextStyleInformation = BigTextStyleInformation(
+        bigDescription,
+        htmlFormatBigText: true,
+        contentTitle: '<b>$title</b>',
+        htmlFormatContentTitle: true,
+        summaryText: '<b>Recommendation</b>',
+        htmlFormatSummaryText: true);
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+        'com.inthenou.app.channel.alert',
+        'Alert Notification',
+        'Notifications of Alerts or Errors.',
+        importance: Importance.Max,
+        priority: Priority.High,
+        visibility: NotificationVisibility.Public,
+        style: AndroidNotificationStyle.BigText,
+        styleInformation: bigTextStyleInformation);
+    var platformChannelSpecifics = NotificationDetails(
+        androidPlatformChannelSpecifics, null);
+
+    await flutterLocalNotificationsPlugin.show(
+        notification.id, title, description,
+        platformChannelSpecifics,
+        payload: jsonEncode(notification));
+  }
   // Helper Methods
 
   static String _getTimeToEvent(DateTime eventTime, DateTime notificationTIme){

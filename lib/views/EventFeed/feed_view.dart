@@ -1,22 +1,22 @@
 import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
-import 'package:InTheNou/stores/event_store.dart';
+import 'package:InTheNou/stores/event_feed_store.dart';
 import 'package:InTheNou/stores/user_store.dart';
 import 'package:InTheNou/views/widgets/event_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
-class GeneralFeedView extends StatefulWidget{
+class FeedView extends StatefulWidget{
 
   final FeedType type;
-  GeneralFeedView({this.type}) : super(key: ValueKey(Utils.feedTypeString(type)));
+  FeedView({this.type}) : super(key: ValueKey(Utils.feedTypeString(type)));
 
   @override
   GeneralFeedState createState() => GeneralFeedState();
 }
 
-class GeneralFeedState extends State<GeneralFeedView>
-    with flux.StoreWatcherMixin<GeneralFeedView>{
+class GeneralFeedState extends State<FeedView>
+    with flux.StoreWatcherMixin<FeedView>{
 
   EventFeedStore _eventFeedStore;
   UserStore _userStore;
@@ -37,9 +37,9 @@ class GeneralFeedState extends State<GeneralFeedView>
     /// Save the scroll position the uer is in to recall if the screen is
     /// switched
     _scrollController = ScrollController(
-        initialScrollOffset: _eventFeedStore.genScrollPos);
+        initialScrollOffset: _eventFeedStore.getScrollPos(widget.type));
     _scrollController.addListener(() {
-      _eventFeedStore.genScrollPos = _scrollController.offset;
+      _eventFeedStore.setScrollPos(widget.type, _scrollController.offset);
     });
     _searchQueryController =TextEditingController(
         text:_eventFeedStore.searchKeyword(widget.type));
@@ -132,6 +132,8 @@ class GeneralFeedState extends State<GeneralFeedView>
     });
   }
 
+  /// Builds the Title child of the AppBar
+  ///
   /// Method called whenever the AppBar is being drawn, if the search button
   /// was selected then [_eventFeedStore.isSearching] will return true and
   /// the Search bar button will be drawn. If not then the Title will.
@@ -151,15 +153,21 @@ class GeneralFeedState extends State<GeneralFeedView>
         onSubmitted: (query) {
           if(_scrollController.hasClients){
             _scrollController.animateTo(0.0,
-                curve: Curves.ease, duration: Duration(seconds: 2));
+                curve: Curves.ease, duration: Duration(seconds: 1))
+                .then((value){
+              searchFeedAction(new MapEntry(widget.type, query));
+            });
+          } else {
+            searchFeedAction(new MapEntry(widget.type, query));
           }
-          searchFeedAction(new MapEntry(widget.type, query));
         },
       );
     }
     return Text(Utils.feedTypeString(widget.type));
   }
 
+  /// Creates the Actions of the AppBar
+  ///
   /// Method called whenever the AppBar is being drawn, if the search button
   /// was selected then [_eventFeedStore.isSearching] will return true and
   /// the Clear button will be drawn. If not then the Search button will.
@@ -179,34 +187,45 @@ class GeneralFeedState extends State<GeneralFeedView>
       ),
       IconButton(
         icon: const Icon(Icons.search),
-        onPressed: _startSearch,
+        onPressed: () => setFeedSearching(new MapEntry(widget.type, true)),
       ),
     ];
   }
 
-  /// Gets all the events from the database and also brings the user to the
-  /// top of the page
+  /// Gets all the events from the database calling [getAllEventsAction] and
+  /// also brings the user to the top of the page
   void _refresh() {
-    getAllEventsAction(widget.type);
     if(_scrollController.hasClients){
       _scrollController.animateTo(0.0,
-          curve: Curves.ease, duration: Duration(seconds: 2));
+          curve: Curves.ease, duration: Duration(seconds: 1))
+          .then((value) {
+        getAllEventsAction(widget.type);
+      });
+    } else {
+      getAllEventsAction(widget.type);
     }
   }
 
-  void _startSearch() {
-    setFeedSearching(new MapEntry(widget.type, true));
-  }
-
+  /// Clears the field of the search bar and also hides the search bar
+  ///
+  /// If the search has a keyword input then it will be cleared. Otherwise
+  /// the search bar is hidden by calling [setFeedSearching] with false. This
+  /// also scrolls to the top of the page in case the user has scrolled down
+  /// and gathers all the events again calling [getAllEventsAction]
   void _clearSearchKeyword() {
     if(_searchQueryController == null ||
         _searchQueryController.text.isEmpty){
       if(_scrollController.hasClients){
         _scrollController.animateTo(0.0,
-            curve: Curves.ease, duration: Duration(seconds: 2));
+            curve: Curves.ease, duration: Duration(seconds: 1))
+            .then((value) {
+          setFeedSearching(new MapEntry(widget.type, false));
+          getAllEventsAction(widget.type);
+        });
+      } else {
+        setFeedSearching(new MapEntry(widget.type, false));
+        getAllEventsAction(widget.type);
       }
-      setFeedSearching(new MapEntry(widget.type, false));
-      getAllEventsAction(widget.type);
       return;
     }
     _searchQueryController.clear();

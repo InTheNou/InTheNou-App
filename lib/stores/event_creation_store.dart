@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/models/building.dart';
 import 'package:InTheNou/models/event.dart';
@@ -7,6 +9,7 @@ import 'package:InTheNou/models/tag.dart';
 import 'package:InTheNou/models/website.dart';
 import 'package:InTheNou/repos/events_repo.dart';
 import 'package:InTheNou/repos/infobase_repo.dart';
+import 'package:InTheNou/repos/tag_repo.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
 class EventCreationStore extends flux.Store {
@@ -16,6 +19,9 @@ class EventCreationStore extends flux.Store {
 
   static final InfoBaseRepo _infoBaseRepo = new InfoBaseRepo();
   static final EventsRepo _eventsRepo = new EventsRepo();
+  static final TagRepo _tagRepo = new TagRepo();
+
+  Random rand = Random();
 
   Event _newEvent;
   String _title;
@@ -39,8 +45,8 @@ class EventCreationStore extends flux.Store {
 
   EventCreationStore() {
     triggerOnAction(submitEventAction, (_){
-      _newEvent = new Event(0,_title, _description,_image, "alguien"
-          ".importante@upr.edu", _startDateTime,
+      _newEvent = new Event(rand.nextInt(100)+30,_title, _description,
+          "alguien.importante@upr.edu", _image, _startDateTime,
           _endDateTime,DateTime.now(), _selectedRoom, _websites,
         _selectedTags, false, null);
       _eventsRepo.createEvent(_newEvent);
@@ -53,8 +59,7 @@ class EventCreationStore extends flux.Store {
       _buildings = _infoBaseRepo.dummyBuildings;
     });
     triggerOnAction(getAllTagsAction, (_){
-      _allTagsFromRepo = new List.generate(5, (index) =>
-        new Tag("Tag$index", 10));
+      _allTagsFromRepo = _tagRepo.getAllTags();
       _allTags = new Map<Tag,bool>.fromIterable(_allTagsFromRepo,
           key: (tag) => tag,
           value: (tag) => false

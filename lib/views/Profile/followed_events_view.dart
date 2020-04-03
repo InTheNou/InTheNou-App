@@ -1,6 +1,6 @@
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/event.dart';
-import 'package:InTheNou/stores/event_store.dart';
+import 'package:InTheNou/stores/event_feed_store.dart';
 import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
@@ -29,6 +29,12 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
     return Scaffold(
       appBar: AppBar(
         title: Text("FollowedEventsView"),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => refreshFollowedAction(),
+          ),
+        ],
       ),
       body: buildBody(),
     );
@@ -52,7 +58,6 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
                 margin: EdgeInsets.only(top: 8.0),
                 child: InkWell(
                   onTap: () {
-                    openEventDetail(_event.UID);
                     Navigator.of(context).pushNamed(
                         '/eventdetail',
                         arguments: _event.UID
@@ -91,35 +96,35 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
                                   overflow: TextOverflow.ellipsis,
                                   style: Theme.of(context).textTheme.subtitle2
                               ),
-//                              const Padding(padding: EdgeInsets.only(bottom: 8.0)),
-//                              Row(
-//                                  mainAxisAlignment: MainAxisAlignment.end,
-//                                  children: <Widget>[
-//                                    ButtonTheme(
-//                                        minWidth: 120.0,
-//                                        child: OutlineButton(
-//                                          child: Text(_event.followed ?
-//                                          "UNFOLLOW":'FOLLOW'
-//                                          ),
-//                                          textColor: Theme.of(context).primaryColor,
-//                                          borderSide: BorderSide(
-//                                              color: Theme.of(context).primaryColor,
-//                                              width: _event.followed ? 1.5 : 0.0
-//                                          ),
-//                                          onPressed: () {
-//                                            _event.followed ?
-//                                              unFollowEventAction
-//                                                (MapEntry(FeedType.Detail, _event
-//                                              )) :
-//                                              followEventAction
-//                                                (MapEntry(FeedType.Detail, _event
-//                                              ));
-//                                            refreshFollowedAction();
-//                                          },
-//                                        )
-//                                    )
-//                                  ]
-//                              ),
+                              const Padding(padding: EdgeInsets.only(bottom: 8.0)),
+                              Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: <Widget>[
+                                    ButtonTheme(
+                                        minWidth: 120.0,
+                                        child: OutlineButton(
+                                          child: Text(_event.followed ?
+                                          "UNFOLLOW":'FOLLOW'
+                                          ),
+                                          textColor: Theme.of(context).primaryColor,
+                                          borderSide: BorderSide(
+                                              color: Theme.of(context).primaryColor,
+                                              width: _event.followed ? 1.5 : 0.0
+                                          ),
+                                          onPressed: () {
+                                            _event.followed ?
+                                              unFollowEventAction
+                                                (MapEntry(FeedType.Detail, _event
+                                              )) :
+                                              followEventAction
+                                                (MapEntry(FeedType.Detail, _event
+                                              ));
+                                            refreshFollowedAction();
+                                          },
+                                        )
+                                    )
+                                  ]
+                              ),
                             ],
                           ),
                         ),

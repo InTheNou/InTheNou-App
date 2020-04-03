@@ -4,7 +4,7 @@ import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/background/background_handler.dart';
 import 'package:InTheNou/background/notification_handler.dart';
 import 'package:InTheNou/stores/settings_store.dart';
-import 'package:InTheNou/views/EventFeed/general_feed_view.dart';
+import 'package:InTheNou/views/EventFeed/feed_view.dart';
 import 'package:InTheNou/views/EventFeed/personal_feed_view.dart';
 import 'package:InTheNou/views/InformoationBase/infobase_category_view.dart';
 import 'package:InTheNou/views/Profile/profile_view.dart';
@@ -33,8 +33,8 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
   SharedPreferences prefs;
 
   final List<Widget> _children = [
-    GeneralFeedView(type: FeedType.PersonalFeed),
-    GeneralFeedView(type: FeedType.GeneralFeed),
+    FeedView(type: FeedType.PersonalFeed),
+    FeedView(type: FeedType.GeneralFeed),
     InfoBaseCategoryView(),
     ProfileView()
   ];

@@ -11,6 +11,8 @@ class UserStore extends flux.Store{
 
   static final flux.StoreToken userStoreToken = new flux.StoreToken(new
     UserStore());
+  static final UserRepo _userRepo = new UserRepo();
+  static final TagRepo _tagRepo = new TagRepo();
 
   User _user;
   List<Event> _followedEvents = new List();
@@ -31,9 +33,6 @@ class UserStore extends flux.Store{
   String _followedEventError;
   String _createdEventError;
 
-  UserRepo _userRepo = new UserRepo();
-  TagRepo _tagRepo = new TagRepo();
-
   UserStore() {
     _user = _userRepo.getUser();
     _allTags = _tagRepo.getAllTagsAsMap();
@@ -41,6 +40,7 @@ class UserStore extends flux.Store{
 
     triggerOnConditionalAction(refreshFollowedAction, (_){
       _isFollowedLoading = true;
+      trigger();
       return _userRepo.getFollowedEvents(0, EVENTS_TO_FETCH).then(
               (List<Event> value) {
         _followedEvents = value;
@@ -54,6 +54,7 @@ class UserStore extends flux.Store{
     });
     triggerOnConditionalAction(refreshCreatedAction, (_){
       _isCreatedLoading = true;
+      trigger();
       return _userRepo.getCreatedEvents(0, 0, EVENTS_TO_FETCH).then((value) {
         _createdEvents = value;
         _isCreatedLoading = false;

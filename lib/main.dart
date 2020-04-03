@@ -45,10 +45,17 @@ class InTheNouApp extends StatelessWidget {
 
   Widget buildError(BuildContext context, FlutterErrorDetails error) {
     return Scaffold(
+        appBar: AppBar(
+          title: Text("Error"),
+        ),
         body: Center(
-          child: Text(
-            error.toString(),
-            style: Theme.of(context).textTheme.title,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              "Oops, an error happend. \nPlease restart the application "
+                  "or contact the Development Team.",
+              style: Theme.of(context).textTheme.title,
+            ),
           ),
         )
     );

@@ -37,7 +37,8 @@ enum UserPrivilege{
 enum NotificationType{
   SmartNotification,
   DefaultNotification,
-  RecommendationNotification
+  RecommendationNotification,
+  Alert
 }
 
 //Constants
@@ -51,11 +52,13 @@ const WEIGHTED_SUM_THRESHOLD = 20;
 const RELEVANCE_VALUE_FACTOR = 100;
 
 const RECOMMENDATION_NOTIFICATION_ID = 0;
+const ALERT_NOTIFICATION_ID = 1;
+
 const NOTIFICATION_ID_START = 20;
 
 const INITIAL_TAG_WEIGHT = 50;
 
-const List<int> defaultTimes = [
+const List<int> defaultNotificationTimes = [
   5, 10, 15, 20, 30
 ];
 

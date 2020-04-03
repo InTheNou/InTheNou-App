@@ -1,6 +1,6 @@
 import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
-import 'package:InTheNou/stores/event_store.dart';
+import 'package:InTheNou/stores/event_feed_store.dart';
 import 'package:InTheNou/stores/user_store.dart';
 import 'package:InTheNou/views/widgets/event_card.dart';
 import 'package:flutter/material.dart';
@@ -34,9 +34,9 @@ class PersonalFeedState extends State<PersonalFeedView>
     /// Save the scroll position the uer is in to recall if the screen is
     /// switched
     _scrollController = ScrollController(
-        initialScrollOffset: _eventFeedStore.perScrollPos);
+        initialScrollOffset: _eventFeedStore.getScrollPos(FeedType.PersonalFeed));
     _scrollController.addListener(() {
-      _eventFeedStore.perScrollPos = _scrollController.offset;
+      _eventFeedStore.setScrollPos(FeedType.PersonalFeed, _scrollController.offset);
     });
     _searchQueryController =TextEditingController(
         text:_eventFeedStore.searchKeyword(FeedType.PersonalFeed));
