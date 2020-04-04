@@ -17,7 +17,7 @@ class _StartUpViewState extends State<StartUpView>
   @override
   void initState() {
     super.initState();
-    _userStore = listenToStore(userStoreToken);
+    _userStore = listenToStore(UserStore.userStoreToken);
     _userStore.getSession().then((Session session) {
       if(session==null){
         Navigator.of(context).pushReplacementNamed("/login");

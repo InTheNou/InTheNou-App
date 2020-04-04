@@ -1,6 +1,6 @@
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/event.dart';
-import 'package:InTheNou/stores/event_store.dart';
+import 'package:InTheNou/stores/event_feed_store.dart';
 import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
@@ -21,7 +21,7 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
   @override
   void initState() {
     super.initState();
-    _userStore = listenToStore(userStoreToken);
+    _userStore = listenToStore(UserStore.userStoreToken);
   }
 
   @override
@@ -29,8 +29,27 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
     return Scaffold(
       appBar: AppBar(
         title: Text("FollowedEventsView"),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => refreshFollowedAction(),
+          ),
+        ],
       ),
-      body: ListView.builder(
+      body: buildBody(),
+    );
+  }
+
+  Widget buildBody(){
+    if(_userStore.isFollowedLoading){
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    } else {
+      if(_userStore.followedEventError !=null){
+        showErrorDialog(_userStore.followedEventError);
+      }
+      return  ListView.builder(
           itemCount: _userStore.followedEvents.length,
           itemBuilder: (context, index){
             Event _event = _userStore.followedEvents[index];
@@ -39,10 +58,9 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
                 margin: EdgeInsets.only(top: 8.0),
                 child: InkWell(
                   onTap: () {
-                    openEventDetail(MapEntry(FeedType.GeneralFeed, _event.UID));
                     Navigator.of(context).pushNamed(
                         '/eventdetail',
-                        arguments: FeedType.GeneralFeed
+                        arguments: _event.UID
                     );
                   },
                   child: Padding(
@@ -95,9 +113,13 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
                                           ),
                                           onPressed: () {
                                             _event.followed ?
-                                            unFollowEventAction(_event) :
-                                            followEventAction(_event);
-                                            refreshFollowedEventsAction();
+                                              unFollowEventAction
+                                                (MapEntry(FeedType.Detail, _event
+                                              )) :
+                                              followEventAction
+                                                (MapEntry(FeedType.Detail, _event
+                                              ));
+                                            refreshFollowedAction();
                                           },
                                         )
                                     )
@@ -111,7 +133,28 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
                   ),
                 )
             );
-          })
-    );
+          });
+    }
+  }
+
+  Future showErrorDialog(String errorText) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await showDialog<String>(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text('Error'),
+          content: Text(errorText),
+          actions: <Widget>[
+            FlatButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                clearErrorAction(FeedType.PersonalFeed);
+              },
+            ),
+          ],
+        ),
+      );
+    });
   }
 }

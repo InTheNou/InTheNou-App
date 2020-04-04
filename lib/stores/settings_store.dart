@@ -1,3 +1,4 @@
+import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/background/notification_handler.dart';
 import 'package:InTheNou/repos/settings_repo.dart';
 import 'package:InTheNou/repos/user_repo.dart';
@@ -8,9 +9,6 @@ class SettingsStore extends flux.Store {
   int _defaultNotificationTime;
   bool _smartNotificationEnabled;
 
-  List<int> _defaultTimes = [
-    5, 10, 15, 20, 30
-  ];
 
   SettingsRepo _settingsRepo = new SettingsRepo();
   UserRepo _userRepo = new UserRepo();
@@ -50,7 +48,7 @@ class SettingsStore extends flux.Store {
     return _smartNotificationEnabled ??
         _settingsRepo.getSmartNotificationToggle();
   }
-  List<int> get defaultTimes => _defaultTimes;
+  List<int> get defaultTimes => defaultNotificationTimes;
 
 }
 

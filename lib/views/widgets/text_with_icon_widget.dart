@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class TextWithIcon extends StatelessWidget{
   String _text;
-  IconData _icon;
+  Widget _icon;
 
   TextWithIcon(this._text, this._icon);
   @override
@@ -13,7 +13,7 @@ class TextWithIcon extends StatelessWidget{
         Row(
           children: <Widget>[
             const Padding(padding: EdgeInsets.only(left: 8.0)),
-            Icon(_icon),
+            _icon,
             const Padding(padding: EdgeInsets.only(left: 16.0)),
             Text(
               _text,

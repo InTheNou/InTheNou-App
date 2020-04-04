@@ -10,9 +10,6 @@ class RoomCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0)),
-        clipBehavior: Clip.antiAliasWithSaveLayer,
         child: InkWell(
             onTap: () {
               Navigator.of(context).pushNamed("/infobase/room");

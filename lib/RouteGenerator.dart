@@ -21,43 +21,67 @@ class RouteGenerator{
     final args = settings.arguments;
     switch (settings.name){
       case "/home":
-        return MaterialPageRoute(builder: (_) => HomePage());
+        return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => HomePage());
       case "/login":
-        return MaterialPageRoute(builder: (_) => LoginView());
+        return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => LoginView());
       case "/accountcreation":
-        return MaterialPageRoute(builder: (_) => AccountCreationView());
+        return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => AccountCreationView());
       case "/eventdetail":
-        if (args is MapEntry<FeedType, int>) {
+        if (args is int) {
           return MaterialPageRoute(
+            settings: settings,
             builder: (_) =>
-                EventDetailView(args.key, args.value),
+                EventDetailView(args),
           );
         }
         return _errorRoute();
       case '/create_event':
-        return MaterialPageRoute(builder: (_) => EventCreationView());
+        return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => EventCreationView());
       case '/infobase/search':
         if (args is InfoBaseSearchType) {
           return MaterialPageRoute(
+            settings: settings,
             builder: (_) =>
                 InfoBaseSearchView(args),
           );
         }
         return _errorRoute();
       case '/infobase/building':
-        return MaterialPageRoute(builder: (_) => BuildingView());
+        return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => BuildingView());
       case '/infobase/floor':
-        return MaterialPageRoute(builder: (_) => FloorView());
+        return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => FloorView());
       case '/infobase/room':
-        return MaterialPageRoute(builder: (_) => RoomView());
+        return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => RoomView());
       case '/infobase/service':
-        return MaterialPageRoute(builder: (_) => ServiceView());
+        return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => ServiceView());
       case '/profile/settings':
-        return MaterialPageRoute(builder: (_) => SettingsView());
+        return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => SettingsView());
       case '/profile/followed_events':
-        return MaterialPageRoute(builder: (_) => FollowedEventsView());
+        return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => FollowedEventsView());
       case '/profile/created_events':
-        return MaterialPageRoute(builder: (_) => CreatedEventsView());
+        return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => CreatedEventsView());
       default:
         return _errorRoute();
     }
@@ -70,7 +94,8 @@ class RouteGenerator{
           title: Text('Error'),
         ),
         body: Center(
-          child: Text('ERROR'),
+          child: Text('Oops something happened trying to get you to your '
+              'destination.'),
         ),
       );
     });

@@ -4,7 +4,8 @@
 
 enum FeedType{
   GeneralFeed,
-  PersonalFeed
+  PersonalFeed,
+  Detail
 }
 
 enum InfoBaseSearchType{
@@ -36,12 +37,13 @@ enum UserPrivilege{
 enum NotificationType{
   SmartNotification,
   DefaultNotification,
-  RecommendationNotification
+  RecommendationNotification,
+  Alert
 }
 
 //Constants
 const EVENTS_TO_FETCH = 20;
-const DEFAULT_NOTIFICATION_TIME = 30;
+const DEFAULT_NOTIFICATION_TIME = 5;
 const SMART_NOTIFICATION_STATE = false;
 const AVERAGE_WALKING_SPEED = 3.0;
 const RECOMMENDATION_INTERVAL_MINUTES = 60;
@@ -50,10 +52,15 @@ const WEIGHTED_SUM_THRESHOLD = 20;
 const RELEVANCE_VALUE_FACTOR = 100;
 
 const RECOMMENDATION_NOTIFICATION_ID = 0;
+const ALERT_NOTIFICATION_ID = 1;
+
 const NOTIFICATION_ID_START = 20;
 
 const INITIAL_TAG_WEIGHT = 50;
 
+const List<int> defaultNotificationTimes = [
+  5, 10, 15, 20, 30
+];
 
 //Shared Preferences Keys
 const DEFAULT_NOTIFICATION_KEY = "defaultNotificationTime";

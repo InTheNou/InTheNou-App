@@ -24,16 +24,18 @@ class InfoBaseSearchView extends StatefulWidget {
 class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
   with flux.StoreWatcherMixin<InfoBaseSearchView>{
 
-  TextEditingController _searchQueryController = TextEditingController();
+  TextEditingController _searchQueryController;
   ScrollController _scrollController;
   InfoBaseStore _infoBaseStore;
 
   @override
   void initState() {
     super.initState();
-    _infoBaseStore = listenToStore(infoBaseToken);
+    _infoBaseStore = listenToStore(InfoBaseStore.infoBaseToken);
     _scrollController = ScrollController();
     getAllBuildingsAction(widget.searchType);
+    _searchQueryController = TextEditingController(
+      text: _infoBaseStore.getSearchKeyword(widget.searchType));
   }
 
   @override
@@ -46,41 +48,40 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: _infoBaseStore.isSearching ? _buildSearchField() :
+        title: _infoBaseStore.getIsSearching(widget.searchType) ? _buildSearchField() :
           Text(Utils.infoBaseSearchString(widget.searchType)),
         actions: _buildActions(),
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
-          const Padding(padding: EdgeInsets.only(top: 8.0)),
           Expanded(
-            child: showCorrectList(context),
+            child: showCorrectList(),
           )
         ],
       ),
     );
   }
 
-  Widget showCorrectList(BuildContext context){
+  Widget showCorrectList(){
     switch (widget.searchType){
       case InfoBaseSearchType.Building:
-        return showBuildingsResults(context);
+        return showBuildingsResults();
         break;
       case InfoBaseSearchType.Room:
-        return showRoomsResults(context);
+        return showRoomsResults();
         break;
       case InfoBaseSearchType.Service:
-        return showServicesResults(context);
+        return showServicesResults();
         break;
     }
   }
 
-  String stefaniImage = "https://pbs.twimg.com/media/DN8sEJpUEAAyuyF?format=jpg&name=large";
-  Widget showBuildingsResults(BuildContext context){
+  Widget showBuildingsResults(){
     return ListView.builder(
         itemCount: _infoBaseStore.buildingsResults.length,
         controller: _scrollController,
+        padding:const EdgeInsets.only(top: 8.0),
         itemBuilder: (context, index){
           Building building = _infoBaseStore.buildingsResults[index];
           return Card(
@@ -99,7 +100,8 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
                     fit: BoxFit.cover,
                     placeholder: "lib/assets/placeholder.png",
                     height: 120.0,
-                    image: stefaniImage,
+                    width: 150.0,
+                    image: building.image,
                   ),
                   const Padding(padding: EdgeInsets.only(left: 16.0)),
                   Column(
@@ -125,7 +127,7 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
         });
   }
 
-  Widget showRoomsResults(BuildContext context){
+  Widget showRoomsResults(){
     return ListView.builder(
         itemCount: _infoBaseStore.roomsResults.length,
         controller: _scrollController,
@@ -135,7 +137,7 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
         });
   }
 
-  Widget showServicesResults(BuildContext context){
+  Widget showServicesResults(){
     return ListView.builder(
         itemCount: _infoBaseStore.servicesResults.length,
         controller: _scrollController,
@@ -147,7 +149,7 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
 
 
   List<Widget> _buildActions() {
-    if (_infoBaseStore.isSearching) {
+    if (_infoBaseStore.getIsSearching(widget.searchType)) {
       return <Widget>[
         IconButton(
           icon: const Icon(Icons.clear),

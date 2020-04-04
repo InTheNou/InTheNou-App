@@ -9,6 +9,11 @@ import 'package:flutter_flux/flutter_flux.dart' as flux;
 
 class UserStore extends flux.Store{
 
+  static final flux.StoreToken userStoreToken = new flux.StoreToken(new
+    UserStore());
+  static final UserRepo _userRepo = new UserRepo();
+  static final TagRepo _tagRepo = new TagRepo();
+
   User _user;
   List<Event> _followedEvents = new List();
   List<Event> _createdEvents = new List();
@@ -23,38 +28,49 @@ class UserStore extends flux.Store{
     UserRole.TeachingPersonnel,
     UserRole.NonTeachingPersonnel];
 
-  UserRepo _userRepo = new UserRepo();
-  TagRepo _tagRepo = new TagRepo();
+  bool _isFollowedLoading = false;
+  bool _isCreatedLoading = false;
+  String _followedEventError;
+  String _createdEventError;
 
-  static final UserStore _instance = UserStore._internal();
-
-  factory UserStore() {
-    return _instance;
-  }
-
-  UserStore._internal() {
+  UserStore() {
     _user = _userRepo.getUser();
     _allTags = _tagRepo.getAllTagsAsMap();
     _searchTags = _tagRepo.getAllTagsAsMap();
 
-    triggerOnAction(refreshFollowedEventsAction, (_){
-      _followedEvents = _userRepo.getFollowedEvents(0, 0, EVENTS_TO_FETCH);
+    triggerOnConditionalAction(refreshFollowedAction, (_){
+      _isFollowedLoading = true;
+      trigger();
+      return _userRepo.getFollowedEvents(0, EVENTS_TO_FETCH).then(
+              (List<Event> value) {
+        _followedEvents = value;
+        _isFollowedLoading = false;
+        return true;
+      }).catchError((error){
+        _followedEventError = error.toString();
+        _isFollowedLoading = false;
+        return true;
+      });
     });
-    triggerOnAction(refreshCreatedEventsAction, (_){
-      _createdEvents = _userRepo.getCreatedEvents(0, 0, EVENTS_TO_FETCH);
+    triggerOnConditionalAction(refreshCreatedAction, (_){
+      _isCreatedLoading = true;
+      trigger();
+      return _userRepo.getCreatedEvents(0, 0, EVENTS_TO_FETCH).then((value) {
+        _createdEvents = value;
+        _isCreatedLoading = false;
+        return true;
+      }).catchError((error){
+        _createdEventError = error.toString();
+        _isCreatedLoading = false;
+        return true;
+      });
     });
     triggerOnAction(cancelEventAction, (Event event){
-      _userRepo.requestDeleteEvents(0, event);
+      _userRepo.requestDeleteEvents(event);
     });
     triggerOnAction(callAuthAction, (_){
       //TODO: Add call to auth service in integration
 
-    });
-    triggerOnConditionalAction(getUserAction, (_) {
-      return _userRepo.getUserInfo().then((value) {
-        _user = value;
-        return true;
-      });
     });
     triggerOnAction(selectRoleAction, (UserRole role) {
       _selectedRole = role;
@@ -117,17 +133,19 @@ class UserStore extends flux.Store{
   Map<Tag, bool> get searchTags => _searchTags;
   List<Tag> get selectedTags => _selectedTags;
 
+  String get followedEventError => _followedEventError;
+  String get createdEventError => _createdEventError;
+  bool get isFollowedLoading => _isFollowedLoading;
+  bool get isCreatedLoading => _isCreatedLoading;
+
 }
 //Profile Actions
-final flux.Action refreshFollowedEventsAction = new flux.Action();
-final flux.Action refreshCreatedEventsAction = new flux.Action();
+final flux.Action refreshFollowedAction = new flux.Action();
+final flux.Action refreshCreatedAction = new flux.Action();
 final flux.Action<Event> cancelEventAction = new flux.Action();
 //AccountCreation and Auth Actions
 final flux.Action callAuthAction = new flux.Action();
-final flux.Action getUserAction = new flux.Action();
 final flux.Action<UserRole> selectRoleAction = new flux.Action();
 final flux.Action<String> searchedTagAction = new flux.Action();
 final flux.Action<MapEntry<Tag,bool>> toggleTagAction = new flux.Action();
 final flux.Action createUserAction = new flux.Action();
-
-final flux.StoreToken userStoreToken = new flux.StoreToken(new UserStore());

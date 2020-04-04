@@ -35,13 +35,7 @@ class Event {
     this._websites = event._websites;
     this._tags = event._tags;
     this.followed = event.followed;
-  }
-
-  Event.newEvent(this._title, this._description, this._startDateTime,
-      this._endDateTime, this._room, this._websites, this._tags){
-    this._UID = -1;
-    this.followed = false;
-    this.recommended = null;
+    this.recommended = event.recommended;
   }
 
   Event.result(this._UID, this._title, this._description, this._startDateTime,

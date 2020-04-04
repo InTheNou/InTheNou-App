@@ -1,3 +1,4 @@
+import 'package:InTheNou/assets/validators.dart';
 import 'package:InTheNou/models/building.dart';
 import 'package:InTheNou/models/floor.dart';
 import 'package:InTheNou/models/room.dart';
@@ -34,7 +35,7 @@ class _EventCreationViewState extends State<EventCreationView>
 
   @override
   void initState() {
-    _creationStore = listenToStore(eventCreationStoreToken);
+    _creationStore = listenToStore(EventCreationStore.eventCreationStoreToken);
     getBuildingsAction();
     getAllTagsAction();
     // In case the user had decided to save the draft and they had entered at
@@ -47,25 +48,25 @@ class _EventCreationViewState extends State<EventCreationView>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("EventCreationView"),
+        title: Text("Event Creation"),
         actions: <Widget>[
           FlatButton(
             textColor: Colors.white,
             child: Text(
               "SUBMIT"
             ),
-            onPressed: () => validateEventSubmit(context)
+            onPressed: () => validateEventSubmit()
           )
         ],
         leading: IconButton(
           icon: Icon(Icons.clear),
-          onPressed: () => showGoBackWarning(context),
+          onPressed: () => showExitWarning(),
         ),
       ),
       body: SingleChildScrollView(
         child: Form(
             key: _formKey,
-            onWillPop: () => showGoBackWarning(context),
+            onWillPop: () => showExitWarning(),
             child: Padding(
               padding: const EdgeInsets.only(top: 16.0, bottom: 8.0,
                   left: 8.0, right: 8.0),
@@ -82,16 +83,9 @@ class _EventCreationViewState extends State<EventCreationView>
                       maxLength: 50,
                       textInputAction: TextInputAction.next,
                       initialValue: _creationStore.title,
-                      validator: (value) {
-                        if (value.isEmpty){
-                          return "Title must be provided";
-                        }else if(value.length < 3){
-                          return "Title is too short";
-                        }
-                        return null;
-                      },
-                      onChanged: (String description) =>
-                          inputEventTitleAction(description),
+                      validator: (title) => Validators.validateTitle(title),
+                      onChanged: (String title) =>
+                          inputEventTitleAction(title.trim()),
                     ),
                     const Padding(padding: EdgeInsets.only(bottom: 8.0)),
                     //
@@ -106,16 +100,25 @@ class _EventCreationViewState extends State<EventCreationView>
                       keyboardType: TextInputType.text,
                       textInputAction: TextInputAction.done,
                       initialValue: _creationStore.description,
-                      validator: (value) {
-                        if (value == null){
-                          return "Description must be provided";
-                        }else if(value.length < 3){
-                          return "Description is too short";
-                        }
-                        return null;
-                      },
+                      validator: (description) =>
+                          Validators.validateDescription(description),
                       onChanged: (String description) =>
-                          inputEventDescriptionAction(description),
+                          inputEventDescriptionAction(description.trim()),
+                    ),
+                    const Padding(padding: EdgeInsets.only(bottom: 8.0)),
+                    //
+                    TextFormField(
+                      decoration: InputDecoration(
+                          labelText: "Event Image (Optional)",
+                          border: OutlineInputBorder()),
+                      autovalidate: _autoValidate,
+                      maxLines: 1,
+                      maxLength: 400,
+                      textInputAction: TextInputAction.next,
+                      initialValue: _creationStore.title,
+                      validator: (image) => Validators.validateImage(image),
+                      onChanged: (String image) =>
+                          inputEventImageAction(image),
                     ),
                     const Padding(padding: EdgeInsets.only(bottom: 8.0)),
                     //
@@ -144,13 +147,16 @@ class _EventCreationViewState extends State<EventCreationView>
                                   TimeOfDay.fromDateTime(_creationStore
                                   .startDateTime ?? DateTime.now()),
                               );
-                              inputEventStartAction(DateTimeField.combine(date, time));
+                              inputEventDateAction(MapEntry(true,
+                                  DateTimeField.combine(date, time)));
                               return DateTimeField.combine(date, time);
                             } else {
                           return currentValue;
                         }
                       },
-                      validator: (value) => validateDates(value),
+                      validator: (date) => Validators.validateDate(date,
+                          _creationStore.startDateTime,
+                          _creationStore.endDateTime),
                       onChanged: (value) {
                         _formKey.currentState.setState(() {
                           _autoValidateDates = true;
@@ -184,13 +190,16 @@ class _EventCreationViewState extends State<EventCreationView>
                             TimeOfDay.fromDateTime(_creationStore.endDateTime
                             ?? DateTime.now()),
                           );
-                          inputEventEndAction(DateTimeField.combine(date, time));
+                          inputEventDateAction(MapEntry(false,
+                              DateTimeField.combine(date, time)));
                           return DateTimeField.combine(date, time);
                         } else {
                           return currentValue;
                         }
                       },
-                      validator: (value) => validateDates(value)
+                      validator: (date) => Validators.validateDate(date,
+                          _creationStore.startDateTime,
+                          _creationStore.endDateTime),
                     ),
                     const Padding(padding: EdgeInsets.only(bottom: 16.0)),
                     //
@@ -275,10 +284,10 @@ class _EventCreationViewState extends State<EventCreationView>
                         Expanded(
                           child: Row(
                             children: <Widget>[
-                              Text("Websites",
+                              Text("Website Links (Optional)",
                                   style: Theme.of(context).textTheme.subtitle1),
                               const Padding(padding: EdgeInsets.only(left: 8.0)),
-                              Text("${_creationStore.websites.length}/3",
+                              Text("${_creationStore.websites.length}/10",
                                   style: Theme.of(context).textTheme
                                       .subtitle1.copyWith(
                                       fontWeight: FontWeight.w300
@@ -289,7 +298,8 @@ class _EventCreationViewState extends State<EventCreationView>
                         IconButton(
                             icon: Icon(Icons.add),
                             onPressed: (){
-                              if(_creationStore.websites.length<3){
+                              if(!Validators.validateWebsiteQuantity(
+                                  _creationStore.websites)){
                                 showDialog(
                                     context: context,
                                     barrierDismissible: false,
@@ -297,7 +307,7 @@ class _EventCreationViewState extends State<EventCreationView>
                                 );
                               }
                               else {
-                                showWebsiteWarning(context);
+                                showWebsiteWarning();
                               }
                             },
                         ),
@@ -334,7 +344,7 @@ class _EventCreationViewState extends State<EventCreationView>
                                     ),
                                     IconButton(
                                       onPressed: () =>
-                                        removeWebsiteAction(website),
+                                          modifyWebsiteAction(MapEntry(false,website)),
                                       icon: Icon(Icons.delete),
                                     )
                                   ],
@@ -370,11 +380,11 @@ class _EventCreationViewState extends State<EventCreationView>
     );
   }
 
-  void validateEventSubmit(BuildContext context){
+  void validateEventSubmit(){
     if(_formKey.currentState.validate()
-        && _creationStore.selectedTags.length < 11
-        && _creationStore.selectedTags.length > 2){
-      showSubmitConfirmation(context).then((value) {
+        && Validators.validateSelectedTags(_creationStore.searchTags.keys
+            .toList())){
+      showSubmitConfirmation().then((value) {
         if(value){
           submitEventAction();
           Navigator.of(context).pop();
@@ -382,9 +392,9 @@ class _EventCreationViewState extends State<EventCreationView>
       });
     }
     else{
-      if (_creationStore.selectedTags.length >10
-          || _creationStore.selectedTags.length < 3){
-        showTagWarning(context);
+      if (!Validators.validateSelectedTags(_creationStore.searchTags.keys
+          .toList())){
+        showTagWarning();
       }
       _formKey.currentState.save();
       setState(() {
@@ -393,7 +403,7 @@ class _EventCreationViewState extends State<EventCreationView>
     }
   }
 
-  Future<bool> showSubmitConfirmation(BuildContext context){
+  Future<bool> showSubmitConfirmation(){
     return showDialog<bool>(context: context,
         barrierDismissible: false,
         builder: (_) {
@@ -427,7 +437,7 @@ class _EventCreationViewState extends State<EventCreationView>
     );
   }
 
-  showGoBackWarning(BuildContext context){
+  showExitWarning(){
     showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
@@ -460,34 +470,13 @@ class _EventCreationViewState extends State<EventCreationView>
     );
   }
 
-  String validateDates(value){
-    if(value == null){
-      return "Insert Date";
-    }
-    if(_creationStore.endDateTime != null){
-      if(_creationStore.endDateTime.difference
-        (_creationStore.startDateTime).inDays > 7){
-        return "Event Duration too long";
-      }
-      if(_creationStore.endDateTime.difference
-        (_creationStore.startDateTime).inMinutes < 10){
-        return "Event Duration too short";
-      }
-      if (_creationStore.startDateTime.isAfter
-        (_creationStore.endDateTime)){
-        return "Event Start After Event End";
-      }
-    }
-    return null;
-  }
-
-  void showWebsiteWarning(BuildContext context){
+  void showWebsiteWarning(){
     showDialog(context: context,
         builder: (_) {
           return AlertDialog(
             title: Text("Links limit"),
             content: Text(
-                "You have reached the limit of 3 links associated with an "
+                "You have reached the limit of 10 links associated with an "
                     "Event."
             ),
             actions: <Widget>[
@@ -504,7 +493,7 @@ class _EventCreationViewState extends State<EventCreationView>
     );
   }
 
-  void showTagWarning(BuildContext context){
+  void showTagWarning(){
       showDialog(context: context,
       builder: (_) {
         return AlertDialog(

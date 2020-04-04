@@ -1,5 +1,8 @@
 import 'package:InTheNou/assets/utils.dart';
+import 'package:InTheNou/assets/values.dart';
+import 'package:InTheNou/background/notification_handler.dart';
 import 'package:InTheNou/home_page.dart';
+import 'package:InTheNou/repos/user_repo.dart';
 import 'package:InTheNou/stores/settings_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
@@ -128,7 +131,48 @@ class _SettingsViewState extends State<SettingsView>
                 ),
               ],
             ),
-          )
+          ),
+          Card(
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                    child: InkWell(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top:16.0, bottom: 16.0,
+                              left: 8.0),
+                          child: Text("Clear Notification Data")
+                        ),
+                        onTap: () {
+                          NotificationHandler.cancelAllSmartNotifications();
+                          Utils.clearNotificationsPrefs();
+                        }
+                    )
+                ),
+              ],
+            ),
+          ),
+          Card(
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                    child: InkWell(
+                        child: Padding(
+                            padding: const EdgeInsets.only(top:16.0, bottom: 16.0,
+                                left: 8.0),
+                            child: Text("User Privilege CHnage")
+                        ),
+                        onTap: () {
+                          UserRepo.dummyUser.userPrivilege =
+                              UserRepo.dummyUser.userPrivilege ==
+                                  UserPrivilege.User?
+                              UserPrivilege.EventCreator :
+                              UserPrivilege.User;
+                        }
+                    )
+                ),
+              ],
+            ),
+          ),
         ],
       )
     );

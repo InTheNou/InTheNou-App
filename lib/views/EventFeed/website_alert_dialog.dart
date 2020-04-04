@@ -1,7 +1,7 @@
+import 'package:InTheNou/assets/validators.dart';
 import 'package:InTheNou/models/website.dart';
 import 'package:InTheNou/stores/event_creation_store.dart';
 import 'package:flutter/material.dart';
-import 'package:validators/validators.dart';
 
 class WebsiteAlertDialog extends StatefulWidget {
 
@@ -27,22 +27,15 @@ class _WebsiteAlertDialogState extends State<WebsiteAlertDialog> {
             children: <Widget>[
               TextFormField (
                 decoration: InputDecoration(
-                    labelText: "Link Name",
+                    labelText: "Link Description",
                     border: OutlineInputBorder()),
                 autovalidate: _validate,
                 maxLines: null,
                 maxLength: 50,
                 keyboardType: TextInputType.text,
-                validator: (String value) {
-                  if (value.isEmpty){
-                    return "Name is required.";
-                  }else if(value.length < 3){
-                    return "Name is too short";
-                  }
-                  return null;
-                },
+                validator: (String website) => Validators.validateWebsiteDescription(website),
                 onSaved: (String value){
-                  _name = value;
+                  _name = value.trim();
                 },
               ),
               const Padding(padding: EdgeInsets.only(top: 8.0)),
@@ -54,14 +47,7 @@ class _WebsiteAlertDialogState extends State<WebsiteAlertDialog> {
                 maxLines: null,
                 maxLength: 400,
                 keyboardType: TextInputType.text,
-                validator: (value) {
-                  if (value.isEmpty){
-                    return "URL is required";
-                  }else if(!Uri.parse(value).isAbsolute || !isURL(value)){
-                    return "Invalid URL";
-                  }
-                  return null;
-                },
+                validator: (link) => Validators.validateWebsiteLink(link),
                 onSaved: (value){
                   _URL = value;
                 },
@@ -85,7 +71,7 @@ class _WebsiteAlertDialogState extends State<WebsiteAlertDialog> {
           onPressed: (){
             if (_formKey.currentState.validate()) {
               _formKey.currentState.save();
-              addWebsiteAction(new Website(_URL, _name));
+              modifyWebsiteAction(MapEntry(true, new Website(_URL, _name)));
               Navigator.of(context).pop();
             }
             else {

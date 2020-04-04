@@ -32,6 +32,10 @@ class User {
   List<Tag> get tags => _tags;
   UserPrivilege get userPrivilege => _userPrivilege;
 
+  set userPrivilege(UserPrivilege value) {
+    _userPrivilege = value;
+  }
+
   @override
   String toString() {
     return 'User{_firstName: $_firstName, _lastName: $_lastName, '
