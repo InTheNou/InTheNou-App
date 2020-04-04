@@ -1,4 +1,5 @@
 import 'package:InTheNou/assets/utils.dart';
+import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -124,16 +125,22 @@ class ProfileState extends State<ProfileView>
                             trailing: Icon(Icons.navigate_next),
                           ),
                         ),
-                        const Divider(),
-                        InkWell(
-                          onTap: () {
-                            Navigator.of(context)
-                                .pushNamed("/profile/created_events");
-                            refreshCreatedAction();
-                          },
-                          child: ListTile(
-                            title: Text("Created Events"),
-                            trailing: Icon(Icons.navigate_next),
+                        Visibility(
+                          visible: _userStore.user.userPrivilege != UserPrivilege.User,
+                          child: const Divider(),
+                        ),
+                        Visibility(
+                          visible: _userStore.user.userPrivilege != UserPrivilege.User,
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.of(context)
+                                  .pushNamed("/profile/created_events");
+                              refreshCreatedAction();
+                            },
+                            child: ListTile(
+                              title: Text("Created Events"),
+                              trailing: Icon(Icons.navigate_next),
+                            ),
                           ),
                         )
                       ],

@@ -1,7 +1,7 @@
+import 'package:InTheNou/assets/validators.dart';
 import 'package:InTheNou/models/website.dart';
 import 'package:InTheNou/stores/event_creation_store.dart';
 import 'package:flutter/material.dart';
-import 'package:validators/validators.dart';
 
 class WebsiteAlertDialog extends StatefulWidget {
 
@@ -27,20 +27,13 @@ class _WebsiteAlertDialogState extends State<WebsiteAlertDialog> {
             children: <Widget>[
               TextFormField (
                 decoration: InputDecoration(
-                    labelText: "Link Name",
+                    labelText: "Link Description",
                     border: OutlineInputBorder()),
                 autovalidate: _validate,
                 maxLines: null,
                 maxLength: 50,
                 keyboardType: TextInputType.text,
-                validator: (String value) {
-                  if(value.length>0 && value.length < 3){
-                    return "Name is too short";
-                  } else if(value.length>0 && value.trim().length < 3){
-                    return "Invalid Name";
-                  }
-                  return null;
-                },
+                validator: (String website) => Validators.validateWebsiteDescription(website),
                 onSaved: (String value){
                   _name = value.trim();
                 },
@@ -54,14 +47,7 @@ class _WebsiteAlertDialogState extends State<WebsiteAlertDialog> {
                 maxLines: null,
                 maxLength: 400,
                 keyboardType: TextInputType.text,
-                validator: (value) {
-                  if (value.isEmpty){
-                    return "URL is required";
-                  }else if(!Uri.parse(value).isAbsolute || !isURL(value)){
-                    return "Invalid URL";
-                  }
-                  return null;
-                },
+                validator: (link) => Validators.validateWebsiteLink(link),
                 onSaved: (value){
                   _URL = value;
                 },

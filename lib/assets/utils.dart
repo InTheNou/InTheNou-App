@@ -98,6 +98,78 @@ class Utils {
     return new Floor(n.toString() + suffix, n);
   }
 
+  ///
+  /// Calculation of the Great Circle Distance between two GPS coordinates.
+  /// This method uses the Haversine formula and takes into account the
+  /// curvature of the earth into the measurement, this makes it very
+  /// accurate in small distances, as opposed to using plain trigonometry or
+  /// other methods that take the Earth as a flat plane.
+  /// For a great explanation please visit this site:
+  /// http://mathforum.org/library/drmath/view/51879.html
+  ///
+  /// The result is multiplied by 1.3 to account for the Euclidian distance
+  /// calculation being different than if we take into account the walking
+  /// maths.
+  /// https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3835347/
+  static double greatCircleDistanceCalc(Coordinate userCoords,
+      Coordinate eventCoords){
+    int earthRad = 3959;
+    double uLat = toRadians(userCoords.lat);
+    double eLat = toRadians(eventCoords.lat);
+    double deltaLat = toRadians(eventCoords.lat - userCoords.lat);
+    double deltaLong = toRadians(eventCoords.long - userCoords.long);
+
+    double a = (sin(deltaLat/2) * sin(deltaLat/2)) +
+        sin(deltaLong/2) * sin(deltaLong/2) * cos(uLat) * cos(eLat);
+    double c = 2 * atan2(sqrt(a), sqrt(1-a));
+    double distance = earthRad * c;
+    return distance*1.3;
+  }
+
+  ///
+  /// Here we divide the distance by the average walking speed of 3mph. Then
+  /// we multiply by 60 minutes to get the time it would take to walk to the
+  /// event in minutes.
+  ///
+  ///  [distance] (mi)                      60 min
+  /// ---------------------------------- * ------- = timeToWalk (min)
+  /// [AVERAGE_WALKING_SPEED] (mph)          1 hr
+  ///
+  static double timeToTravel(double distance){
+    return (distance/AVERAGE_WALKING_SPEED)*60;
+  }
+
+  static double toRadians(double val){
+    return val*pi/180;
+  }
+
+  static bool isEventInTheNextDay(DateTime eventStartDate, DateTime timestamp){
+    Duration timeToEvent = eventStartDate.difference(timestamp);
+    return timeToEvent.inHours < 24 && !timeToEvent.isNegative;
+  }
+
+  static bool isScheduleSmartNecessary(Duration timeToEvent, double timeToWalk){
+    return timeToEvent.inMinutes - 15 < timeToWalk;
+  }
+
+  static bool isScheduleDefaultNecessary(DateTime eventStartDate, DateTime timestamp){
+    return !eventStartDate.difference(timestamp).isNegative;
+  }
+
+
+  static double GPSTimeToWalkCalculation(Duration timeToEvent, Coordinate
+  userCoords, Coordinate eventCoords){
+      double distance = greatCircleDistanceCalc(userCoords, eventCoords);
+      double timeToWalk = timeToTravel(distance);
+        print("user: $userCoords");
+        print("event: $eventCoords}");
+        print("[SmartNotification] Starts in: ${timeToEvent.toString()}");
+        print("[SmartNotification] We calculated: $distance distance "
+            "$timeToWalk minutes of walking");
+        print(buildGoogleMapsLink2(userCoords, eventCoords));
+    return timeToWalk;
+  }
+
   static String buildGoogleMapsLink(Coordinate coord){
     String url = "http://maps.google.com/maps?daddr="
         + "${coord.lat},${coord.long}&z=14" ;

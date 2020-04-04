@@ -1,3 +1,4 @@
+import 'package:InTheNou/assets/validators.dart';
 import 'package:InTheNou/models/building.dart';
 import 'package:InTheNou/models/floor.dart';
 import 'package:InTheNou/models/room.dart';
@@ -10,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
-import 'package:validators/validators.dart';
 
 
 class EventCreationView extends StatefulWidget {
@@ -83,16 +83,7 @@ class _EventCreationViewState extends State<EventCreationView>
                       maxLength: 50,
                       textInputAction: TextInputAction.next,
                       initialValue: _creationStore.title,
-                      validator: (value) {
-                        if (value.isEmpty){
-                          return "Title must be provided";
-                        } else if(value.trim().length < 3){
-                          return "Invalid Title";
-                        } else if(value.length < 3){
-                          return "Title is too short";
-                        }
-                        return null;
-                      },
+                      validator: (title) => Validators.validateTitle(title),
                       onChanged: (String title) =>
                           inputEventTitleAction(title.trim()),
                     ),
@@ -109,16 +100,8 @@ class _EventCreationViewState extends State<EventCreationView>
                       keyboardType: TextInputType.text,
                       textInputAction: TextInputAction.done,
                       initialValue: _creationStore.description,
-                      validator: (value) {
-                        if (value.isEmpty){
-                          return "Description must be provided";
-                        } else if(value.trim().length < 3){
-                          return "Invalid Description";
-                        } else if(value.length < 3){
-                          return "Description is too short";
-                        }
-                        return null;
-                      },
+                      validator: (description) =>
+                          Validators.validateDescription(description),
                       onChanged: (String description) =>
                           inputEventDescriptionAction(description.trim()),
                     ),
@@ -133,13 +116,7 @@ class _EventCreationViewState extends State<EventCreationView>
                       maxLength: 400,
                       textInputAction: TextInputAction.next,
                       initialValue: _creationStore.title,
-                      validator: (value) {
-                        if(value.isNotEmpty &&
-                            (!Uri.parse(value).isAbsolute || !isURL(value))){
-                          return "Invalid Image";
-                        }
-                        return null;
-                      },
+                      validator: (image) => Validators.validateImage(image),
                       onChanged: (String image) =>
                           inputEventImageAction(image),
                     ),
@@ -177,7 +154,9 @@ class _EventCreationViewState extends State<EventCreationView>
                           return currentValue;
                         }
                       },
-                      validator: (value) => validateDates(value),
+                      validator: (date) => Validators.validateDate(date,
+                          _creationStore.startDateTime,
+                          _creationStore.endDateTime),
                       onChanged: (value) {
                         _formKey.currentState.setState(() {
                           _autoValidateDates = true;
@@ -218,7 +197,9 @@ class _EventCreationViewState extends State<EventCreationView>
                           return currentValue;
                         }
                       },
-                      validator: (value) => validateDates(value)
+                      validator: (date) => Validators.validateDate(date,
+                          _creationStore.startDateTime,
+                          _creationStore.endDateTime),
                     ),
                     const Padding(padding: EdgeInsets.only(bottom: 16.0)),
                     //
@@ -317,7 +298,8 @@ class _EventCreationViewState extends State<EventCreationView>
                         IconButton(
                             icon: Icon(Icons.add),
                             onPressed: (){
-                              if(_creationStore.websites.length<10){
+                              if(!Validators.validateWebsiteQuantity(
+                                  _creationStore.websites)){
                                 showDialog(
                                     context: context,
                                     barrierDismissible: false,
@@ -400,8 +382,8 @@ class _EventCreationViewState extends State<EventCreationView>
 
   void validateEventSubmit(){
     if(_formKey.currentState.validate()
-        && _creationStore.selectedTags.length < 11
-        && _creationStore.selectedTags.length > 2){
+        && Validators.validateSelectedTags(_creationStore.searchTags.keys
+            .toList())){
       showSubmitConfirmation().then((value) {
         if(value){
           submitEventAction();
@@ -410,8 +392,8 @@ class _EventCreationViewState extends State<EventCreationView>
       });
     }
     else{
-      if (_creationStore.selectedTags.length >10
-          || _creationStore.selectedTags.length < 3){
+      if (!Validators.validateSelectedTags(_creationStore.searchTags.keys
+          .toList())){
         showTagWarning();
       }
       _formKey.currentState.save();
@@ -486,23 +468,6 @@ class _EventCreationViewState extends State<EventCreationView>
           ],
         )
     );
-  }
-
-  String validateDates(value){
-    if(value == null){
-      return "Insert Date";
-    }
-    if(_creationStore.endDateTime != null){
-      if(_creationStore.endDateTime.difference
-        (_creationStore.startDateTime).inDays > 7){
-        return "Event Duration too long";
-      }
-      if (_creationStore.startDateTime.isAfter
-        (_creationStore.endDateTime)){
-        return "Event Start After Event End";
-      }
-    }
-    return null;
   }
 
   void showWebsiteWarning(){

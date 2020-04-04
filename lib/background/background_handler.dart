@@ -122,7 +122,6 @@ class BackgroundHandler {
       }
       return;
     });
-print("hello");
     UserRepo _userRepo = UserRepo();
     _prefs = await SharedPreferences.getInstance();
 

@@ -24,7 +24,7 @@ class NotificationHandler {
   /// Default notification
   ///
   /// This is called through the [EventFeedStore] whenever the user follows an
-  /// event
+  /// [event]
   static void checkNotifications(Event event) async{
     _prefs = await SharedPreferences.getInstance();
 
@@ -43,7 +43,7 @@ class NotificationHandler {
     _makeDefaultNotification(event);
   }
 
-  /// Cancels Smart and Default notifications associated with this event
+  /// Cancels Smart and Default notifications associated with this [event]
   static void cancelNotification(Event event) async{
     _prefs = await SharedPreferences.getInstance();
     List<String> jsonSmart = _prefs.getStringList
@@ -53,26 +53,33 @@ class NotificationHandler {
 
     // Look for the Smart and Default notification that is for this event and
     // cancel it using the ID
-    int smartIndex = jsonSmart.indexWhere((element) {
-      return NotificationObject.fromJson(jsonDecode(element)).payload
-          == event.UID.toString();
+    NotificationObject notif;
+    jsonSmart.removeWhere((element) {
+      notif = NotificationObject.fromJson(jsonDecode(element));
+      if(notif.payload == event.UID.toString()){
+        flutterLocalNotificationsPlugin
+            .cancel(notif.id);
+      }
+      return notif.payload == event.UID.toString();
     });
-    if(smartIndex != -1){
-      flutterLocalNotificationsPlugin
-          .cancel(jsonDecode(jsonSmart[smartIndex])["id"]);
-      jsonSmart.removeAt(smartIndex);
-    }
 
-    int defaultIndex = jsonDefault.indexWhere((element) {
-      return NotificationObject.fromJson(jsonDecode(element)).payload
-          == event.UID.toString();
+    jsonDefault.removeWhere((element) {
+      notif = NotificationObject.fromJson(jsonDecode(element));
+      if(notif.payload == event.UID.toString()){
+        flutterLocalNotificationsPlugin
+            .cancel(notif.id);
+      }
+      return notif.payload == event.UID.toString();
     });
-    if(defaultIndex != -1){
-      flutterLocalNotificationsPlugin
-          .cancel(jsonDecode(jsonDefault[defaultIndex])["id"]);
-      jsonDefault.removeAt(defaultIndex);
-    }
 
+    // Update the list of notifications
+    _prefs.setStringList(SMART_NOTIFICATION_LIST, jsonSmart);
+    _prefs.setStringList(DEFAULT_NOTIFICATION_LIST, jsonDefault);
+
+    print("Pending Smart Notifications: ");
+    print(jsonSmart);
+    print("Pending Default Notifications: ");
+    print(jsonDefault);
     var pendingNotificationRequests =
     await flutterLocalNotificationsPlugin.pendingNotificationRequests();
     for (var pendingNotificationRequest in pendingNotificationRequests) {
@@ -89,12 +96,12 @@ class NotificationHandler {
     _prefs = await SharedPreferences.getInstance();
     List<String> jsonSmart = _prefs.getStringList
       (SMART_NOTIFICATION_LIST) ?? new List();
-    flutterLocalNotificationsPlugin.cancelAll();
     Map notificationMap;
     jsonSmart.forEach((notification) {
       notificationMap = jsonDecode(notification);
       flutterLocalNotificationsPlugin.cancel(notificationMap["id"]);
     });
+    _prefs.setStringList(SMART_NOTIFICATION_LIST, null);
   }
 
   /// Cleans up old notifications that have been delivered
@@ -145,21 +152,15 @@ class NotificationHandler {
     int notificationID;
     events.forEach((event) {
       timeToEvent = event.startDateTime.difference(timestamp);
-      if (timeToEvent.inHours < 24 && !timeToEvent.isNegative){
-        double distance = greatCircleDistanceCalc(userCoords, event.room.coordinates);
-        double timeToWalk = timeToTravel(distance);
-        int seconds = ((timeToWalk - timeToWalk.floor()) * 60).ceil();
+      if(Utils.isEventInTheNextDay(event.startDateTime, timestamp)){
+        double timeToWalk = Utils.GPSTimeToWalkCalculation(timeToEvent,
+            userCoords, event.room.coordinates);
+        if(Utils.isScheduleSmartNecessary(timeToEvent, timeToWalk)){
+          int seconds = ((timeToWalk - timeToWalk.floor()) * 60).ceil();
 
-//        print("user: $userCoords");
-//        print("event: ${event.room.coordinates}");
-//        print("[SmartNotification] Starts in: ${timeToEvent.toString()}");
-//        print("[SmartNotification] Starts at: ${event.startDateTime.toString()}");
-//        print("[SmartNotification] We calculated: $distance $timeToWalk");
-//        print(buildGoogleMapsLink2(userCoords, event.room.coordinates));
+          DateTime scheduleTime;
+          NotificationObject eventNotification;
 
-        DateTime scheduleTime;
-        NotificationObject eventNotification;
-        if(timeToEvent.inMinutes - 15 < timeToWalk){
           scheduleTime = event.startDateTime.subtract(Duration(minutes:
           timeToWalk.ceil(), seconds: seconds));
 //          print("[SmartNotification] Scheduled for at: "
@@ -180,7 +181,8 @@ class NotificationHandler {
               notificationID,
               event.title,
               startOfEvent,
-              startOfEvent + "\n" + "You are ${nf.format(distance)} miles away from the "
+              startOfEvent + "\n" + "You are ${nf.format(timeToWalk*3)} miles "
+                  "away from the "
                   "event, it will take you ${nf2.format(timeToWalk)} mins to "
                   "walk to the event.",
               scheduleTime,
@@ -226,31 +228,33 @@ class NotificationHandler {
   ///
   /// Calculates the time to send the notification based on the user setting
   static void _makeDefaultNotification(Event event) async{
-    _prefs = await SharedPreferences.getInstance();
-    int defaultTime = _prefs.getInt(DEFAULT_NOTIFICATION_KEY);
-    int notificationID = _prefs.getInt(NOTIFICATION_ID_KEY);
-    _prefs.setInt(NOTIFICATION_ID_KEY, notificationID+1);
+    if(Utils.isScheduleDefaultNecessary(event.startDateTime, DateTime.now())){
+      _prefs = await SharedPreferences.getInstance();
+      int defaultTime = _prefs.getInt(DEFAULT_NOTIFICATION_KEY);
+      int notificationID = _prefs.getInt(NOTIFICATION_ID_KEY);
+      _prefs.setInt(NOTIFICATION_ID_KEY, notificationID+1);
 
-    // Gets all Default Notifications that are scheduled already
-    List<String> jsonNotifications = _prefs.getStringList
-      (DEFAULT_NOTIFICATION_LIST) ?? new List();
+      // Gets all Default Notifications that are scheduled already
+      List<String> jsonNotifications = _prefs.getStringList
+        (DEFAULT_NOTIFICATION_LIST) ?? new List();
 
-    DateTime notificationTime = event.startDateTime
-        .subtract(Duration(minutes: defaultTime));
-    NotificationObject notification = NotificationObject(
-        type: NotificationType.DefaultNotification,
-        id: notificationID, time: notificationTime,
-        payload: event.UID.toString());
+      DateTime notificationTime = event.startDateTime
+          .subtract(Duration(minutes: defaultTime));
+      NotificationObject notification = NotificationObject(
+          type: NotificationType.DefaultNotification,
+          id: notificationID, time: notificationTime,
+          payload: event.UID.toString());
 
-    DateFormat df = new DateFormat("K:mm a");
-    String startOfEvent = "The event starts at ${df.format(event.startDateTime)}";
-    _scheduleDefaultNotification(notification,
-      event.title, startOfEvent
-    );
+      DateFormat df = new DateFormat("K:mm a");
+      String startOfEvent = "The event starts at ${df.format(event.startDateTime)}";
+      _scheduleDefaultNotification(notification,
+          event.title, startOfEvent
+      );
 
-    // Update notification list and NotificationID
-    jsonNotifications.add(jsonEncode(notification));
-    _prefs.setStringList(DEFAULT_NOTIFICATION_LIST,jsonNotifications);
+      // Update notification list and NotificationID
+      jsonNotifications.add(jsonEncode(notification));
+      _prefs.setStringList(DEFAULT_NOTIFICATION_LIST,jsonNotifications);
+    }
   }
 
   /// Setup of the notification and schedules it
@@ -342,51 +346,6 @@ class NotificationHandler {
     } else{
       return "Event starts in ${time.inMinutes} mins";
     }
-  }
-
-  ///
-  /// Calculation of the Great Circle Distance between two GPS coordinates.
-  /// This method uses the Haversine formula and takes into account the
-  /// curvature of the earth into the measurement, this makes it very
-  /// accurate in small distances, as opposed to using plain trigonometry or
-  /// other methods that take the Earth as a flat plane.
-  /// For a great explanation please visit this site:
-  /// http://mathforum.org/library/drmath/view/51879.html
-  ///
-  /// The result is multiplied by 1.3 to account for the Euclidian distance
-  /// calculation being different than if we take into account the walking
-  /// maths.
-  /// https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3835347/
-  static double greatCircleDistanceCalc(Coordinate userCoords,
-      Coordinate eventCoords){
-    int earthRad = 3959;
-    double uLat = toRadians(userCoords.lat);
-    double eLat = toRadians(eventCoords.lat);
-    double deltaLat = toRadians(eventCoords.lat - userCoords.lat);
-    double deltaLong = toRadians(eventCoords.long - userCoords.long);
-
-    double a = (sin(deltaLat/2) * sin(deltaLat/2)) +
-        sin(deltaLong/2) * sin(deltaLong/2) * cos(uLat) * cos(eLat);
-    double c = 2 * atan2(sqrt(a), sqrt(1-a));
-    double distance = earthRad * c;
-    return distance*1.3;
-  }
-
-  ///
-  /// Here we divide the distance by the average walking speed of 3mph. Then
-  /// we multiply by 60 minutes to get the time it would take to walk to the
-  /// event in minutes.
-  ///
-  ///  [distance] (mi)                      60 min
-  /// ---------------------------------- * ------- = timeToWalk (min)
-  /// [AVERAGE_WALKING_SPEED] (mph)          1 hr
-  ///
-  static double timeToTravel(double distance){
-    return (distance/AVERAGE_WALKING_SPEED)*60;
-  }
-
-  static double toRadians(double val){
-    return val*pi/180;
   }
 
 }
