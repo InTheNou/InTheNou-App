@@ -5,7 +5,15 @@ class Coordinate {
   double _long;
   double _alt;
 
-  Coordinate(this._lat, this._long);
+  Coordinate(this._lat, this._long, this._alt);
+
+  factory Coordinate.fromHJson(Map<String,dynamic> json){
+    return Coordinate(
+      json['rlatitude'],
+      json['rlongitude'],
+      json['raltitude']
+    );
+  }
 
   double get lat => _lat;
   double get long => _long;

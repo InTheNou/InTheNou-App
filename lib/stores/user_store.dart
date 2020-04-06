@@ -33,6 +33,8 @@ class UserStore extends flux.Store{
   String _followedEventError;
   String _createdEventError;
 
+  String _redirectURL = "";
+
   UserStore() {
     _user = _userRepo.getUser();
     _allTags = _tagRepo.getAllTagsAsMap();
@@ -68,9 +70,11 @@ class UserStore extends flux.Store{
     triggerOnAction(cancelEventAction, (Event event){
       _userRepo.requestDeleteEvents(event);
     });
-    triggerOnAction(callAuthAction, (_){
-      //TODO: Add call to auth service in integration
-
+    triggerOnConditionalAction(callAuthAction, (_) async{
+      await _userRepo.callAuthService().then((value) {
+        _redirectURL = "value";
+      });
+      return true;
     });
     triggerOnAction(selectRoleAction, (UserRole role) {
       _selectedRole = role;
@@ -95,10 +99,12 @@ class UserStore extends flux.Store{
       }
     });
     triggerOnConditionalAction(createUserAction, (_){
-      // This is just to give time to show the loading screen
       return _userRepo.createUser(_selectedRole, _selectedTags).then(
               (value) {
                 _user = value;
+                _selectedRole = null;
+                _selectedTags = List();
+                _searchTags = _allTags;
                 return true;
       });
     });
@@ -137,6 +143,8 @@ class UserStore extends flux.Store{
   String get createdEventError => _createdEventError;
   bool get isFollowedLoading => _isFollowedLoading;
   bool get isCreatedLoading => _isCreatedLoading;
+
+  String get redirectURL => _redirectURL;
 
 }
 //Profile Actions

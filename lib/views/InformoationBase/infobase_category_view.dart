@@ -5,6 +5,9 @@ import 'package:flutter_flux/flutter_flux.dart' as flux;
 const String INFORMATION_BASE = "Inforamtion Base";
 
 class InfoBaseCategoryView extends StatefulWidget{
+
+  InfoBaseCategoryView({Key key}) : super(key: PageStorageKey(key));
+
   @override
   InformationBaseState createState() => InformationBaseState();
 }

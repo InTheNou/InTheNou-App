@@ -113,12 +113,15 @@ class BackgroundHandler {
     Geolocator().checkGeolocationPermissionStatus().then((value) {
       if(value == GeolocationStatus.denied ||
           value == GeolocationStatus.unknown){
-        NotificationHandler.shoPermissionNotification(NotificationObject(
+        NotificationHandler.showAlertNotification(NotificationObject(
           id: ALERT_NOTIFICATION_ID,
           payload: "",
           time: DateTime.now(),
           type: NotificationType.Alert
-        ), "Location Permission", "test","test");
+        ), "Location Permission", "Location permission is disabled",
+            "We tried scheduling a Smart Notification but the Location "
+                "permissions are denied. Please provide the permission or "
+                "turn off the feature.");
       }
       return;
     });

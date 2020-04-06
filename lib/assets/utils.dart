@@ -139,8 +139,56 @@ class Utils {
     return (distance/AVERAGE_WALKING_SPEED)*60;
   }
 
+  static double distanceToTravel(double time){
+    return (time/60)*AVERAGE_WALKING_SPEED;
+  }
+
   static double toRadians(double val){
     return val*pi/180;
+  }
+
+  static String toSmartTime(double min){
+    NumberFormat nf = NumberFormat("##", "en_US");
+    Duration timeToWalk = Duration(minutes: min.floor(),
+        seconds: ((min - min.floor()) * 60).ceil());
+    if(timeToWalk.inMinutes <1){
+      return timeToWalk.inSeconds.toString() + " seconds ";
+    } else if(timeToWalk.inMinutes < 60){
+      return timeToWalk.inMinutes.toString() + " minutes and "+
+          nf.format(timeToWalk.inSeconds.remainder(60))+ " seconds ";
+    } else if(timeToWalk.inHours < 2){
+      return "1 hour and"+
+          nf.format(timeToWalk.inMinutes.remainder(60))+ " minutes and "+
+          nf.format(timeToWalk.inSeconds.remainder(60))+ " seconds";
+    } else if(timeToWalk.inHours < 24){
+      return timeToWalk.inHours.toString() + " hours,"+
+          nf.format(timeToWalk.inMinutes.remainder(60))+ " minutes and "+
+          nf.format(timeToWalk.inSeconds.remainder(60))+ " seconds";
+    } else if(timeToWalk.inDays < 7){
+      return timeToWalk.inDays.toString() + " days,"+
+          nf.format(timeToWalk.inHours.remainder(24))+ " hours, "+
+          nf.format(timeToWalk.inMinutes.remainder(60))+ " minutes and "+
+          nf.format(timeToWalk.inSeconds.remainder(60))+ " seconds";
+    } else if(timeToWalk.inDays < 30){
+      return nf.format(timeToWalk.inDays/7) + " weeks,"+
+          nf.format(timeToWalk.inDays.remainder(7))+ " days,"+
+          nf.format(timeToWalk.inHours.remainder(24))+ " hours,"+
+          nf.format(timeToWalk.inMinutes.remainder(60))+ " minutes and "+
+          nf.format(timeToWalk.inSeconds.remainder(60))+ " seconds";
+    } else if((timeToWalk.inDays/7).remainder(4) < 1){
+      return nf.format(timeToWalk.inDays/30) + " months, "+
+          nf.format(timeToWalk.inDays.remainder(7))+ " days, "+
+          nf.format(timeToWalk.inHours.remainder(24))+ " hours, "+
+          nf.format(timeToWalk.inMinutes.remainder(60))+ " minutes and "+
+          nf.format(timeToWalk.inSeconds.remainder(60))+ " seconds";
+    } else {
+      return nf.format(timeToWalk.inDays/30) + " months, "+
+          nf.format((timeToWalk.inDays/7).remainder(4))+ " weeks, "+
+          nf.format(timeToWalk.inDays.remainder(7))+ " days, "+
+          nf.format(timeToWalk.inHours.remainder(24))+ " hours, "+
+          nf.format(timeToWalk.inMinutes.remainder(60))+ " minutes and "+
+          nf.format(timeToWalk.inSeconds.remainder(60))+ " seconds";
+    }
   }
 
   static bool isEventInTheNextDay(DateTime eventStartDate, DateTime timestamp){

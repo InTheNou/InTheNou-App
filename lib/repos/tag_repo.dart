@@ -23,9 +23,10 @@ class TagRepo {
   }
 
   // Debug stuff
-  List<Tag> dummyTags = [Tag("ADMI",50), Tag("ADOF",50), Tag("AGRO",50), Tag
-    ("ALEM",50), Tag("ANTR",50), Tag("ARTE",50), Tag("ASTR",50), Tag("BIND",50),
-    Tag("BIOL",50), Tag("BOTA",50), Tag("CFIT",50), Tag("CHIN",50), Tag("CIAN",50)
-    , Tag("CIBI",50), Tag("CIFI",50), Tag("CIIC",50), Tag("CIMA",50)];
+  List<Tag> dummyTags = [Tag(1,"ADMI",0), Tag(2,"ADOF",0),
+    Tag(3,"AGRO",0), Tag(4,"ALEM",0), Tag(5,"ANTR",0), Tag(6,"ARTE",0),
+    Tag(7,"ASTR",0), Tag(8,"BIND",0), Tag(9,"BIOL",0), Tag(10,"BOTA",0),
+    Tag(11,"CFIT",0), Tag(12,"CHIN",0), Tag(13,"CIAN",0), Tag(14,"CIBI",0),
+    Tag(15,"CIFI",0), Tag(16,"CIIC",0), Tag(17,"CIMA",0)];
 
 }

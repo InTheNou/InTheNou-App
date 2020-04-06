@@ -9,7 +9,7 @@ import 'package:flutter_flux/flutter_flux.dart' as flux;
 class FeedView extends StatefulWidget{
 
   final FeedType type;
-  FeedView({this.type}) : super(key: ValueKey(Utils.feedTypeString(type)));
+  FeedView({this.type}) : super(key: PageStorageKey(Utils.feedTypeString(type)));
 
   @override
   GeneralFeedState createState() => GeneralFeedState();
@@ -30,10 +30,12 @@ class GeneralFeedState extends State<FeedView>
     /// if it's the first time the feed is loaded, get all the Events
     _eventFeedStore = listenToStore(EventFeedStore.eventFeedToken);
     _userStore = UserStore();
-    if (_eventFeedStore.eventCount(widget.type) == 0 &&
-        !_eventFeedStore.isSearching(widget.type)){
-      getAllEventsAction(widget.type);
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      if (_eventFeedStore.eventCount(widget.type) == 0 &&
+          !_eventFeedStore.isSearching(widget.type)){
+        getAllEventsAction(widget.type);
+      }
+    });
     /// Save the scroll position the uer is in to recall if the screen is
     /// switched
     _scrollController = ScrollController(
@@ -62,6 +64,7 @@ class GeneralFeedState extends State<FeedView>
         floatingActionButton: new Visibility(
           key: ValueKey("EventCreationFAB"),
           visible: widget.type == FeedType.PersonalFeed &&
+              _userStore.user != null &&
               _userStore.user.userPrivilege != UserPrivilege.User,
           child: new FloatingActionButton(
             onPressed: (){

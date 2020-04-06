@@ -1,5 +1,6 @@
 import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
+import 'package:InTheNou/background/background_handler.dart';
 import 'package:InTheNou/background/notification_handler.dart';
 import 'package:InTheNou/home_page.dart';
 import 'package:InTheNou/repos/user_repo.dart';
@@ -120,10 +121,12 @@ class _SettingsViewState extends State<SettingsView>
                         )
                       ),
                     ),
-                    onTap: () {
-                      logoutAction();
+                    onTap: () async {
+                      await logoutAction();
                       navigateToAction(0);
+                      NotificationHandler.cancelAllSmartNotifications();
                       Utils.clearAllPreferences();
+                      BackgroundHandler.onClickEnable(false);
                       Navigator.pushNamedAndRemoveUntil(
                         context, "/login", (Route<dynamic> route) => false,);
                     }

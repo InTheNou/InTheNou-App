@@ -206,8 +206,8 @@ void main(){
         DateTime timestamp = new DateTime.now();
         DateTime startDateTime = new DateTime.now().add(Duration(hours: 25));
         Duration timeToEvent;
-        Coordinate userCoords = Coordinate(18.211183333333334, -67.14078833333333);
-        Coordinate eventCoords = Coordinate(18.209641, -67.139923);
+        Coordinate userCoords = Coordinate(18.211183333333334, -67.14078833333333, 0);
+        Coordinate eventCoords = Coordinate(18.209641, -67.139923, 0);
 
         timeToEvent = startDateTime.difference(timestamp);
         bool isEventInTheNextDay = Utils.isEventInTheNextDay(startDateTime, timestamp);
@@ -222,8 +222,8 @@ void main(){
         DateTime timestamp = new DateTime.now();
         DateTime startDateTime = new DateTime.now().subtract(Duration(minutes: 1));
         Duration timeToEvent;
-        Coordinate userCoords = Coordinate(18.211183333333334, -67.14078833333333);
-        Coordinate eventCoords = Coordinate(18.209641, -67.139923);
+        Coordinate userCoords = Coordinate(18.211183333333334, -67.14078833333333, 0);
+        Coordinate eventCoords = Coordinate(18.209641, -67.139923, 0);
 
         timeToEvent = startDateTime.difference(timestamp);
         bool isEventInTheNextDay = Utils.isEventInTheNextDay(startDateTime, timestamp);
@@ -238,8 +238,9 @@ void main(){
         DateTime timestamp = new DateTime.now();
         DateTime startDateTime = new DateTime.now().add(Duration(minutes: 40));
         Duration timeToEvent;
-        Coordinate userCoords = Coordinate(18.211183333333334, -67.14078833333333);
-        Coordinate eventCoords = Coordinate(18.209641, -67.139923);
+        Coordinate userCoords = Coordinate(18.211183333333334,
+            -67.14078833333333,0);
+        Coordinate eventCoords = Coordinate(18.209641, -67.139923,0);
 
         timeToEvent = startDateTime.difference(timestamp);
         bool isEventInTheNextDay = Utils.isEventInTheNextDay(startDateTime, timestamp);
@@ -254,8 +255,8 @@ void main(){
         DateTime timestamp = new DateTime.now();
         DateTime startDateTime = new DateTime.now().add(Duration(minutes: 17));
         Duration timeToEvent;
-        Coordinate userCoords = Coordinate(18.211183333333334, -67.14078833333333);
-        Coordinate eventCoords = Coordinate(18.209641, -67.139923);
+        Coordinate userCoords = Coordinate(18.211183333333334, -67.14078833333333,0);
+        Coordinate eventCoords = Coordinate(18.209641, -67.139923,0);
 
         timeToEvent = startDateTime.difference(timestamp);
         bool isEventInTheNextDay = Utils.isEventInTheNextDay(startDateTime, timestamp);
@@ -270,8 +271,8 @@ void main(){
         DateTime timestamp = new DateTime.now();
         DateTime startDateTime = new DateTime.now().add(Duration(minutes: 30));
         Duration timeToEvent;
-        Coordinate userCoords = Coordinate(18.220244, -67.152635);
-        Coordinate eventCoords = Coordinate(18.209641, -67.139923);
+        Coordinate userCoords = Coordinate(18.220244, -67.152635, 0);
+        Coordinate eventCoords = Coordinate(18.209641, -67.139923, 0);
 
         timeToEvent = startDateTime.difference(timestamp);
         bool isEventInTheNextDay = Utils.isEventInTheNextDay(startDateTime, timestamp);

@@ -37,7 +37,8 @@ class TestHandler {
               DateTime.now().add(new Duration(minutes: i*20)),
               DateTime.now(),
               new Room(0, "S-200", "Stefani", 2, "Stefani is Cool", 20,
-                  "Alguien.importante@upr.edu", new Coordinate(18.209641, -67.139923)
+                  "Alguien.importante@upr.edu",
+                  new Coordinate(18.209641, -67.139923, 0)
               ),
               new List.generate(3, (i) => Website(
                   "https://portal.upr.edu/rum/portal.php?a=rea_login",

@@ -1,3 +1,4 @@
+import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/models/room.dart';
 import 'package:InTheNou/models/tag.dart';
 import 'package:InTheNou/models/website.dart';
@@ -28,6 +29,7 @@ class Event {
     this._title = event._title;
     this._description = event._description;
     this._creator = event._creator;
+    this._image = event._image;
     this._startDateTime = event._startDateTime;
     this._endDateTime = event._endDateTime;
     this._timestamp = event._timestamp;
@@ -38,12 +40,84 @@ class Event {
     this.recommended = event.recommended;
   }
 
-  Event.result(this._UID, this._title, this._description, this._startDateTime,
-      this._endDateTime, this._room, this.followed) {
-    this._timestamp = null;
+  Event.result({int UID, String title, String description,  String image,
+      DateTime startDateTime,  DateTime endDateTime, DateTime timestamp,
+     Room room, bool followed}) {
+    this._UID = UID;
+    this._title = title;
+    this._description = description;
+    this._creator = null;
+    this._startDateTime = startDateTime;
+    this._endDateTime = endDateTime;
+    this._timestamp = timestamp;
+    this._room = room;
+    this._websites = null;
     this._tags = new List(10);
+    this.followed = followed;
     this.recommended = null;
   }
+
+  factory Event.fromJson(Map<String, dynamic> json) {
+    if(json == null){
+      return null;
+    }
+    return Event(
+        json['eid'],
+        json['etitle'],
+        json['edescription'],
+        json['ecreator']["first_name"],
+        json['photourl'],
+        fixDate(json['estart'].toString()),
+        fixDate( json['eend'].toString()),
+        fixDate(json['ecreation'].toString()),
+        Room.fromJson(json['room']),
+        Website.jsonToList(json["websites"]),
+        Tag.fromJsonToList(json["tags"]),
+        json['itype'] == "following",
+        null
+    );
+  }
+
+  factory Event.resultFromJson(Map<String, dynamic> json) {
+    return Event.result(
+        UID: json['eid'],
+        title: json['etitle'],
+        description: json['edescription'],
+        image: json['photourl'],
+        startDateTime: fixDate(json['estart'].toString()),
+        endDateTime: fixDate( json['eend'].toString()),
+        timestamp: fixDate(json['ecreation'].toString()),
+        room: Room.forEventFromJson(json['room']),
+        followed: json['itype'] == "following"
+    );
+  }
+
+  static final DateFormat dateFormatter =
+    DateFormat("EEE, d MMM yyyy HH:mm:ss");
+  static DateTime fixDate(String date){
+    return dateFormatter.parseStrict(date.substring(0, date.length-4));
+  }
+  //    {"ecreator" : 1,
+  //    "roomid" : 5,
+  //    "etitle" : "Test Event",
+  //    "edescription" : "A test event to see the insert route working.",
+  //    "estart" : "{{current_timestamp}}",
+  //    "eend" : "2020-10-26 16:40:00",
+  //    "photourl" : "akePhotoURL",
+  //    "tags": [{"tid": 1},{"tid": 2},{"tid": 3},{"tid": 4},{"tid": 5},{"tid": 6}],
+  //    "websites":[{"url": "firstwebsite.com","wdescription": "my  favorite website"},{"url": "secondsite.net","wdescription": "my  worst website"},{"url": "thirdsite.edu","wdescription": null}]}   OR   { "ecreator" : 1,"roomid" : 5,"etitle" : "Test Event","edescription" : "A test event to see the insert route working.","estart" : "2020-10-26 15:40:00","eend" : "2020-10-26 16:40:00","photourl" : null,"tags": [{"tid": 1},{"tid": 2},{"tid": 3}],"websites":null}
+
+  Map<String, dynamic> toJson() => {
+        "etitle": _title,
+        "edescription": _description,
+        "image": _image,
+        "ecreator": "placeholder",
+        "estart": Utils.formatTimeStamp(_startDateTime),
+        "eend": Utils.formatTimeStamp(_startDateTime),
+        "roomid": _room.UID,
+        "tags": Tag.toJsonList(_tags),
+        "websites": Website.jsonToList(_websites)
+  };
 
   int get UID => _UID;
   String get title => _title;

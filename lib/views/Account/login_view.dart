@@ -17,6 +17,7 @@ class _LoginViewState extends State<LoginView>
   with flux.StoreWatcherMixin<LoginView>{
 
   UserStore _userStore;
+
   @override
   void initState() {
     super.initState();

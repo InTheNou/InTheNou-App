@@ -1,9 +1,9 @@
-import 'dart:convert';
-import 'dart:math';
+import 'dart:convert' as convert;
 import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/coordinate.dart';
 import 'package:InTheNou/models/event.dart';
+import 'package:InTheNou/repos/events_repo.dart';
 import 'package:InTheNou/stores/event_feed_store.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -33,13 +33,24 @@ class NotificationHandler {
       (SMART_NOTIFICATION_LIST) ?? new List();
 
     // Check if the event needs a notification and if so, add to the list
+    EventsRepo eventsRepo = EventsRepo();
+    event = await eventsRepo.getEvent(event.UID).catchError((error){
+      showAlertNotification(NotificationObject(
+          id: ALERT_NOTIFICATION_ID,
+          payload: "",
+          time: DateTime.now(),
+          type: NotificationType.Alert
+      ), "Smart Notification Error", "Unable to Schdule Smart Notification",
+          "There was an error trying to schedule a Smart notification, we "
+              "will try again shortly");
+    });
     jsonNotifications = await NotificationHandler.doSmartNotification(
         [event], jsonNotifications);
 
     // Update notification list
     _prefs.setStringList(SMART_NOTIFICATION_LIST,jsonNotifications);
 
-    // Create Default notification
+    // Get all the details for event and create Default notification
     _makeDefaultNotification(event);
   }
 
@@ -55,7 +66,7 @@ class NotificationHandler {
     // cancel it using the ID
     NotificationObject notif;
     jsonSmart.removeWhere((element) {
-      notif = NotificationObject.fromJson(jsonDecode(element));
+      notif = NotificationObject.fromJson(convert.jsonDecode(element));
       if(notif.payload == event.UID.toString()){
         flutterLocalNotificationsPlugin
             .cancel(notif.id);
@@ -64,7 +75,7 @@ class NotificationHandler {
     });
 
     jsonDefault.removeWhere((element) {
-      notif = NotificationObject.fromJson(jsonDecode(element));
+      notif = NotificationObject.fromJson(convert.jsonDecode(element));
       if(notif.payload == event.UID.toString()){
         flutterLocalNotificationsPlugin
             .cancel(notif.id);
@@ -98,7 +109,7 @@ class NotificationHandler {
       (SMART_NOTIFICATION_LIST) ?? new List();
     Map notificationMap;
     jsonSmart.forEach((notification) {
-      notificationMap = jsonDecode(notification);
+      notificationMap = convert.jsonDecode(notification);
       flutterLocalNotificationsPlugin.cancel(notificationMap["id"]);
     });
     _prefs.setStringList(SMART_NOTIFICATION_LIST, null);
@@ -116,11 +127,11 @@ class NotificationHandler {
 
     // Remove all notifications that have been delivered
     DateTime now = DateTime.now();
-    jsonSmart.removeWhere((json)
-    => NotificationObject.fromJson(jsonDecode(json)).time.difference(now).isNegative
+    jsonSmart.removeWhere((json) => NotificationObject.fromJson(
+        convert.jsonDecode(json)).time.difference(now).isNegative
     );
-    jsonDefault.removeWhere((json)
-    => NotificationObject.fromJson(jsonDecode(json)).time.difference(now).isNegative
+    jsonDefault.removeWhere((json) => NotificationObject.fromJson(
+        convert.jsonDecode(json)).time.difference(now).isNegative
     );
     _prefs.setStringList(SMART_NOTIFICATION_LIST,jsonSmart);
     _prefs.setStringList(DEFAULT_NOTIFICATION_LIST,jsonDefault);
@@ -144,7 +155,7 @@ class NotificationHandler {
     _geolocator.forceAndroidLocationManager = true;
     await _geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy
         .high).then((coordinate) {
-      userCoords = Coordinate(coordinate.latitude, coordinate.longitude);
+      userCoords = Coordinate(coordinate.latitude, coordinate.longitude, 0);
     });
 
     DateTime timestamp = new DateTime.now();
@@ -171,22 +182,22 @@ class NotificationHandler {
           eventNotification = NotificationObject(
               type: NotificationType.SmartNotification,
               id: notificationID, time: scheduleTime, payload: event.UID.toString());
-          jsonNotifications.add(jsonEncode(eventNotification));
+          jsonNotifications.add(convert.jsonEncode(eventNotification));
 
           NumberFormat nf = NumberFormat("#####.##", "en_US");
-          NumberFormat nf2 = NumberFormat("#####", "en_US");
           DateFormat df = new DateFormat("K:mm a");
           String startOfEvent = "The event starts at ${df.format(event.startDateTime)}";
           NotificationHandler._scheduleSmartNotification(
               notificationID,
               event.title,
               startOfEvent,
-              startOfEvent + "\n" + "You are ${nf.format(timeToWalk*3)} miles "
+              startOfEvent + "\n" + "You are"
+                  " ${nf.format(Utils.distanceToTravel(timeToWalk))} miles "
                   "away from the "
-                  "event, it will take you ${nf2.format(timeToWalk)} mins to "
+                  "event, it will take you ${Utils.toSmartTime(timeToWalk)} to "
                   "walk to the event.",
               scheduleTime,
-              jsonEncode(eventNotification)
+              convert.jsonEncode(eventNotification)
           );
         }
       }
@@ -252,7 +263,7 @@ class NotificationHandler {
       );
 
       // Update notification list and NotificationID
-      jsonNotifications.add(jsonEncode(notification));
+      jsonNotifications.add(convert.jsonEncode(notification));
       _prefs.setStringList(DEFAULT_NOTIFICATION_LIST,jsonNotifications);
     }
   }
@@ -276,7 +287,7 @@ class NotificationHandler {
 
     await flutterLocalNotificationsPlugin.schedule(
         notification.id, title, description, notification.time,
-        platformChannelSpecifics, payload: jsonEncode(notification));
+        platformChannelSpecifics, payload: convert.jsonEncode(notification));
   }
 
   /// Setup of the notification and schedules it
@@ -306,10 +317,10 @@ class NotificationHandler {
     await flutterLocalNotificationsPlugin.show(
         notification.id, title, description,
         platformChannelSpecifics,
-        payload: jsonEncode(notification));
+        payload: convert.jsonEncode(notification));
   }
 
-  static void shoPermissionNotification(
+  static void showAlertNotification(
       NotificationObject notification, String title, String description,
       String bigDescription) async {
     var bigTextStyleInformation = BigTextStyleInformation(
@@ -334,7 +345,7 @@ class NotificationHandler {
     await flutterLocalNotificationsPlugin.show(
         notification.id, title, description,
         platformChannelSpecifics,
-        payload: jsonEncode(notification));
+        payload: convert.jsonEncode(notification));
   }
   // Helper Methods
 

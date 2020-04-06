@@ -225,7 +225,7 @@ class EventFeedStore extends flux.Store{
     if (feed == FeedType.PersonalFeed) {
       _isLoading[0] = true;
       trigger();
-      return _eventsRepo.getPerEvents(_personalSearch.length, EVENTS_TO_FETCH)
+      return _eventsRepo.getPerEvents(0, EVENTS_TO_FETCH)
           .then((List<Event> value) {
         _personalSearch = value;
         _isLoading[0] = false;
@@ -238,7 +238,7 @@ class EventFeedStore extends flux.Store{
     } else {
       _isLoading[1] = true;
       trigger();
-      return _eventsRepo.getGenEvents(_generalSearch.length, EVENTS_TO_FETCH)
+      return _eventsRepo.getGenEvents(0, EVENTS_TO_FETCH)
           .then((List<Event> value) {
         _generalSearch = value;
         _isLoading[1] = false;

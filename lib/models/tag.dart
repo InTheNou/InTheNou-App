@@ -1,9 +1,43 @@
+import 'dart:convert' as convert;
+
 class Tag {
 
+  int _UID;
   String _name;
   int _weight;
 
-  Tag(this._name, this._weight);
+  Tag(this._UID, this._name, this._weight);
+
+  factory Tag.fromJson(Map<String, dynamic> json) {
+    if(json == null){
+      return null;
+    }
+    return Tag(
+        json['tid'],
+        json['tname'],
+        json["tagweight"] ?? 0
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    "tid": _UID,
+    "tname": _name,
+    "tagweight": _weight
+  };
+
+  static List<Tag> fromJsonToList(List<dynamic> json){
+    if(json == null){
+      return null;
+    }
+    return new List.generate(json.length, (i) => Tag.fromJson(json[i]));
+  }
+
+  static List<Map<String, dynamic>> toJsonList(List<Tag> tags) {
+    if(tags == null){
+      return null;
+    }
+    return new List.generate(tags.length, (i) => tags[i].toJson());
+  }
 
   String get name => _name;
   int get weight => _weight;

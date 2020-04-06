@@ -35,8 +35,8 @@ class SettingsStore extends flux.Store {
         return true;
       });
     });
-    triggerOnAction(logoutAction, (_) {
-      _userRepo.logOut();
+    triggerOnConditionalAction(logoutAction, (_) async{
+      return await _userRepo.logOut();
     });
   }
 
