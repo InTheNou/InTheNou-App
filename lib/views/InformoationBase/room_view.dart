@@ -25,6 +25,18 @@ class _RoomViewState extends State<RoomView>
 
   @override
   Widget build(BuildContext context) {
+    if(_infoBaseStore.detailRoom == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text("Loading"),
+        ),
+        body: Center(
+          child: Container(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(_infoBaseStore.detailRoom.code),

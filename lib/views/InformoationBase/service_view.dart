@@ -27,6 +27,18 @@ class _ServiceViewState extends State<ServiceView>
 
   @override
   Widget build(BuildContext context) {
+    if(_infoBaseStore.detailService == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text("Loading"),
+        ),
+        body: Center(
+          child: Container(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(_infoBaseStore.detailService.name),
@@ -95,58 +107,61 @@ class _ServiceViewState extends State<ServiceView>
                   ),
                   //
                   // Contact info
-                  Card(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Padding(
-                            padding: const EdgeInsets.fromLTRB(8.0, 4.0,
-                                8.0, 4.0),
-                            child: Text(
-                              "Contact Information",
-                              style: Theme.of(context).textTheme.subtitle2.copyWith(
-                                  fontWeight: FontWeight.w300
-                              ),
-                            )
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(8.0, 4.0,
-                              8.0, 2.0),
-                          child: Row(
-                            children: <Widget>[
-                              Expanded(
-                                child: ListView.builder(
-                                    physics: const NeverScrollableScrollPhysics(),
-                                    shrinkWrap: true,
-                                    itemCount: _infoBaseStore.detailService.websites.length,
-                                    itemBuilder: (context, index){
-                                      Website _website = _infoBaseStore
-                                          .detailService.websites[index];
-                                      return LinkWithIconWidget(
-                                          _website.description ?? _website.URL,
-                                          _website.URL,
-                                          Icon(Icons.language)
-                                      );
-                                    }),
+                  Visibility(
+                    visible: _infoBaseStore.detailService.websites.length>0,
+                    child: Card(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Padding(
+                              padding: const EdgeInsets.fromLTRB(8.0, 4.0,
+                                  8.0, 4.0),
+                              child: Text(
+                                "Contact Information",
+                                style: Theme.of(context).textTheme.subtitle2.copyWith(
+                                    fontWeight: FontWeight.w300
+                                ),
                               )
-                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(8.0, 4.0,
+                                8.0, 2.0),
+                            child: Row(
+                              children: <Widget>[
+                                Expanded(
+                                  child: ListView.builder(
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      shrinkWrap: true,
+                                      itemCount: _infoBaseStore.detailService.websites.length,
+                                      itemBuilder: (context, index){
+                                        Website _website = _infoBaseStore
+                                            .detailService.websites[index];
+                                        return LinkWithIconWidget(
+                                            _website.description ?? _website.URL,
+                                            _website.URL,
+                                            Icon(Icons.language)
+                                        );
+                                      }),
+                                )
+                              ],
+                            )
+                          ),
+                          Padding(
+                              padding: const EdgeInsets.fromLTRB(8.0, 2.0,
+                                  8.0, 4.0),
+                              child: ListView.builder(
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  itemCount: _infoBaseStore
+                                      .detailService.numbers.length,
+                                  itemBuilder: (context, index){
+                                    PhoneNumber _phone = _infoBaseStore
+                                        .detailService.numbers[index];
+                                    return createPhoneEntry(_phone);
+                                  })
                           )
-                        ),
-                        Padding(
-                            padding: const EdgeInsets.fromLTRB(8.0, 2.0,
-                                8.0, 4.0),
-                            child: ListView.builder(
-                                physics: const NeverScrollableScrollPhysics(),
-                                shrinkWrap: true,
-                                itemCount: _infoBaseStore
-                                    .detailService.numbers.length,
-                                itemBuilder: (context, index){
-                                  PhoneNumber _phone = _infoBaseStore
-                                      .detailService.numbers[index];
-                                  return createPhoneEntry(_phone);
-                                })
-                        )
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                   //

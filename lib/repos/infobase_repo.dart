@@ -39,7 +39,6 @@ class InfoBaseRepo {
             .statusCode} please try again");
       }
     });
-//    return new List.from(dummyBuildings);
   }
   List<Building> searchBuildings(String keyword){
     runLocalBuildingSearch(keyword);
@@ -60,21 +59,21 @@ class InfoBaseRepo {
             .statusCode} please try again");
       }
     });
-//    return dummyBuildings.firstWhere((element) => (element.UID ==
-//        buildingUID));
   }
   Future<List<Room>> getRoomsOfFloor(int buildingUID, int floor) async{
     return client.get(API_URL
         +"/App/Rooms/bid=$buildingUID/rfloor=$floor").then((response) {
       if (response.statusCode == HttpStatus.ok) {
         List<Room> roomResults = new List();
-        Building b = Building
-            .resultFromJson(convert.jsonDecode(response.body)['building']);
-        List jsonResponse = convert.jsonDecode(response.body)['rooms'];
-        if(jsonResponse != null){
-          jsonResponse.forEach((element) {
-            roomResults.add(Room.fromJson(element, b));
-          });
+        if(response.body != null){
+          Building b = Building
+              .resultFromJson(convert.jsonDecode(response.body)['building']);
+          List jsonResponse = convert.jsonDecode(response.body)['rooms'];
+          if(jsonResponse != null){
+            jsonResponse.forEach((element) {
+              roomResults.add(Room.fromJson(element, b));
+            });
+          }
         }
         return roomResults;
       } else {
@@ -82,27 +81,69 @@ class InfoBaseRepo {
             .statusCode} please try again");
       }
     });
-    return dummyRooms[buildingUID].where((element) => element.floor == floor-1)
-        .toList();
   }
   List<Room> searchRooms(String keyword){
     runLocalRoomSearch(keyword);
     return new List.from(roomsSearch);
   }
-  Room getRoom(int roomUID){
-    return dummyRooms[0].firstWhere((element) => (element.UID == roomUID));
+  Future<Room> getRoom(int roomUID){
+    return client.get(API_URL
+        +"/App/Rooms/rid=$roomUID").then((response) {
+      if (response.statusCode == HttpStatus.ok) {
+        Room roomResult;
+        Map<String, dynamic> jsonResponse = convert.jsonDecode(response.body);
+        print(jsonResponse);
+        if(jsonResponse != null){
+          Building b = Building.resultFromJson(jsonResponse['building']);
+          roomResult = Room.fromJson(jsonResponse, b);
+
+          List servicesJson = convert.jsonDecode(response.body)['services'];
+          List<Service> services = List();
+          if(servicesJson != null){
+            servicesJson.forEach((service) {
+            services.add(Service.fromJson(service, roomResult));
+            });
+          }
+          roomResult.services = services;
+        }
+        return roomResult;
+      } else {
+        return Future.error("Request failed with status: ${response
+            .statusCode} please try again");
+      }
+    });
   }
   List<Service> searchServices(String keyword){
     runLocalServiceSearch(keyword);
     return new List.from(servicesSearch);
   }
-  List<Service> getServicesOfRoom(int roomUID){
-    return dummyServices[0].where((service) => service.roomCode == "S-00")
-        .toList();
-  }
-  Service getService(int serviceUID){
-    return dummyServices[0].firstWhere((element) => element.UID == serviceUID);
-  }
+
+  Future<Service> getService(int serviceUID){
+    return client.get(API_URL
+        +"/App/Services/sid=$serviceUID").then((response) {
+      if (response.statusCode == HttpStatus.ok) {
+        Room roomResult;
+        Service service;
+        Map<String, dynamic> jsonResponse = convert.jsonDecode(response.body);
+        print(jsonResponse);
+        if(jsonResponse != null){
+          Building b = Building.resultFromJson
+            (jsonResponse['room']['building']);
+          roomResult = Room.fromJson(jsonResponse["room"], b);
+
+          Map<String,dynamic> servicesJson =
+            convert.jsonDecode(response.body);
+
+          if(servicesJson != null){
+            service = Service.fromJson(servicesJson, roomResult);
+          }
+        }
+        return service;
+      } else {
+        return Future.error("Request failed with status: ${response
+            .statusCode} please try again");
+      }
+    });    }
 
 //---------------------- DEBUGGING STUFF ----------------------
   List<Building> dummyBuildings = new List.generate(2,

@@ -1,5 +1,6 @@
 import 'package:InTheNou/models/building.dart';
 import 'package:InTheNou/models/coordinate.dart';
+import 'package:InTheNou/models/service.dart';
 
 class Room {
 
@@ -11,6 +12,7 @@ class Room {
   int _occupancy;
   String _custodian;
   Coordinate _coordinates;
+  List<Service> services;
 
   // "room":{},"raltitude":50.04,""rdept":"COMPUTER SCIENCE AND ENGINEERING","rlatitude":50.04,"rlongitude":50.04
   // not taking into account rdept and photourl
@@ -55,5 +57,15 @@ class Room {
   int get occupancy => _occupancy;
   String get custodian => _custodian;
   Coordinate get coordinates => _coordinates;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is Room &&
+              runtimeType == other.runtimeType &&
+              _UID == other._UID;
+
+  @override
+  int get hashCode => _UID.hashCode;
 
 }

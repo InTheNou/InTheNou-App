@@ -83,6 +83,11 @@ class InfoBaseStore extends flux.Store{
     });
 
     triggerOnConditionalAction(selectBuildingAction, (Building building) async{
+      if(_detailBuilding == building){
+        return false;
+      }
+      _detailRoom = null;
+      trigger();
       return _infoBaseRepo.getBuilding(building.UID).then((value) {
         _detailBuilding = value;
         return true;
@@ -90,19 +95,40 @@ class InfoBaseStore extends flux.Store{
     });
     triggerOnConditionalAction(selectFloorAction,
             (MapEntry<Building,Floor> floor) async{
+      if(selectedFloor ==  floor.value){
+        return false;
+      }
       _selectedFloor = floor.value;
+      _roomsInBuilding = null;
+      trigger();
       return _infoBaseRepo.getRoomsOfFloor(floor.key.UID, floor.value
           .floorNumber).then((value){
         _roomsInBuilding = value;
         return true;
       });
     });
-    triggerOnAction(selectRoomAction, (Room room){
-      _detailRoom = _infoBaseRepo.getRoom(room.UID);
-      _servicesInRoom = _infoBaseRepo.getServicesOfRoom(room.UID);
+    triggerOnConditionalAction(selectRoomAction, (Room room){
+      if(_detailRoom == room){
+        return false;
+      }
+      _detailRoom = null;
+      trigger();
+      return _infoBaseRepo.getRoom(room.UID).then((value) {
+        _detailRoom = value;
+        _servicesInRoom = _detailRoom.services;
+        return true;
+      });
     });
     triggerOnAction(selectServiceAction, (Service service){
-      _detailService = _infoBaseRepo.getService(service.UID);
+      if(_detailService == service){
+        return false;
+      }
+      _detailService = null;
+      trigger();
+      return _infoBaseRepo.getService(service.UID).then((value) {
+        _detailService = value;
+        return true;
+      });
     });
   }
 

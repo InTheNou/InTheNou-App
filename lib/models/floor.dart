@@ -20,4 +20,17 @@ class Floor {
   String get floorName => _floorName;
   int get floorNumber => _floorNumber;
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is Floor &&
+              runtimeType == other.runtimeType &&
+              _floorName == other._floorName &&
+              _floorNumber == other._floorNumber;
+
+  @override
+  int get hashCode =>
+      _floorName.hashCode ^
+      _floorNumber.hashCode;
+
 }
