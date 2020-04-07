@@ -9,6 +9,7 @@ import 'package:InTheNou/views/InformoationBase/services_card.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
+import 'package:validators/validators.dart';
 
 class InfoBaseSearchView extends StatefulWidget {
 
@@ -101,7 +102,7 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
                     placeholder: "lib/assets/placeholder.png",
                     height: 120.0,
                     width: 150.0,
-                    image: building.image,
+                    image: isURL(building.image) ? building.image : "",
                   ),
                   const Padding(padding: EdgeInsets.only(left: 16.0)),
                   Column(
@@ -109,17 +110,22 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
                     children: <Widget>[
                       Text(
                         building.name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.headline6,
+                        softWrap: true,
                       ),
                       Padding(padding: EdgeInsets.only(top: 8.0,
                           left: 8.0),
                           child: Text(
                             building.commonName,
                             style: Theme.of(context).textTheme.subtitle1,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           )
                       ),
                     ],
-                  )
+                  ),
                 ],
               ),
             )

@@ -1,10 +1,11 @@
+import 'dart:io';
+import 'dart:convert' as convert;
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/models/session.dart';
 import 'package:InTheNou/models/tag.dart';
 import 'package:InTheNou/models/user.dart';
 import 'package:InTheNou/repos/events_repo.dart';
-import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -32,13 +33,35 @@ class UserRepo {
     ]
   );
 
+  _launchURL(String URL) async {
+    if (await canLaunch(URL)) {
+      await launch(URL);
+    } else {
+      throw 'Could not launch $URL';
+    }
+  }
+
   Future<bool> callAuthService() async {
 //    _userAccount = await _googleSignIn.signIn();
 //    print(_userAccount.toString());
-//    var response = await client.get(API_URL+"/App/login");
+    var response = await client.get(API_URL+"/App/login");
 //    debugPrint('Response body: ${response.body}');
-//    RegExp reg = RegExp(r"(https:)(.*)(?=, 'OCAK')",multiLine: true);
-//    String url = reg.stringMatch(response.body).split(RegExp(r"', "))[0];
+    RegExp reg = RegExp(r"(https:)(.*)(?=, 'OCAK')",multiLine: true);
+    String url = reg.stringMatch(response.body).split(RegExp(r"', "))[0];
+    url = url.replaceAll(RegExp(r'\\x3d'),"=");
+    url = url.replaceAll(RegExp(r'\\x26'),"&");
+    url = url.replaceAll(RegExp(r'\\/'),r"/");
+    print(url);
+
+//    _launchURL(url);
+    // Present the dialog to the user
+//    final result = await FlutterWebAuth.authenticate(url: url,
+//        callbackUrlScheme: "https://inthenou.uprm.edu/login/google/authorized");
+
+  // Extract code from resulting url
+//    final code = Uri.parse(result);
+//    print(code);
+
     return true;
   }
 
@@ -49,13 +72,13 @@ class UserRepo {
   /// otherwise the user is routed to the login to re-auth.
   Future<Session> getSession() async{
     final SharedPreferences prefs = await _prefs;
-    _googleSignIn.signInSilently().then((GoogleSignInAccount acc) {
-      if(acc == null){
-
-      } else{
-        _userAccount = acc;
-      }
-    });
+//    _googleSignIn.signInSilently().then((GoogleSignInAccount acc) {
+//      if(acc == null){
+//
+//      } else{
+//        _userAccount = acc;
+//      }
+//    });
     return Future.delayed(Duration(seconds: 3)).then((onValue) {
       Session session = Session(prefs.getString(USER_SESSION_KEY));
       if(session.value == null){
@@ -109,23 +132,46 @@ class UserRepo {
 //    _googleSignIn.signOut();
   }
 
-
-  Future<List<Event>> getFollowedEvents(int skip, int rows) async{
-    // For now It's just getting it from a secrete place, it should just get it
-    // straight from the server
-    return getFollowedEventsFromSecretPlace();
+  Future<List<Event>> getFollowedEvents(int skipEvents, int numEvents) async{
+    return client.get(API_URL
+        +"/App/Events/Following//uid=4/offset=$skipEvents/limit=$numEvents")
+        .then((response) {
+          if (response.statusCode == HttpStatus.ok) {
+            List<Event> eventResults = new List();
+            List jsonResponse = convert.jsonDecode(response.body)["events"];
+            if(jsonResponse != null){
+              jsonResponse.forEach((element) {
+                eventResults.add(Event.resultFromJson(element,
+                    isFollowed: true));
+              });
+            }
+            return eventResults;
+          } else {
+            return Future.error("Request failed with status: ${response
+                .statusCode} please try again");
+          }
+        });
+//    return getFollowedEventsFromSecretPlace();
   }
 
-  Future<List<Event>> getAllFollowedEvents() async{
-    // For now It's just getting it from a secrete place, it should just get it
-    // straight from the server
-    return getFollowedEventsFromSecretPlace();
-  }
-
-  Future<List<Event>> getCreatedEvents(int userUID, int skip,
-      int rows) async{
-    // For now It's just getting it from a secrete place, it should just get it
-    // straight from the server
+  Future<List<Event>> getCreatedEvents(int skipEvents, int numEvents) async{
+    return client.get(API_URL
+        +"/App/Events/Created//uid=4/offset=$skipEvents/limit=$numEvents")
+        .then((response) {
+      if (response.statusCode == HttpStatus.ok) {
+        List<Event> eventResults = new List();
+        List jsonResponse = convert.jsonDecode(response.body)["events"];
+        if(jsonResponse != null){
+          jsonResponse.forEach((element) {
+            eventResults.add(Event.resultFromJson(element));
+          });
+        }
+        return eventResults;
+      } else {
+        return Future.error("Request failed with status: ${response
+            .statusCode} please try again");
+      }
+    });
     return getFollowedEventsFromSecretPlace2();
   }
   bool requestDeleteEvents(Event event){

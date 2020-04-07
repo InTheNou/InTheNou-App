@@ -17,12 +17,12 @@ class Website {
 
   Map<String, dynamic> toJson() => {
     "url": _URL,
-    "wdescription": _description,
+    "wdescription": _description.isEmpty ? null : _description,
   };
 
   static List<Website> jsonToList(List<dynamic> json){
     if(json == null){
-      return null;
+      return List();
     }
     return new List.generate(json.length, (i) => Website.fromJson(json[i]));
   }

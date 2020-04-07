@@ -57,7 +57,7 @@ class UserStore extends flux.Store{
     triggerOnConditionalAction(refreshCreatedAction, (_){
       _isCreatedLoading = true;
       trigger();
-      return _userRepo.getCreatedEvents(0, 0, EVENTS_TO_FETCH).then((value) {
+      return _userRepo.getCreatedEvents(0, EVENTS_TO_FETCH).then((value) {
         _createdEvents = value;
         _isCreatedLoading = false;
         return true;

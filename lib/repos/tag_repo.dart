@@ -1,9 +1,14 @@
-
+import 'dart:convert' as convert;
+import 'dart:io';
+import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/tag.dart';
+import 'package:http/http.dart' as http;
+
 
 class TagRepo {
 
   static final TagRepo _instance = TagRepo._internal();
+  var client = http.Client();
 
   factory TagRepo() {
     return _instance;
@@ -11,7 +16,22 @@ class TagRepo {
 
   TagRepo._internal();
 
-  List<Tag> getAllTags(){
+  Future<List<Tag>> getAllTags() async{
+    return client.get(API_URL
+        +"/App/Tags").then((response) {
+      if (response.statusCode == HttpStatus.ok) {
+        List<Tag> tagResults;
+        List<dynamic> jsonResponse =
+          convert.jsonDecode(response.body)["tags"];
+        if(jsonResponse != null){
+          tagResults = Tag.fromJsonToList(jsonResponse);
+        }
+        return tagResults;
+      } else {
+        return Future.error("Request failed with status: ${response
+            .statusCode} please try again");
+      }
+    });
     return new List.of(dummyTags);
   }
 

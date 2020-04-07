@@ -2,6 +2,7 @@ import 'package:InTheNou/assets/colors.dart';
 import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/event.dart';
+import 'package:InTheNou/models/website.dart';
 import 'package:InTheNou/stores/event_feed_store.dart';
 import 'package:InTheNou/views/widgets/link_with_icon_widget.dart';
 import 'package:InTheNou/views/widgets/multi_text_with_icon_widget.dart';
@@ -70,11 +71,6 @@ class _EventDetailViewState extends State<EventDetailView>
               child: CircularProgressIndicator(),
             ),
         ),
-      );
-
-        Container(
-        color: Theme.of(context).primaryColor,
-        child: CircularProgressIndicator(),
       );
     }
     else{
@@ -234,9 +230,11 @@ class _EventDetailViewState extends State<EventDetailView>
                                         padding: EdgeInsets.all(0),
                                         itemCount: _detailEvent.websites.length,
                                         itemBuilder: (context, index) {
+                                          Website website = _detailEvent
+                                              .websites[index];
                                           return LinkWithIconWidget(
-                                              _detailEvent.websites[index].description,
-                                              _detailEvent.websites[index].URL,
+                                              website.description ?? website.URL,
+                                              website.URL,
                                               Icon(Icons.language));
                                         }
                                     ),

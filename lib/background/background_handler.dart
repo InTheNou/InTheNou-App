@@ -133,7 +133,7 @@ class BackgroundHandler {
       (SMART_NOTIFICATION_LIST) ?? new List();
 
     // Calls the database to get all the events followed by the uer
-    List<Event> _events = await _userRepo.getAllFollowedEvents();
+    List<Event> _events = await _userRepo.getFollowedEvents(0,100000);
 
     // Decodes the json strings into a map with the NotificationObject fields
     // Also removes the followed events that have been scheduled already

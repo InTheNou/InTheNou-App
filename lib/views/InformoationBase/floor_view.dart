@@ -24,6 +24,18 @@ class _FloorViewState extends State<FloorView>
   }
   @override
   Widget build(BuildContext context) {
+    if(_infoBaseStore.roomsInBuilding == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(_infoBaseStore.selectedFloor.floorName + " Floor"),
+        ),
+        body: Center(
+          child: Container(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(_infoBaseStore.selectedFloor.floorName + " Floor"),

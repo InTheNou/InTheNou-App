@@ -26,12 +26,24 @@ class _BuildingViewState extends State<BuildingView>
 
   @override
   Widget build(BuildContext context) {
+    if(_infoBaseStore.detailBuilding == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text("Loading"),
+        ),
+        body: Center(
+          child: Container(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (BuildContext context, innerBoxIsScrolled) {
           return <Widget>[
             SliverAppBar(
-              expandedHeight: _infoBaseStore.detailBuilding.image.isNotEmpty ?
+              expandedHeight: _infoBaseStore.detailBuilding.image != null ?
               250.0 : 0,
               floating: false,
               pinned: true,
@@ -39,6 +51,7 @@ class _BuildingViewState extends State<BuildingView>
                 style: Theme.of(context).textTheme.headline6.copyWith(
                     color: Theme.of(context).canvasColor
                 ),
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               flexibleSpace: FlexibleSpaceBar(
@@ -60,7 +73,7 @@ class _BuildingViewState extends State<BuildingView>
                       fit: BoxFit.cover,
                       placeholder: "lib/assets/placeholder.png",
                       height: 120.0,
-                      image: _infoBaseStore.detailBuilding.image,
+                      image: _infoBaseStore.detailBuilding.image ?? "",
                     ),
                   )
               ),
@@ -116,7 +129,7 @@ class _BuildingViewState extends State<BuildingView>
                                     ),
                                     TextSpan(
                                         text: _infoBaseStore.detailBuilding
-                                            .commonName,
+                                            .abbreviation,
                                         style: Theme.of(context).textTheme
                                             .subtitle1.copyWith(fontWeight:
                                         FontWeight.bold)
@@ -171,14 +184,14 @@ class _BuildingViewState extends State<BuildingView>
                         padding: const EdgeInsets.all((0)),
                         itemCount: _infoBaseStore.detailBuilding.numFloors,
                         itemBuilder: (context, index){
-                          Floor _floor = Utils.ordinalNumber(index+1);
+                          Floor _floor = _infoBaseStore.detailBuilding
+                              .floors[index];
                           return  InkWell(
                             onTap: () => {
                               Navigator.of(context).pushNamed
                                 ("/infobase/floor"),
                               selectFloorAction(
-                                  MapEntry(_infoBaseStore
-                                      .detailBuilding, _floor.floorNumber)
+                                  MapEntry(_infoBaseStore.detailBuilding, _floor)
                               )
                             },
                             child: ListTile(

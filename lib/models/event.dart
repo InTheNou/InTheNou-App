@@ -1,4 +1,5 @@
 import 'package:InTheNou/assets/utils.dart';
+import 'package:InTheNou/models/building.dart';
 import 'package:InTheNou/models/room.dart';
 import 'package:InTheNou/models/tag.dart';
 import 'package:InTheNou/models/website.dart';
@@ -57,20 +58,22 @@ class Event {
     this.recommended = null;
   }
 
+  static DateFormat df = DateFormat("yyyy-MM-dd HH:mm:ss");
   factory Event.fromJson(Map<String, dynamic> json) {
     if(json == null){
       return null;
     }
+    Building b = Building.resultFromJson(json['room']['building']);
     return Event(
         json['eid'],
         json['etitle'],
         json['edescription'],
         json['ecreator']["first_name"],
         json['photourl'],
-        fixDate(json['estart'].toString()),
-        fixDate( json['eend'].toString()),
-        fixDate(json['ecreation'].toString()),
-        Room.fromJson(json['room']),
+        df.parseUTC(json['estart']).toLocal(),
+        df.parseUTC(json['eend']).toLocal(),
+        df.parseUTC(json['ecreation']).toLocal(),
+        Room.fromJson(json['room'], b),
         Website.jsonToList(json["websites"]),
         Tag.fromJsonToList(json["tags"]),
         json['itype'] == "following",
@@ -78,45 +81,31 @@ class Event {
     );
   }
 
-  factory Event.resultFromJson(Map<String, dynamic> json) {
+  factory Event.resultFromJson(Map<String, dynamic> json,
+      {bool isFollowed = false}) {
     return Event.result(
         UID: json['eid'],
         title: json['etitle'],
         description: json['edescription'],
         image: json['photourl'],
-        startDateTime: fixDate(json['estart'].toString()),
-        endDateTime: fixDate( json['eend'].toString()),
-        timestamp: fixDate(json['ecreation'].toString()),
+        startDateTime: df.parseUTC(json['estart']).toLocal(),
+        endDateTime: df.parseUTC(json['eend']).toLocal(),
+        timestamp: df.parseUTC(json['ecreation']).toLocal(),
         room: Room.forEventFromJson(json['room']),
-        followed: json['itype'] == "following"
+        followed: isFollowed ? true : json['itype'] == "following"
     );
   }
-
-  static final DateFormat dateFormatter =
-    DateFormat("EEE, d MMM yyyy HH:mm:ss");
-  static DateTime fixDate(String date){
-    return dateFormatter.parseStrict(date.substring(0, date.length-4));
-  }
-  //    {"ecreator" : 1,
-  //    "roomid" : 5,
-  //    "etitle" : "Test Event",
-  //    "edescription" : "A test event to see the insert route working.",
-  //    "estart" : "{{current_timestamp}}",
-  //    "eend" : "2020-10-26 16:40:00",
-  //    "photourl" : "akePhotoURL",
-  //    "tags": [{"tid": 1},{"tid": 2},{"tid": 3},{"tid": 4},{"tid": 5},{"tid": 6}],
-  //    "websites":[{"url": "firstwebsite.com","wdescription": "my  favorite website"},{"url": "secondsite.net","wdescription": "my  worst website"},{"url": "thirdsite.edu","wdescription": null}]}   OR   { "ecreator" : 1,"roomid" : 5,"etitle" : "Test Event","edescription" : "A test event to see the insert route working.","estart" : "2020-10-26 15:40:00","eend" : "2020-10-26 16:40:00","photourl" : null,"tags": [{"tid": 1},{"tid": 2},{"tid": 3}],"websites":null}
 
   Map<String, dynamic> toJson() => {
         "etitle": _title,
         "edescription": _description,
-        "image": _image,
-        "ecreator": "placeholder",
-        "estart": Utils.formatTimeStamp(_startDateTime),
-        "eend": Utils.formatTimeStamp(_startDateTime),
+        "photourl": _image.isEmpty ? null : _image,
+        "ecreator": 4,
+        "estart": Utils.formatTimeStamp(_startDateTime.toUtc()),
+        "eend": Utils.formatTimeStamp(_endDateTime.toUtc()),
         "roomid": _room.UID,
         "tags": Tag.toJsonList(_tags),
-        "websites": Website.jsonToList(_websites)
+        "websites": Website.toJsonList(_websites)
   };
 
   int get UID => _UID;

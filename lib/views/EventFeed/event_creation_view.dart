@@ -115,7 +115,7 @@ class _EventCreationViewState extends State<EventCreationView>
                       maxLines: 1,
                       maxLength: 400,
                       textInputAction: TextInputAction.next,
-                      initialValue: _creationStore.title,
+                      initialValue: _creationStore.image,
                       validator: (image) => Validators.validateImage(image),
                       onChanged: (String image) =>
                           inputEventImageAction(image),
@@ -298,7 +298,7 @@ class _EventCreationViewState extends State<EventCreationView>
                         IconButton(
                             icon: Icon(Icons.add),
                             onPressed: (){
-                              if(!Validators.validateWebsiteQuantity(
+                              if(Validators.validateWebsiteQuantity(
                                   _creationStore.websites)){
                                 showDialog(
                                     context: context,
@@ -382,8 +382,7 @@ class _EventCreationViewState extends State<EventCreationView>
 
   void validateEventSubmit(){
     if(_formKey.currentState.validate()
-        && Validators.validateSelectedTags(_creationStore.searchTags.keys
-            .toList())){
+        && Validators.validateSelectedTags(_creationStore.selectedTags)){
       showSubmitConfirmation().then((value) {
         if(value){
           submitEventAction();
@@ -392,8 +391,7 @@ class _EventCreationViewState extends State<EventCreationView>
       });
     }
     else{
-      if (!Validators.validateSelectedTags(_creationStore.searchTags.keys
-          .toList())){
+      if (!Validators.validateSelectedTags(_creationStore.selectedTags)){
         showTagWarning();
       }
       _formKey.currentState.save();

@@ -17,11 +17,10 @@ class Room {
   Room(this._UID, this._code, this._building, this._floor, this._description,
       this._occupancy, this._custodian, this._coordinates);
 
-  factory Room.fromJson(Map<String, dynamic> json) {
-    Building b = Building.resultFromJson(json['building']);
+  factory Room.fromJson(Map<String, dynamic> json, Building b) {
     return Room(
         json['rid'],
-        b.abbreviation+json['rcode'],
+        b.abbreviation+"-"+json['rcode'],
         b.name,
         json['rfloor'],
         json['rdescription'],

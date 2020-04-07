@@ -46,12 +46,6 @@ class EventsRepo {
             .statusCode}");
       }
     });
-//    return Future.delayed(Duration(seconds: 2)).then((onValue) {
-//      if(rand.nextBool()){
-//        return Future.error("Error happened!");
-//      }
-//      return new List.from(dummyEvents);
-//    });
   }
 
   /// Calls teh back-end to get the Events for the Personal Feed.
@@ -81,13 +75,6 @@ class EventsRepo {
                 .statusCode}");
           }
         });
-//    return Future.delayed(Duration(seconds: 2)).then((onValue) {
-//      if(rand.nextBool()){
-//        return Future.error("Error happened!");
-//      }
-//      return new List.from(dummyEvents.where((event) =>
-//        event.recommended != null && event.recommended));
-//    });
   }
 
   /// Contacts the back-end to get [Event]s created after [lastDate].
@@ -136,11 +123,6 @@ class EventsRepo {
                 .statusCode}");
           }
         });
-//    return Future.delayed(Duration(seconds: 2)).then((onValue) {
-//      genSearchKeyword = keyword;
-//      runLocalSearch();
-//      return new List.from(genSearch);
-//    });
   }
 
   /// Calls the back-end with a search query for the Personal Feed
@@ -167,20 +149,17 @@ class EventsRepo {
           if (response.statusCode == HttpStatus.ok) {
             List<Event> eventResults = new List();
             List jsonResponse = convert.jsonDecode(response.body)["events"];
-            jsonResponse.forEach((element) {
-              eventResults.add(Event.resultFromJson(element));
-            });
+            if(jsonResponse != null){
+              jsonResponse.forEach((element) {
+                eventResults.add(Event.resultFromJson(element));
+              });
+            }
             return eventResults;
           } else {
             return Future.error("Request failed with status: ${response
                 .statusCode} please try again");
           }
         });
-//    return Future.delayed(Duration(seconds: 2)).then((onValue) {
-//      perSearchKeyword = keyword;
-//      runLocalSearch();
-//      return new List.from(perSearch);
-//    });
   }
 
   /// Calls the back-end to get all the information on a specific [Event].
@@ -196,14 +175,6 @@ class EventsRepo {
              .statusCode} please try again");
        }
     });
-
-//    try{
-//      return dummyEvents.firstWhere((element) =>
-//        element.UID == eventUID);
-//    } catch (e){
-//      return Future.error("The Selected Event has been deleted.");
-//    }
-
   }
 
   /// Requests for an [Event] to be marked as Followed in the back-end.
@@ -220,15 +191,6 @@ class EventsRepo {
                 .statusCode} please try again");
           }
         });
-//    return Future.delayed(Duration(seconds: 1)).then((onValue) {
-//      if(rand.nextBool()){
-//        return Future.error("Internal Error Following Event please try again"
-//            " later.");
-//      }
-//      int index = dummyEvents.indexWhere((event) => event.UID == eventUID);
-//      dummyEvents[index].followed = true;
-//      return true;
-//    });
   }
 
   /// Requests for an [Event] to be marked as UnFollowed in the back-end.
@@ -245,15 +207,6 @@ class EventsRepo {
             .statusCode} please try again");
       }
     });
-//    return Future.delayed(Duration(seconds: 1)).then((onValue) {
-//      if(rand.nextBool()){
-//        return Future.error("Internal Error UnFollowing Event please try again"
-//            " later.");
-//      }
-//      int index = dummyEvents.indexWhere((event) => event.UID == eventUID);
-//      dummyEvents[index].followed = false;
-//      return true;
-//    });
   }
 
   /// Requests for an [Event] to be marked as Dismissed in the back-end.
@@ -271,15 +224,6 @@ class EventsRepo {
             .statusCode} please try again");
       }
     });
-
-//    return Future.delayed(Duration(seconds: 2)).then((onValue) {
-//      if(rand.nextBool()){
-//        return Future.error("Error Dismissing Event please try again later.");
-//      }
-//      int index = dummyEvents.indexWhere((event) => event.UID == eventUID);
-//      dummyEvents.removeAt(index);
-//      return true;
-//    });
   }
 
   /// Requests for an [Event] to be marked as Recommended in the back-end.
@@ -306,19 +250,15 @@ class EventsRepo {
   /// Personal Feed if recommended to a user.
   Future<bool> createEvent(Event event) async{
     return client.post(API_URL+ "/App/Events/Create",
-        body: event.toJson()).then((response) {
+        headers: {"Content-Type": "application/json"},
+        body: convert.jsonEncode(event.toJson())).then((response) {
       if (response.statusCode == HttpStatus.created) {
-// JSON [{EID: INT, eTitle: String, eDescription: Text, eStartTime: DateTime, eEndTime: DateTime,bName:Text ,rCode:Text , ePhoto: URL}...xGetRow]
         return convert.jsonDecode(response.body)["eid"] == event.UID;
       } else {
         return Future.error("Dismiss Request failed with status: ${response
             .statusCode} please try again");
       }
     });
-
-    dummyEvents.add(event);
-    runLocalSearch();
-    return true;
   }
 
   //---------------------- DEBUGGING STUFF ----------------------

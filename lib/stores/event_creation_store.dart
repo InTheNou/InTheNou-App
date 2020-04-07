@@ -46,7 +46,7 @@ class EventCreationStore extends flux.Store {
   EventCreationStore() {
     triggerOnAction(submitEventAction, (_){
       _newEvent = new Event(rand.nextInt(100)+30,_title, _description,
-          "alguien.importante@upr.edu", _image, _startDateTime,
+          "jonathan.santiago27@upr.edu", _image, _startDateTime,
           _endDateTime,DateTime.now(), _selectedRoom, _websites,
         _selectedTags, false, null);
       _eventsRepo.createEvent(_newEvent);
@@ -55,18 +55,23 @@ class EventCreationStore extends flux.Store {
     triggerOnAction(discardEventAction, (_){
       reset();
     });
-    triggerOnAction(getBuildingsAction, (_){
-      _buildings = _infoBaseRepo.dummyBuildings;
+    triggerOnConditionalAction(getBuildingsAction, (_) async{
+      return _infoBaseRepo.getAllBuildings().then((buildings){
+        _buildings = buildings;
+        return true;
+      });
     });
     triggerOnAction(getAllTagsAction, (_){
-      _allTagsFromRepo = _tagRepo.getAllTags();
-      _allTags = new Map<Tag,bool>.fromIterable(_allTagsFromRepo,
-          key: (tag) => tag,
-          value: (tag) => false
-      );
-      if(_searchTags.isEmpty){
-        _searchTags = new Map.from(_allTags);
-      }
+      return _tagRepo.getAllTags().then((tags) {
+        _allTagsFromRepo = tags;
+        _allTags = new Map<Tag,bool>.fromIterable(_allTagsFromRepo,
+            key: (tag) => tag,
+            value: (tag) => false
+        );
+        if(_searchTags.isEmpty){
+          _searchTags = new Map.from(_allTags);
+        }
+      });
     });
     triggerOnAction(inputEventTitleAction, (String title){
       _title = title;
@@ -84,18 +89,24 @@ class EventCreationStore extends flux.Store {
         _endDateTime = dateTime.value;
       }
     });
-    triggerOnAction(buildingSelectAction, (Building building){
-      _selectedBuilding = building;
+    triggerOnConditionalAction(buildingSelectAction, (Building building){
       _selectedFloor = null;
       _selectedRoom = null;
       _roomsInBuilding = new List();
-      createFloors(building);
+      return _infoBaseRepo.getBuilding(building.UID).then((value) {
+        _selectedBuilding = value;
+        _floors = selectedBuilding.floors;
+        return true;
+      });
     });
-    triggerOnAction(floorSelectAction, (Floor floor){
-      _roomsInBuilding = _infoBaseRepo.getRoomsOfFloor(_selectedBuilding.UID,
-          floor.floorNumber);
+    triggerOnConditionalAction(floorSelectAction, (Floor floor) async{
       _selectedFloor = floor;
       _selectedRoom = null;
+      return _infoBaseRepo.getRoomsOfFloor(_selectedBuilding.UID,
+          floor.floorNumber).then((value){
+        _roomsInBuilding = value;
+        return true;
+      });
     });
     triggerOnAction(roomSelectAction, (Room room){
       _selectedRoom = room;
@@ -152,6 +163,7 @@ class EventCreationStore extends flux.Store {
 
   String get title => _title;
   String get description => _description;
+  String get image => _image;
   DateTime get startDateTime => _startDateTime;
   DateTime get endDateTime => _endDateTime;
   List<Building> get buildings => _buildings;

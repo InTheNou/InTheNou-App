@@ -1,4 +1,5 @@
 import 'package:InTheNou/models/coordinate.dart';
+import 'package:InTheNou/models/floor.dart';
 
 class Building {
 
@@ -7,6 +8,7 @@ class Building {
   String _name;
   String _commonName;
   int _numFloors;
+  List<Floor> _floors;
   String _type;
   Coordinate _coordinates;
   String _image;
@@ -20,27 +22,31 @@ class Building {
   }
 
   Building(this._UID, this._abbreviation, this._name, this._commonName,
-      this._numFloors, this._type, this._coordinates, this._image);
-  //"building":{"babbrev":"S","bcommonname":"STEFANI","bid":1,"bname":"LUIS A STEFANI (INGENIERIA)","btype":"Acad\u00e9mico","distinctfloors":[1,2,3,4,5,6,7],"numfloors":7,"photourl":null
+      this._numFloors, this._floors, this._type, this._coordinates, this
+          ._image);
 
   factory Building.fromJson(Map<String, dynamic> json) {
     return Building(
       json['bid'],
       json['babbrev'],
-      json['bname'],
-      json['bcommonname'],
+      json['bname'].toString().replaceAll(RegExp(r"(\()(.*)(\))"),""),
+      json['bcommonname'] ?? "error",
       json['numfloors'],
+      Floor.fromJsonToList(json['distinctfloors']),
       json['btype'],
-      json['bcoordinates'] ?? null,
+      Coordinate.fromHJson({
+        "CLatitude" : json['CLatitude'],
+        "CLongitude" : json['CLongitude'],
+        "CAltitude" : json['CAltitude'],
+      }),
       json['photourl'],
     );
   }
-
   factory Building.resultFromJson(Map<String, dynamic> json) {
     return Building.result(
       UID: json['bid'],
       abbreviation: json['babbrev'],
-      name: json['bname'],
+      name: json['bname'].toString().replaceAll(RegExp(r"(\()(.*)(\))"),""),
       commonName: json['bname'],
     );
   }
@@ -50,8 +56,21 @@ class Building {
   String get name => _name;
   String get commonName => _commonName;
   int get numFloors => _numFloors;
+  List<Floor> get floors => _floors;
   String get type => _type;
   Coordinate get coordinates => _coordinates;
   String get image => _image;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is Building &&
+              runtimeType == other.runtimeType &&
+              _UID == other._UID;
+
+  @override
+  int get hashCode => _UID.hashCode;
+
+
 
 }

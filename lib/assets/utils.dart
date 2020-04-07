@@ -231,7 +231,7 @@ class Utils {
   }
 
   static String formatTimeStamp(DateTime dateTime){
-    return  DateFormat("yyyy-MM-dd hh:mm:ss").format(dateTime);
+    return  DateFormat("yyyy-MM-dd HH:mm:ss").format(dateTime);
   }
 
   static List<int> getRandomNumberList(int length, int min, int max){

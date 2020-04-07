@@ -1,4 +1,3 @@
-import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/building.dart';
 import 'package:InTheNou/models/floor.dart';
@@ -76,17 +75,27 @@ class InfoBaseStore extends flux.Store{
                   break;
               }
     });
-    triggerOnAction(getAllBuildingsAction, (_){
-      _buildingsResults = _infoBaseRepo.getAllBuildings();
+    triggerOnConditionalAction(getAllBuildingsAction, (_) async{
+      return _infoBaseRepo.getAllBuildings().then((buildings){
+        _buildingsResults = buildings;
+        return true;
+      });
     });
 
-    triggerOnAction(selectBuildingAction, (Building building){
-      _detailBuilding = _infoBaseRepo.getBuilding(building.UID);
+    triggerOnConditionalAction(selectBuildingAction, (Building building) async{
+      return _infoBaseRepo.getBuilding(building.UID).then((value) {
+        _detailBuilding = value;
+        return true;
+      });
     });
-    triggerOnAction(selectFloorAction, (MapEntry<Building,int> floor){
-      _roomsInBuilding = _infoBaseRepo.getRoomsOfFloor(floor.key.UID,
-          floor.value);
-      _selectedFloor = Utils.ordinalNumber(floor.value);
+    triggerOnConditionalAction(selectFloorAction,
+            (MapEntry<Building,Floor> floor) async{
+      _selectedFloor = floor.value;
+      return _infoBaseRepo.getRoomsOfFloor(floor.key.UID, floor.value
+          .floorNumber).then((value){
+        _roomsInBuilding = value;
+        return true;
+      });
     });
     triggerOnAction(selectRoomAction, (Room room){
       _detailRoom = _infoBaseRepo.getRoom(room.UID);
@@ -140,7 +149,7 @@ final flux.Action<InfoBaseSearchType> clearInfoBaseKeywordAction = new
   flux.Action();
 final flux.Action getAllBuildingsAction = new flux.Action();
 final flux.Action<Building> selectBuildingAction = new flux.Action();
-final flux.Action<MapEntry<Building,int>> selectFloorAction = new flux
+final flux.Action<MapEntry<Building,Floor>> selectFloorAction = new flux
     .Action();
 final flux.Action<Room> selectRoomAction = new flux.Action();
 final flux.Action<Service> selectServiceAction = new flux.Action();

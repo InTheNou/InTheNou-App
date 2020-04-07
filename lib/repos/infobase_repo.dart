@@ -1,14 +1,19 @@
+import 'dart:io';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/building.dart';
 import 'package:InTheNou/models/coordinate.dart';
+import 'package:InTheNou/models/floor.dart';
 import 'package:InTheNou/models/phone_number.dart';
 import 'package:InTheNou/models/room.dart';
 import 'package:InTheNou/models/service.dart';
 import 'package:InTheNou/models/website.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert' as convert;
 
 class InfoBaseRepo {
 
   static final InfoBaseRepo _instance = InfoBaseRepo._internal();
+  var client = http.Client();
 
   factory InfoBaseRepo() {
     return _instance;
@@ -16,18 +21,67 @@ class InfoBaseRepo {
 
   InfoBaseRepo._internal();
 
-  List<Building> getAllBuildings(){
-    return new List.from(dummyBuildings);
+  Future<List<Building>> getAllBuildings() async{
+    return client.get(API_URL
+        +"/App/Buildings/offset=0/limit=1000")
+        .then((response) {
+      if (response.statusCode == HttpStatus.ok) {
+        List<Building> buildingResults = new List();
+        List jsonResponse = convert.jsonDecode(response.body);
+        if(jsonResponse != null){
+          jsonResponse.forEach((element) {
+            buildingResults.add(Building.fromJson(element));
+          });
+        }
+        return buildingResults;
+      } else {
+        return Future.error("Request failed with status: ${response
+            .statusCode} please try again");
+      }
+    });
+//    return new List.from(dummyBuildings);
   }
   List<Building> searchBuildings(String keyword){
     runLocalBuildingSearch(keyword);
     return new List.from(buildingsSearch);
   }
-  Building getBuilding(int buildingUID){
-    return dummyBuildings.firstWhere((element) => (element.UID ==
-        buildingUID));
+  Future<Building> getBuilding(int buildingUID) async{
+    return client.get(API_URL
+        +"/App/Buildings/bid=$buildingUID").then((response) {
+      if (response.statusCode == HttpStatus.ok) {
+        Building buildingResult;
+        Map<String, dynamic> jsonResponse = convert.jsonDecode(response.body);
+        if(jsonResponse != null){
+          buildingResult =  Building.fromJson(jsonResponse);
+        }
+        return buildingResult;
+      } else {
+        return Future.error("Request failed with status: ${response
+            .statusCode} please try again");
+      }
+    });
+//    return dummyBuildings.firstWhere((element) => (element.UID ==
+//        buildingUID));
   }
-  List<Room> getRoomsOfFloor(int buildingUID, int floor){
+  Future<List<Room>> getRoomsOfFloor(int buildingUID, int floor) async{
+    return client.get(API_URL
+        +"/App/Rooms/bid=$buildingUID/rfloor=$floor").then((response) {
+      if (response.statusCode == HttpStatus.ok) {
+        List<Room> roomResults = new List();
+        Building b = Building
+            .resultFromJson(convert.jsonDecode(response.body)['building']);
+        List jsonResponse = convert.jsonDecode(response.body)['rooms'];
+        if(jsonResponse != null){
+          jsonResponse.forEach((element) {
+            roomResults.add(Room.fromJson(element, b));
+          });
+        }
+        return roomResults;
+      } else {
+        return Future.error("Request failed with status: ${response
+            .statusCode} please try again");
+      }
+    });
     return dummyRooms[buildingUID].where((element) => element.floor == floor-1)
         .toList();
   }
@@ -54,7 +108,8 @@ class InfoBaseRepo {
   List<Building> dummyBuildings = new List.generate(2,
           (index) => new Building(index, "B$index","Building $index",
               "Cool Building $index",
-              2, "academic", new Coordinate(18.209641, -67.139923,0),
+              2,List.generate(2, (i) => Floor.fromJson(i)), "academic", new
+              Coordinate(18.209641, -67.139923,0),
               "https://pbs.twimg.com/media/DN8sEJpUEAAyuyF?format=jpg&name=large"));
 
   var dummyRooms = <int,List<Room>>{
