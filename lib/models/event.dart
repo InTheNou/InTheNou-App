@@ -1,4 +1,5 @@
 import 'package:InTheNou/assets/utils.dart';
+import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/building.dart';
 import 'package:InTheNou/models/room.dart';
 import 'package:InTheNou/models/tag.dart';
@@ -19,7 +20,7 @@ class Event {
   List<Website> _websites;
   List<Tag> _tags;
   bool followed;
-  bool recommended;
+  String recommended;
 
   Event(this._UID,this._title, this._description, this._creator, this._image,
       this._startDateTime, this._endDateTime, this._timestamp,
@@ -76,7 +77,7 @@ class Event {
         Room.fromJson(json['room'], b),
         Website.jsonToList(json["websites"]),
         Tag.fromJsonToList(json["tags"]),
-        json['itype'] == "following",
+        json['itype'] == Utils.interactionTypeToString(InteractionType.Following),
         null
     );
   }
@@ -92,7 +93,8 @@ class Event {
         endDateTime: df.parseUTC(json['eend']).toLocal(),
         timestamp: df.parseUTC(json['ecreation']).toLocal(),
         room: Room.forEventFromJson(json['room']),
-        followed: isFollowed ? true : json['itype'] == "following"
+        followed: isFollowed ? true :
+          json['itype'] == Utils.interactionTypeToString(InteractionType.Following)
     );
   }
 
@@ -135,7 +137,7 @@ class Event {
       return DateFormat('EEE d: hh:mm aaa - ').format(_startDateTime);
     } else {
       return DateFormat('EEE, MMM d: hh:mm aaa - ').format(_startDateTime)
-          + DateFormat('hh:mm aaa').format(_startDateTime);;
+          + DateFormat('hh:mm aaa').format(_startDateTime);
     }
   }
 

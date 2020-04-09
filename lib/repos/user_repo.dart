@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:convert' as convert;
 import 'package:InTheNou/assets/values.dart';
@@ -5,7 +6,12 @@ import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/models/session.dart';
 import 'package:InTheNou/models/tag.dart';
 import 'package:InTheNou/models/user.dart';
+import 'package:InTheNou/repos/api_connection.dart';
 import 'package:InTheNou/repos/events_repo.dart';
+import 'package:cookie_jar/cookie_jar.dart';
+import 'package:dio/dio.dart';
+import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -40,30 +46,67 @@ class UserRepo {
       throw 'Could not launch $URL';
     }
   }
+  ApiConnection apiConnection = ApiConnection();
 
   Future<bool> callAuthService() async {
 //    _userAccount = await _googleSignIn.signIn();
 //    print(_userAccount.toString());
-    var response = await client.get(API_URL+"/App/login");
+//    var response = await client.get("/App/login");
 //    debugPrint('Response body: ${response.body}');
-    RegExp reg = RegExp(r"(https:)(.*)(?=, 'OCAK')",multiLine: true);
-    String url = reg.stringMatch(response.body).split(RegExp(r"', "))[0];
-    url = url.replaceAll(RegExp(r'\\x3d'),"=");
-    url = url.replaceAll(RegExp(r'\\x26'),"&");
-    url = url.replaceAll(RegExp(r'\\/'),r"/");
-    print(url);
+//    RegExp reg = RegExp(r"(https:)(.*)(?=, 'OCAK')",multiLine: true);
+//    String url = reg.stringMatch(response.body).split(RegExp(r"', "))[0];
+//    url = url.replaceAll(RegExp(r'\\x3d'),"=");
+//    url = url.replaceAll(RegExp(r'\\x26'),"&");
+//    url = url.replaceAll(RegExp(r'\\/'),r"/");
+//    print(url);
+    String url = "https://25.128.255.65/App/login";
+
+    HttpClient client = new HttpClient();
+
+//    HttpClientRequest clientRequest =
+//    await client.getUrl(Uri.parse("https://inthenou.uprm.edu/Dashboard/Users/Delegated"));
+//    Cookie session = Cookie("session", ""
+//        ".eJyVTstqw0AQ-xUzZ1O8r9ld_0aPJYSZ2ZnE4ObgjQ8l5N-70C8oOkhCAukFV9up37XD-vWC6TkIvrV3uinM8HmKDGPnvv9Mfbs9tE3b4wMu7_k_5cs8Zg7td1ifx6nDbQ1WcM2YiES1cW4-VlSvUQKjoFtSTiQRgyteAzUUx9UtmAeK4tCZ1XLL3rRVjowlGCWyZNVVKzJCcktBl-IiPofAjIiRgo-RfSkpjc_Xs-vx9ybC-xc6olK-.Xo6a0A.D5QLQR_3kCcEaIPYdG-WAqaGd3A");
+//
+//    session.domain = ".inthenou.uprm.edu";
+//    session.path = "/";
+//    clientRequest.cookies.add(session);
+//    HttpClientResponse clientResponse = await clientRequest.close();
+//    clientResponse.transform(utf8.decoder).listen((body) {
+//      var document = convert.jsonDecode(body);
+//      print(document);
+//    });
+    Dio dio =  apiConnection.dio;
 
 //    _launchURL(url);
     // Present the dialog to the user
-//    final result = await FlutterWebAuth.authenticate(url: url,
-//        callbackUrlScheme: "https://inthenou.uprm.edu/login/google/authorized");
 
-  // Extract code from resulting url
-//    final code = Uri.parse(result);
-//    print(code);
+//    return FlutterWebAuth.authenticate(url: url,
+//        callbackUrlScheme: "inthenou").then((value) async{
+//          var uri = Uri.parse(value);
+//          print(uri);
+//          print(uri.queryParameters['uid']);
+//          print(uri.queryParameters['newAccount']);
+//          print(uri.queryParameters["session"]);
+////          print(convert.jsonDecode(uri.queryParameters["session"]));
+//          var cj = CookieJar();
+//          List<Cookie> results = cj.loadForRequest(Uri.parse(url));
+//          print(results);
+//          await dio.get(url).then((value) {
+//            print(value);
+//            print(value.headers.toString());
+//            print(apiConnection.cookies);
+//            print(apiConnection.session);
+//
+//          }).catchError((e){
+//            print(e);
+//          });
+//        return Uri.parse(value).queryParameters['newAccount'] == "True";
+//        });
 
     return true;
   }
+
 
   /// Check if there is a Session saved locally.
   /// IF there isn't one then just send null so the user goes to Login

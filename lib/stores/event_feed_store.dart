@@ -78,6 +78,11 @@ class EventFeedStore extends flux.Store{
         _getAllEvents(feed)
     );
     triggerOnConditionalAction(openEventDetail, (int eventID){
+      if(_eventDetail !=null && _eventDetail.UID == eventID){
+        return false;
+      }
+      _eventDetail = null;
+      trigger();
       return _eventsRepo.getEvent(eventID).then((Event value) {
         _eventDetail = value;
         return true;
@@ -127,13 +132,11 @@ class EventFeedStore extends flux.Store{
       unfollowed) {
         if (unfollowed){
           NotificationHandler.cancelNotification(event.value);
-          int i = _personalSearch.indexOf(event.value);
           return false;
         } else{
           // Revert all changes
           _modifyFollowStatus(event.value, true);
-          _setError(event.key, "Error UnFollowing Event please try again later"
-              ".");
+          _setError(event.key, "Error UnFollowing Event please try again later.");
           return true;
         }
       }).catchError((error){

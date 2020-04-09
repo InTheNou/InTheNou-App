@@ -42,8 +42,8 @@ class EventsRepo {
         }
         return eventResults;
       } else {
-        return Future.error("Request failed with status: ${response
-            .statusCode}");
+        return Utils.createError("Getting General Events",
+            response.statusCode, convert.jsonDecode(response.body)["Error"]);
       }
     });
   }
@@ -71,8 +71,8 @@ class EventsRepo {
             }
             return eventResults;
           } else {
-            return Future.error("Request failed with status: ${response
-                .statusCode}");
+            return Utils.createError("Getting Recommended Events",
+                response.statusCode, convert.jsonDecode(response.body)["Error"]);
           }
         });
   }
@@ -99,16 +99,9 @@ class EventsRepo {
   /// To get all the Events at once just supply a very bit number to [numEvents]
   Future<List<Event>> searchGenEvents(String keyword, int skipEvents,
       int numEvents) async{
-    final queryParameters = {
-      "uid": "4",
-      "searchstring": keyword
-    };
-    Uri uri = Uri.https("inthenou.uprm.edu",
-        "/App/Events/General/Keyword/offset=$skipEvents/limit=$numEvents",
-        queryParameters);
-
-    return client.get(uri).then(
-            (response) {
+    return client.get(API_URL+
+        "/App/Events/General/search=$keyword/offset=$skipEvents/limit=$numEvents"
+            "/uid=4").then((response) {
           if (response.statusCode == HttpStatus.ok) {
             List<Event> eventResults = new List();
             List jsonResponse = convert.jsonDecode(response.body)["events"];
@@ -119,8 +112,8 @@ class EventsRepo {
             }
             return eventResults;
           } else {
-            return Future.error("Request failed with status: ${response
-                .statusCode}");
+            return Utils.createError("Searching General Events",
+                response.statusCode, convert.jsonDecode(response.body)["Error"]);
           }
         });
   }
@@ -136,16 +129,9 @@ class EventsRepo {
   /// To get all the Events at once just supply a very bit number to [numEvents]
   Future<List<Event>> searchPerEvents(String keyword, int skipEvents,
       int numEvents) async{
-    final queryParameters = {
-      "uid": "4",
-      "searchstring": keyword
-    };
-    Uri uri = Uri.https("inthenou.uprm.edu",
-        "/App/Events/Recommended/Keyword/offset=$skipEvents/limit=$numEvents",
-        queryParameters);
-
-    return client.get(uri).then(
-            (response) {
+    return client.get(API_URL+
+        "/App/Events/Recommended/search=$keyword/offset=$skipEvents/limit"
+            "=$numEvents/uid=4").then((response) {
           if (response.statusCode == HttpStatus.ok) {
             List<Event> eventResults = new List();
             List jsonResponse = convert.jsonDecode(response.body)["events"];
@@ -156,8 +142,8 @@ class EventsRepo {
             }
             return eventResults;
           } else {
-            return Future.error("Request failed with status: ${response
-                .statusCode} please try again");
+            return Utils.createError("Searching Recommended Events",
+                response.statusCode, convert.jsonDecode(response.body)["Error"]);
           }
         });
   }
@@ -167,12 +153,13 @@ class EventsRepo {
   /// Given the [Event._UID] through the [eventUID] parameter, the back-end
   /// will return detailed information about the [Event] that matches the UID.
   Future<Event> getEvent(int eventUID) async{
-    return client.get(API_URL+ "/App/Events//eid=$eventUID").then((response) {
+    return client.get(API_URL+ "/App/Events/eid=$eventUID/uid=4").then(
+            (response) {
        if (response.statusCode == HttpStatus.ok) {
          return Event.fromJson(convert.jsonDecode(response.body));
        } else {
-         return Future.error("Request failed with status: ${response
-             .statusCode} please try again");
+         return Utils.createError("Getting Event", response.statusCode,
+             convert.jsonDecode(response.body)["Error"]);
        }
     });
   }
@@ -187,8 +174,8 @@ class EventsRepo {
           if (response.statusCode == HttpStatus.created) {
             return convert.jsonDecode(response.body)["event"]["eid"] == eventUID;
           } else {
-            return Future.error("Follow Request failed with status: ${response
-                .statusCode} please try again");
+            return Utils.createError("Follow", response.statusCode,
+                convert.jsonDecode(response.body)["Error"]);
           }
         });
   }
@@ -203,8 +190,8 @@ class EventsRepo {
       if (response.statusCode == HttpStatus.created) {
         return convert.jsonDecode(response.body)["event"]["eid"] == eventUID;
       } else {
-        return Future.error("Unfollow Request failed with status: ${response
-            .statusCode} please try again");
+        return Utils.createError("Unfollow", response.statusCode,
+            convert.jsonDecode(response.body)["Error"]);
       }
     });
   }
@@ -220,8 +207,8 @@ class EventsRepo {
       if (response.statusCode == HttpStatus.created) {
         return convert.jsonDecode(response.body)["event"]["eid"] == eventUID;
       } else {
-        return Future.error("Dismiss Request failed with status: ${response
-            .statusCode} please try again");
+        return Utils.createError("Dismiss", response.statusCode,
+            convert.jsonDecode(response.body)["Error"]);
       }
     });
   }
@@ -232,13 +219,25 @@ class EventsRepo {
   /// marks them as being Recommended to this user, setting
   /// [Event.recommended]. Events marked as such will show up in the Personal
   /// Feed.
-  Future<bool> requestRecommendation(List<Event> events) async{
-    int index;
-    events.forEach((event) {
-      index = dummyEvents.indexOf(event);
-      dummyEvents[index] = event;
-    });
-    return true;
+  Future<List<bool>> requestRecommendation(List<Event> events) async{
+    Future<List<bool>> result;
+    result = Future.wait<bool>(events.map((event) async{
+      return await client.post(API_URL+
+          "/App/Events/eid=${event.UID}/uid=4/recommendstatus="
+              "${event.recommended}").then((response) {
+        if (response.statusCode == HttpStatus.created) {
+          if(convert.jsonDecode(response.body)["eid"] == event.UID){
+            return true;
+          } else {
+            return Utils.createError("Reccomendation", null, null);
+          }
+        } else {
+          return Utils.createError("Reccomendation", response.statusCode,
+              convert.jsonDecode(response.body)["Error"]);
+        }
+      });
+    }));
+    return result;
   }
 
   /// Requests for an [Event] to be created in the system.
@@ -255,8 +254,8 @@ class EventsRepo {
       if (response.statusCode == HttpStatus.created) {
         return convert.jsonDecode(response.body)["eid"] == event.UID;
       } else {
-        return Future.error("Dismiss Request failed with status: ${response
-            .statusCode} please try again");
+        return Utils.createError("Create Event", response.statusCode,
+            convert.jsonDecode(response.body)["Error"]);
       }
     });
   }

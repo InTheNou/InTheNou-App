@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/coordinate.dart';
@@ -12,7 +14,8 @@ class Utils {
 
   static String infoBaseSearchString(InfoBaseSearchType type) =>
       type == InfoBaseSearchType.Building ? "Buildings Search" :
-      type == InfoBaseSearchType.Room ? "Rooms Search" : "Services Search";
+      type == InfoBaseSearchType.Room ? "Rooms Search" :
+      type == InfoBaseSearchType.Service ? "Services Search" : "Floors";
 
   static String telephoneTypeString(PhoneType telephoneType) =>
       telephoneType == PhoneType.E ? "E" :
@@ -38,6 +41,14 @@ class Utils {
       type == "SmartNotification" ? NotificationType.SmartNotification :
       type == "DefaultNotification" ? NotificationType.DefaultNotification :
       NotificationType.RecommendationNotification;
+
+  static String interactionTypeToString(InteractionType type) =>
+      type == InteractionType.Following  ? "following" :
+      type == InteractionType.unfollowed  ? "unfollowed" :
+      "dismissed";
+
+  static String recommendationTypeFromString(RecommendationType type) =>
+      type == RecommendationType.R  ? "R" : "N";
 
   ///  Check if shared preferences has been setup, if not then set the default
   /// values
@@ -245,6 +256,27 @@ class Utils {
       num = rand.nextInt(max - min) + min;
     }
     return randomList;
+  }
+
+  static Future<T> createError<T>(String feature, int status, String
+  statusString){
+    switch(status){
+      case HttpStatus.badRequest: //400
+        return Future.error("$feature Request failed with error: $status \n"
+            "$statusString");
+        break;
+      case HttpStatus.notFound:   //404
+        return Future.error("$feature Request failed with error: $status \n"
+            "$statusString");
+        break;
+      case HttpStatus.internalServerError:   //500
+        return Future.error("$feature Request failed with error: $status \n"
+            "$statusString \n\n"
+            "Please contact the development team to let them know what "
+            "happened and what you were doing at the time.");
+        break;
+    }
+    return Future.error("$feature Request failed unknown error.");
   }
 
 }

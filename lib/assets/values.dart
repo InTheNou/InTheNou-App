@@ -11,7 +11,8 @@ enum FeedType{
 enum InfoBaseSearchType{
   Building,
   Room,
-  Service
+  Service,
+  Floor
 }
 
 enum PhoneType{
@@ -39,6 +40,18 @@ enum NotificationType{
   DefaultNotification,
   RecommendationNotification,
   Alert
+}
+
+// Used when converting from json received from database for itype
+enum InteractionType{
+  Following,
+  unfollowed,
+  dismissed
+}
+// Used when converting from json received from database for reccomendstatus
+enum RecommendationType{
+  R,
+  N
 }
 
 //Constants

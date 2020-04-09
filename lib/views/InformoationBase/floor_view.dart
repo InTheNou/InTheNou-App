@@ -1,3 +1,4 @@
+import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/room.dart';
 import 'package:InTheNou/stores/infobase_store.dart';
 import 'package:InTheNou/views/InformoationBase/room_card.dart';
@@ -24,6 +25,9 @@ class _FloorViewState extends State<FloorView>
   }
   @override
   Widget build(BuildContext context) {
+    if(_infoBaseStore.getError(InfoBaseSearchType.Floor) !=null){
+      showErrorDialog(_infoBaseStore.getError(InfoBaseSearchType.Floor));
+    }
     if(_infoBaseStore.roomsInBuilding == null) {
       return Scaffold(
         appBar: AppBar(
@@ -53,5 +57,26 @@ class _FloorViewState extends State<FloorView>
         ],
       )
     );
+  }
+
+  Future showErrorDialog(String errorText) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await showDialog<String>(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text('Error'),
+          content: Text(errorText),
+          actions: <Widget>[
+            FlatButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                clearInfoBaseErrorAction(InfoBaseSearchType.Floor);
+              },
+            ),
+          ],
+        ),
+      );
+    });
   }
 }

@@ -2,7 +2,6 @@ import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/home_page.dart';
 import 'package:InTheNou/views/Account/account_creation_view.dart';
 import 'package:InTheNou/views/Account/login_view.dart';
-import 'package:InTheNou/views/Account/login_web_view.dart';
 import 'package:InTheNou/views/EventFeed/event_creation_view.dart';
 import 'package:InTheNou/views/EventFeed/event_detail_view.dart';
 import 'package:InTheNou/views/InformoationBase/building_view.dart';
@@ -29,10 +28,6 @@ class RouteGenerator{
         return MaterialPageRoute(
             settings: settings,
             builder: (_) => LoginView());
-      case "/login_webview":
-          return MaterialPageRoute(
-            settings: settings,
-            builder: (_) => LoginWebView());
       case "/accountcreation":
         return MaterialPageRoute(
             settings: settings,

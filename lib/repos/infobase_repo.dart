@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/building.dart';
 import 'package:InTheNou/models/coordinate.dart';
@@ -23,8 +24,7 @@ class InfoBaseRepo {
 
   Future<List<Building>> getAllBuildings() async{
     return client.get(API_URL
-        +"/App/Buildings/offset=0/limit=1000")
-        .then((response) {
+        +"/App/Buildings/offset=0/limit=1000").then((response) {
       if (response.statusCode == HttpStatus.ok) {
         List<Building> buildingResults = new List();
         List jsonResponse = convert.jsonDecode(response.body);
@@ -35,14 +35,29 @@ class InfoBaseRepo {
         }
         return buildingResults;
       } else {
-        return Future.error("Request failed with status: ${response
-            .statusCode} please try again");
+        return Utils.createError("Getting Buildings ",
+            response.statusCode, convert.jsonDecode(response.body)["Error"]);
       }
     });
   }
-  List<Building> searchBuildings(String keyword){
-    runLocalBuildingSearch(keyword);
-    return new List.from(buildingsSearch);
+  Future<List<Building>> searchBuildings(String keyword) async{
+    return client.get(API_URL
+        +"/App/Rooms/searchstring=$keyword/offset=0/limit=10000").then((response) {
+      if (response.statusCode == HttpStatus.ok) {
+        List<Building> buildingResults = List();
+        List<dynamic> jsonResponse =
+          convert.jsonDecode(response.body)["buildings"];
+        if(jsonResponse != null){
+          jsonResponse.forEach((element) {
+            buildingResults.add(Building.resultFromJson(element));
+          });
+        }
+        return buildingResults;
+      } else {
+        return Utils.createError("Searching Buildings ",
+            response.statusCode, convert.jsonDecode(response.body)["Error"]);
+      }
+    });
   }
   Future<Building> getBuilding(int buildingUID) async{
     return client.get(API_URL
@@ -55,8 +70,8 @@ class InfoBaseRepo {
         }
         return buildingResult;
       } else {
-        return Future.error("Request failed with status: ${response
-            .statusCode} please try again");
+        return Utils.createError("Getting Building ",
+            response.statusCode, convert.jsonDecode(response.body)["Error"]);
       }
     });
   }
@@ -77,22 +92,56 @@ class InfoBaseRepo {
         }
         return roomResults;
       } else {
-        return Future.error("Request failed with status: ${response
-            .statusCode} please try again");
+        return Utils.createError("Searching Room ",
+            response.statusCode, convert.jsonDecode(response.body)["Error"]);
       }
     });
   }
-  List<Room> searchRooms(String keyword){
-    runLocalRoomSearch(keyword);
-    return new List.from(roomsSearch);
+  Future<List<Room>> searchRoomsByKeyword(String keyword) async{
+    return client.get(API_URL
+        +"/App/Rooms/searchstring=$keyword/offset=0/limit=10000").then((response) {
+      if (response.statusCode == HttpStatus.ok) {
+        List<Room> roomsResult = List();
+        List<dynamic> jsonResponse = convert.jsonDecode(response.body)["rooms"];
+        if(jsonResponse != null){
+          jsonResponse.forEach((element) {
+            Building b = Building.resultFromJson(element['building']);
+            roomsResult.add(Room.fromJson(element, b));
+          });
+        }
+        return roomsResult;
+      } else {
+        return Utils.createError("Searching Rooms ",
+            response.statusCode, convert.jsonDecode(response.body)["Error"]);
+      }
+    });
   }
-  Future<Room> getRoom(int roomUID){
+  Future<List<Room>> searchRoomsByCode(String abrev, String code) async{
+    return client.get(API_URL
+        +"/App/Rooms/babbrev=$abrev/rcode=$code/offset=0/limit=10000")
+        .then((response) {
+      if (response.statusCode == HttpStatus.ok) {
+        List<Room> roomsResult = List();
+        List<dynamic> jsonResponse = convert.jsonDecode(response.body)["rooms"];
+        if(jsonResponse != null){
+          jsonResponse.forEach((element) {
+            Building b = Building.resultFromJson(element['building']);
+            roomsResult.add(Room.fromJson(element, b));
+          });
+        }
+        return roomsResult;
+      } else {
+        return Utils.createError("Searching Rooms ",
+            response.statusCode, convert.jsonDecode(response.body)["Error"]);
+      }
+    });
+  }
+  Future<Room> getRoom(int roomUID) async{
     return client.get(API_URL
         +"/App/Rooms/rid=$roomUID").then((response) {
       if (response.statusCode == HttpStatus.ok) {
         Room roomResult;
         Map<String, dynamic> jsonResponse = convert.jsonDecode(response.body);
-        print(jsonResponse);
         if(jsonResponse != null){
           Building b = Building.resultFromJson(jsonResponse['building']);
           roomResult = Room.fromJson(jsonResponse, b);
@@ -108,14 +157,32 @@ class InfoBaseRepo {
         }
         return roomResult;
       } else {
-        return Future.error("Request failed with status: ${response
-            .statusCode} please try again");
+        return Utils.createError("Getting Room ",
+            response.statusCode, convert.jsonDecode(response.body)["Error"]);
       }
     });
   }
-  List<Service> searchServices(String keyword){
-    runLocalServiceSearch(keyword);
-    return new List.from(servicesSearch);
+  Future<List<Service>> searchServices(String keyword) async{
+    return client.get(API_URL
+        +"/App/Services/searchstring=$keyword/offset=0/limit=10000")
+        .then((response) {
+      if (response.statusCode == HttpStatus.ok) {
+        List<Service> serviceResult = List();
+        List<dynamic> jsonResponse = convert.jsonDecode(response.body)
+        ["services"];
+        if(jsonResponse != null){
+          jsonResponse.forEach((element) {
+            Building b = Building.resultFromJson(element["room"]['building']);
+            Room r = Room.fromJson(element["room"], b);
+            serviceResult.add(Service.fromJson(element, r));
+          });
+        }
+        return serviceResult;
+      } else {
+        return Utils.createError("Searching Services ",
+            response.statusCode, convert.jsonDecode(response.body)["Error"]);
+      }
+    });
   }
 
   Future<Service> getService(int serviceUID){
@@ -125,7 +192,6 @@ class InfoBaseRepo {
         Room roomResult;
         Service service;
         Map<String, dynamic> jsonResponse = convert.jsonDecode(response.body);
-        print(jsonResponse);
         if(jsonResponse != null){
           Building b = Building.resultFromJson
             (jsonResponse['room']['building']);
@@ -140,10 +206,11 @@ class InfoBaseRepo {
         }
         return service;
       } else {
-        return Future.error("Request failed with status: ${response
-            .statusCode} please try again");
+        return Utils.createError("Getting Service ",
+            response.statusCode, convert.jsonDecode(response.body)["Error"]);
       }
-    });    }
+    });
+  }
 
 //---------------------- DEBUGGING STUFF ----------------------
   List<Building> dummyBuildings = new List.generate(2,

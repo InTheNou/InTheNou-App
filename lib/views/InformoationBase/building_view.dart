@@ -1,5 +1,5 @@
 import 'package:InTheNou/assets/colors.dart';
-import 'package:InTheNou/assets/utils.dart';
+import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/floor.dart';
 import 'package:InTheNou/stores/infobase_store.dart';
 import 'package:flutter/cupertino.dart';
@@ -26,6 +26,9 @@ class _BuildingViewState extends State<BuildingView>
 
   @override
   Widget build(BuildContext context) {
+    if(_infoBaseStore.getError(InfoBaseSearchType.Building) !=null){
+      showErrorDialog(_infoBaseStore.getError(InfoBaseSearchType.Building));
+    }
     if(_infoBaseStore.detailBuilding == null) {
       return Scaffold(
         appBar: AppBar(
@@ -213,5 +216,26 @@ class _BuildingViewState extends State<BuildingView>
         )
       ),
     );
+  }
+
+  Future showErrorDialog(String errorText) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await showDialog<String>(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text('Error'),
+          content: Text(errorText),
+          actions: <Widget>[
+            FlatButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                clearInfoBaseErrorAction(InfoBaseSearchType.Building);
+              },
+            ),
+          ],
+        ),
+      );
+    });
   }
 }

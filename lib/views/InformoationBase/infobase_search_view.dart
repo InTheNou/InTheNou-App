@@ -65,6 +65,9 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
   }
 
   Widget showCorrectList(){
+    if(_infoBaseStore.getError(widget.searchType) !=null){
+      showErrorDialog(_infoBaseStore.getError(widget.searchType));
+    }
     switch (widget.searchType){
       case InfoBaseSearchType.Building:
         return showBuildingsResults();
@@ -75,10 +78,19 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
       case InfoBaseSearchType.Service:
         return showServicesResults();
         break;
+      case InfoBaseSearchType.Floor:
+        break;
     }
   }
 
   Widget showBuildingsResults(){
+    if(_infoBaseStore.buildingsResults == null) {
+      return Center(
+        child: Container(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
     return ListView.builder(
         itemCount: _infoBaseStore.buildingsResults.length,
         controller: _scrollController,
@@ -134,6 +146,13 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
   }
 
   Widget showRoomsResults(){
+    if(_infoBaseStore.roomsResults == null) {
+      return Center(
+        child: Container(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
     return ListView.builder(
         itemCount: _infoBaseStore.roomsResults.length,
         controller: _scrollController,
@@ -144,6 +163,13 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
   }
 
   Widget showServicesResults(){
+    if(_infoBaseStore.servicesResults == null) {
+      return Center(
+        child: Container(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
     return ListView.builder(
         itemCount: _infoBaseStore.servicesResults.length,
         controller: _scrollController,
@@ -179,21 +205,41 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
   }
 
   Widget _buildSearchField() {
+    _searchQueryController.text =
+        _infoBaseStore.getSearchKeyword(widget.searchType);
     return TextField(
       controller: _searchQueryController,
       autofocus: true,
       decoration: InputDecoration(
-        hintText: "Search Events...",
+        hintText: _buildHint(widget.searchType),
         border: InputBorder.none,
-        hintStyle: TextStyle(color: Colors.white30),
+        hintStyle: TextStyle(color: Colors.white70),
       ),
       style: TextStyle(color: Colors.white, fontSize: 16.0),
       onSubmitted: (query) {
-        _scrollController.animateTo(0.0,
-            curve: Curves.ease, duration: Duration(seconds: 1));
+        if(_scrollController.hasClients){
+          _scrollController.animateTo(0.0, curve: Curves.ease,
+              duration: Duration(seconds: 1));
+        }
         searchInfoBaseAction(new MapEntry(widget.searchType, query));
       },
     );
+  }
+
+  String _buildHint(InfoBaseSearchType type){
+    switch(type){
+      case InfoBaseSearchType.Building:
+       return "Search: Stefani";
+        break;
+      case InfoBaseSearchType.Room:
+        return "Search: S-100, Salon";
+        break;
+      case InfoBaseSearchType.Service:
+        return "Search: Oficina";
+        break;
+      case InfoBaseSearchType.Floor:
+        break;
+    }
   }
 
   void _startSearch() {
@@ -203,9 +249,11 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
   }
 
   void _stopSearching() {
-    _scrollController.animateTo(0.0,
-        curve: Curves.ease, duration: Duration(seconds: 2));
-    _clearSearchKeyword();
+    if(_scrollController.hasClients){
+      _scrollController.animateTo(0.0,
+          curve: Curves.ease, duration: Duration(seconds: 2));
+    }
+//    _clearSearchKeyword();
     setSearchingAction(new MapEntry(widget.searchType, false));
     if(widget.searchType == InfoBaseSearchType.Building) {
       getAllBuildingsAction();
@@ -215,5 +263,26 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
   void _clearSearchKeyword() {
     _searchQueryController.clear();
     clearInfoBaseKeywordAction(widget.searchType);
+  }
+
+  Future showErrorDialog(String errorText) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await showDialog<String>(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text('Error'),
+          content: Text(errorText),
+          actions: <Widget>[
+            FlatButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                clearInfoBaseErrorAction(widget.searchType);
+              },
+            ),
+          ],
+        ),
+      );
+    });
   }
 }

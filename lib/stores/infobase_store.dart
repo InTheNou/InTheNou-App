@@ -29,25 +29,47 @@ class InfoBaseStore extends flux.Store{
   String _roomSearchKeyword;
   String _serviceSearchKeyword;
 
+  List<String> _errors = List(4);
+
   InfoBaseRepo _infoBaseRepo = new InfoBaseRepo();
 
   InfoBaseStore() {
-    triggerOnAction(searchInfoBaseAction,
-        (MapEntry<InfoBaseSearchType, String> search){
+    triggerOnConditionalAction(searchInfoBaseAction,
+        (MapEntry<InfoBaseSearchType, String> search) {
       switch(search.key){
         case InfoBaseSearchType.Building:
-          _buildingsResults = _infoBaseRepo.searchBuildings(search.value);
+          _buildingSearchKeyword = search.value;
+          _infoBaseRepo.searchBuildings(search.value).then((value) {
+            _buildingsResults = value;
+          }).catchError((error){
+            _setError(InfoBaseSearchType.Building, error.toString());
+            return true;
+          });
+          return true;
           break;
         case InfoBaseSearchType.Room:
-          _roomsResults = _infoBaseRepo.searchRooms(search.value);
+          _roomSearchKeyword = search.value;
+          return _searchRooms(search.value)
+              .catchError((error){
+                _setError(InfoBaseSearchType.Room, error.toString());
+                return true;
+              });
           break;
         case InfoBaseSearchType.Service:
-          _servicesResults = _infoBaseRepo.searchServices(search.value);
+          _serviceSearchKeyword = search.value;
+          return _searchServicesByKeyword(search.value)
+              .catchError((error){
+                _setError(InfoBaseSearchType.Service, error.toString());
+                return true;
+              });
+          break;
+        default:
+            return true;
           break;
       }
     });
     triggerOnAction(setSearchingAction,
-            (MapEntry<InfoBaseSearchType, bool> searching){
+            (MapEntry<InfoBaseSearchType, bool> searching) {
       switch (searching.key){
         case InfoBaseSearchType.Building:
           _isBuildingSearching = searching.value;
@@ -58,11 +80,12 @@ class InfoBaseStore extends flux.Store{
         case InfoBaseSearchType.Service:
           _isServiceSearching = searching.value;
           break;
+        case InfoBaseSearchType.Floor:
+          break;
       }
 
     });
-    triggerOnAction(clearInfoBaseKeywordAction,
-            (InfoBaseSearchType searching){
+    triggerOnAction(clearInfoBaseKeywordAction, (InfoBaseSearchType searching) {
               switch(searching){
                 case InfoBaseSearchType.Building:
                   _buildingSearchKeyword = "";
@@ -73,16 +96,21 @@ class InfoBaseStore extends flux.Store{
                 case InfoBaseSearchType.Service:
                   _serviceSearchKeyword = "";
                   break;
+                case InfoBaseSearchType.Floor:
+                  break;
               }
     });
-    triggerOnConditionalAction(getAllBuildingsAction, (_) async{
+    triggerOnConditionalAction(getAllBuildingsAction, (_) {
       return _infoBaseRepo.getAllBuildings().then((buildings){
         _buildingsResults = buildings;
+        return true;
+      }).catchError((error){
+        _setError(InfoBaseSearchType.Building, error.toString());
         return true;
       });
     });
 
-    triggerOnConditionalAction(selectBuildingAction, (Building building) async{
+    triggerOnConditionalAction(selectBuildingAction, (Building building) {
       if(_detailBuilding == building){
         return false;
       }
@@ -91,10 +119,13 @@ class InfoBaseStore extends flux.Store{
       return _infoBaseRepo.getBuilding(building.UID).then((value) {
         _detailBuilding = value;
         return true;
+      }).catchError((error){
+        _setError(InfoBaseSearchType.Building, error.toString());
+        return true;
       });
     });
     triggerOnConditionalAction(selectFloorAction,
-            (MapEntry<Building,Floor> floor) async{
+            (MapEntry<Building,Floor> floor) {
       if(selectedFloor ==  floor.value){
         return false;
       }
@@ -104,6 +135,9 @@ class InfoBaseStore extends flux.Store{
       return _infoBaseRepo.getRoomsOfFloor(floor.key.UID, floor.value
           .floorNumber).then((value){
         _roomsInBuilding = value;
+        return true;
+      }).catchError((error){
+        _setError(InfoBaseSearchType.Floor, error.toString());
         return true;
       });
     });
@@ -117,6 +151,10 @@ class InfoBaseStore extends flux.Store{
         _detailRoom = value;
         _servicesInRoom = _detailRoom.services;
         return true;
+      }).catchError((error){
+        print(error);
+        _setError(InfoBaseSearchType.Room, error.toString());
+        return true;
       });
     });
     triggerOnAction(selectServiceAction, (Service service){
@@ -128,7 +166,53 @@ class InfoBaseStore extends flux.Store{
       return _infoBaseRepo.getService(service.UID).then((value) {
         _detailService = value;
         return true;
+      }).catchError((error){
+        _setError(InfoBaseSearchType.Service, error.toString());
+        return true;
       });
+    });
+    triggerOnAction(clearInfoBaseErrorAction, (InfoBaseSearchType type){
+      switch (type){
+        case InfoBaseSearchType.Building:
+          _errors[0] = null;
+          break;
+        case InfoBaseSearchType.Room:
+          _errors[1] = null;
+          break;
+        case InfoBaseSearchType.Service:
+          _errors[2] = null;
+          break;
+        case InfoBaseSearchType.Floor:
+          _errors[3] = null;
+          break;
+      }
+    });
+  }
+
+  Future<bool> _searchRooms(String code){
+    if(code.contains(RegExp(r"^\b[a-zA-Z]{1,2}-\d{1,3}[a-zA-Z]?$"))){
+      var codeQuery = RegExp(
+          r"(?<abrev>\b[a-zA-Z]{1,2})(?<dash>-)(?<code>\d{1,3}[a-zA-Z]?)")
+          .firstMatch(code);
+      String abrev = codeQuery.namedGroup("abrev");
+      String rCode = codeQuery.namedGroup("code");
+      return _infoBaseRepo.searchRoomsByCode(abrev, rCode).then((value){
+        _roomsResults = value;
+        return true;
+      });
+    }
+    else{
+      return _infoBaseRepo.searchRoomsByKeyword(code).then((value){
+        _roomsResults = value;
+        return true;
+      });
+    }
+  }
+
+  Future<bool> _searchServicesByKeyword(String code){
+    return _infoBaseRepo.searchServices(code).then((value){
+      _servicesResults = value;
+      return true;
     });
   }
 
@@ -150,6 +234,8 @@ class InfoBaseStore extends flux.Store{
         return _isRoomSearching;
       case InfoBaseSearchType.Service:
         return _isServiceSearching;
+      case InfoBaseSearchType.Floor:
+        break;
     }
     return false;
   }
@@ -161,8 +247,47 @@ class InfoBaseStore extends flux.Store{
         return _roomSearchKeyword;
       case InfoBaseSearchType.Service:
         return _serviceSearchKeyword;
+      case InfoBaseSearchType.Floor:
+        break;
     }
     return null;
+  }
+
+  String getError(InfoBaseSearchType type){
+    switch (type){
+      case InfoBaseSearchType.Building:
+        return _errors[0];
+        break;
+      case InfoBaseSearchType.Room:
+        return _errors[1];
+        break;
+      case InfoBaseSearchType.Service:
+        return _errors[2];
+        break;
+      case InfoBaseSearchType.Floor:
+        return _errors[3];
+        break;
+      default:
+        return null;
+        break;
+    }
+  }
+
+  void _setError(InfoBaseSearchType type, String error){
+    switch (type){
+      case InfoBaseSearchType.Building:
+        _errors[0] = error;
+        break;
+      case InfoBaseSearchType.Room:
+        _errors[1] = error;
+        break;
+      case InfoBaseSearchType.Service:
+        _errors[2] = error;
+        break;
+      case InfoBaseSearchType.Floor:
+        _errors[3] = error;
+        break;
+    }
   }
 
 }
@@ -173,6 +298,8 @@ final flux.Action<MapEntry<InfoBaseSearchType, bool>> setSearchingAction = new
   flux.Action();
 final flux.Action<InfoBaseSearchType> clearInfoBaseKeywordAction = new
   flux.Action();
+final flux.Action<InfoBaseSearchType> clearInfoBaseErrorAction = new
+flux.Action();
 final flux.Action getAllBuildingsAction = new flux.Action();
 final flux.Action<Building> selectBuildingAction = new flux.Action();
 final flux.Action<MapEntry<Building,Floor>> selectFloorAction = new flux

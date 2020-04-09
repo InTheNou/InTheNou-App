@@ -150,9 +150,9 @@ class GeneralFeedState extends State<FeedView>
         decoration: InputDecoration(
           hintText: "Search Events...",
           border: InputBorder.none,
-          filled: true,
-          fillColor: Colors.white,
+          hintStyle: TextStyle(color: Colors.white70),
         ),
+        style: TextStyle(color: Colors.white, fontSize: 16.0),
         onSubmitted: (query) {
           if(_scrollController.hasClients){
             _scrollController.animateTo(0.0,

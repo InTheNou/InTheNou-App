@@ -89,7 +89,7 @@ class BackgroundHandler {
 //        if(_prefs.getBool(SMART_NOTIFICATION_KEY)){
 //          _prepareForNotification();
 //        }
-        _doRecommendation();
+//        _doRecommendation();
         break;
       case "com.inthenou.app.cleanup":
         NotificationHandler.cleanupNotifications();
@@ -174,20 +174,20 @@ class BackgroundHandler {
       if(commonTags.length >= 2){
         weight = calcWeightedSum(commonTags, event.tags.length);
         if(weight >= WEIGHTED_SUM_THRESHOLD){
-          event.recommended = true;
+          event.recommended = "R";
           recommendedEvents.add(event);
         }
         else {
-          event.recommended = false;
+          event.recommended = "N";
         }
       } else{
-        event.recommended = false;
+        event.recommended = "N";
       }
     });
 
-    if(recommendedEvents.length > 0){
-      _eventRepo.requestRecommendation(recommendedEvents);
+    _eventRepo.requestRecommendation(newEvents);
 
+    if(recommendedEvents.length > 0){
       NotificationHandler.scheduleRecommendationNotification
         (NotificationObject(id: 0,
           type: NotificationType.RecommendationNotification,

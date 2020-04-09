@@ -27,6 +27,9 @@ class _ServiceViewState extends State<ServiceView>
 
   @override
   Widget build(BuildContext context) {
+    if(_infoBaseStore.getError(InfoBaseSearchType.Service) !=null){
+      showErrorDialog(_infoBaseStore.getError(InfoBaseSearchType.Service));
+    }
     if(_infoBaseStore.detailService == null) {
       return Scaffold(
         appBar: AppBar(
@@ -198,7 +201,6 @@ class _ServiceViewState extends State<ServiceView>
     );
   }
 
-
   Widget createPhoneEntry(PhoneNumber phoneNumber){
     switch (phoneNumber.type){
       case PhoneType.E:
@@ -238,5 +240,26 @@ class _ServiceViewState extends State<ServiceView>
         );
         break;
     }
+  }
+
+  Future showErrorDialog(String errorText) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await showDialog<String>(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text('Error'),
+          content: Text(errorText),
+          actions: <Widget>[
+            FlatButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                clearInfoBaseErrorAction(InfoBaseSearchType.Service);
+              },
+            ),
+          ],
+        ),
+      );
+    });
   }
 }
