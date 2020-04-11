@@ -29,7 +29,7 @@ class GeneralFeedState extends State<FeedView>
 
     /// if it's the first time the feed is loaded, get all the Events
     _eventFeedStore = listenToStore(EventFeedStore.eventFeedToken);
-    _userStore = UserStore();
+    _userStore = listenToStore(UserStore.userStoreToken);
     WidgetsBinding.instance.addPostFrameCallback((_){
       if (_eventFeedStore.eventCount(widget.type) == 0 &&
           !_eventFeedStore.isSearching(widget.type)){

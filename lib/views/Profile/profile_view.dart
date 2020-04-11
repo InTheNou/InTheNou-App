@@ -51,8 +51,7 @@ class ProfileState extends State<ProfileView>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Text(
-                          _userStore.user.firstName +" "+
-                              _userStore.user.lastName,
+                          _userStore.user.fullName ,
                           style: Theme.of(context).textTheme.headline5,
                         ),
                         const Padding(padding: EdgeInsets.all(8.0)),
@@ -88,7 +87,7 @@ class ProfileState extends State<ProfileView>
                         RichText(
                           text: TextSpan(
                               style: Theme.of(context).textTheme.subtitle1,
-                              text: "TPrivilege level: ",
+                              text: "Privilege level: ",
                               children: <TextSpan>[
                                 TextSpan(
                                     text: Utils.userPrivilegeString(_userStore

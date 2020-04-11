@@ -1,4 +1,5 @@
-import 'package:InTheNou/models/session.dart';
+import 'dart:io';
+
 import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
@@ -18,12 +19,19 @@ class _StartUpViewState extends State<StartUpView>
   void initState() {
     super.initState();
     _userStore = listenToStore(UserStore.userStoreToken);
-    _userStore.getSession().then((Session session) {
+    _userStore.getSession().then((Cookie session) {
       if(session==null){
         Navigator.of(context).pushReplacementNamed("/login");
       }
       else{
-        Navigator.of(context).pushReplacementNamed("/home");
+        _userStore.getUser().then((user) {
+          print(user);
+          if(user == null || user.tags == null){
+            Navigator.of(context).pushReplacementNamed("/accountcreation");
+          } else {
+            Navigator.of(context).pushReplacementNamed("/home");
+          }
+        });
       }
     });
   }
@@ -35,31 +43,24 @@ class _StartUpViewState extends State<StartUpView>
       body: Center(
         child: Column(
           children: <Widget>[
-            Flexible(
-              flex: 3,
-              child: Container(
-                height: 450,
-                width: 350,
-                child: Image.asset(
-                  "lib/assets/InTheNou_logo.png",
-                  fit: BoxFit.fitWidth,
-                  semanticLabel: "InTheNou App Logo",
-                ),
+            Container(
+              height: 450,
+              width: 350,
+              child: Image.asset(
+                "lib/assets/InTheNou_logo.png",
+                fit: BoxFit.fitWidth,
+                semanticLabel: "InTheNou App Logo",
               ),
             ),
             Flexible(
               flex: 4,
-              child: Column(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Container(
-                      height: 100,
-                      width: 100,
-                      child: CircularProgressIndicator(),
-                    ),
-                  ),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Container(
+                  height: 100,
+                  width: 100,
+                  child: CircularProgressIndicator(),
+                ),
               ),
             ),
             Expanded(

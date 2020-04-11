@@ -132,7 +132,7 @@ class EventCreationStore extends flux.Store {
     triggerOnAction(searchedTagAction, (String search){
       _searchTags.clear();
       _allTags.forEach((key, value) {
-        if(key.name.contains(search)){
+        if(key.name.toUpperCase().contains(search.toUpperCase())){
           _searchTags.putIfAbsent(key, () => value);
         }
       });

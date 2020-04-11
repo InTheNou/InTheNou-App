@@ -39,13 +39,13 @@ class InfoBaseStore extends flux.Store{
       switch(search.key){
         case InfoBaseSearchType.Building:
           _buildingSearchKeyword = search.value;
-          _infoBaseRepo.searchBuildings(search.value).then((value) {
+          return _infoBaseRepo.searchBuildings(search.value).then((value) {
             _buildingsResults = value;
+            return true;
           }).catchError((error){
             _setError(InfoBaseSearchType.Building, error.toString());
             return true;
           });
-          return true;
           break;
         case InfoBaseSearchType.Room:
           _roomSearchKeyword = search.value;
@@ -152,7 +152,6 @@ class InfoBaseStore extends flux.Store{
         _servicesInRoom = _detailRoom.services;
         return true;
       }).catchError((error){
-        print(error);
         _setError(InfoBaseSearchType.Room, error.toString());
         return true;
       });

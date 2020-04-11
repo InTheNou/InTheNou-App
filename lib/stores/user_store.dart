@@ -1,6 +1,6 @@
+import 'dart:io';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/event.dart';
-import 'package:InTheNou/models/session.dart';
 import 'package:InTheNou/models/tag.dart';
 import 'package:InTheNou/models/user.dart';
 import 'package:InTheNou/repos/tag_repo.dart';
@@ -33,10 +33,12 @@ class UserStore extends flux.Store{
   String _followedEventError;
   String _createdEventError;
 
-  String _redirectURL = "";
+//  Future<User> loginUser;
 
   UserStore() {
-    _user = _userRepo.getUser();
+//    _userRepo.getUser().then((value) {
+//       _user = value;
+//    });
     _allTags = _tagRepo.getAllTagsAsMap();
     _searchTags = _tagRepo.getAllTagsAsMap();
 
@@ -71,10 +73,26 @@ class UserStore extends flux.Store{
       _userRepo.requestDeleteEvents(event);
     });
     triggerOnConditionalAction(callAuthAction, (_) async{
-      await _userRepo.callAuthService().then((value) {
-        _redirectURL = "value";
+      return await _userRepo.callAuthService().then((uid) async{
+        if(uid != null){
+          return await _userRepo.getUserInfo(uid).then((user){
+//            loginUser = Future.value(user);
+            print(user);
+            _user = user;
+            return true;
+          }).catchError((e){
+//            loginUser = Future.error(e);
+            return true;
+          });
+        }
+        return true;
+      }).catchError((e){
+//        loginUser = Future.error(e);
+        return true;
       });
-      return true;
+    });
+    triggerOnAction(resetLoginError, (_) {
+//      loginUser = null;
     });
     triggerOnAction(selectRoleAction, (UserRole role) {
       _selectedRole = role;
@@ -82,7 +100,7 @@ class UserStore extends flux.Store{
     triggerOnAction(searchedTagAction, (String keyword) {
       _searchTags.clear();
       _allTags.forEach((key, value) {
-        if(key.name.contains(keyword)){
+        if(key.name.toUpperCase().contains(keyword.toUpperCase())){
           _searchTags.putIfAbsent(key, () => value);
         }
       });
@@ -99,7 +117,7 @@ class UserStore extends flux.Store{
       }
     });
     triggerOnConditionalAction(createUserAction, (_){
-      return _userRepo.createUser(_selectedRole, _selectedTags).then(
+      return _userRepo.createUser(_selectedTags).then(
               (value) {
                 _user = value;
                 _selectedRole = null;
@@ -115,9 +133,10 @@ class UserStore extends flux.Store{
   /// it has logged in with Google.
   /// The [Future] can return a Null if the user is new to the system.
   /// Otherwise it return the full User information
-  Future<User> getUser () async{
-    return _userRepo.getUserInfo().then((value) {
+  Future<User> getUser() async{
+    return _userRepo.getUserFromPrefrs().then((value) {
       _user = value;
+      trigger();
       return _user;
     });
   }
@@ -125,7 +144,7 @@ class UserStore extends flux.Store{
   ///
   /// Method gets the Session saved locally, if there is one.
   /// If there is none or the Session found is invalid, then Null is returned
-  Future<Session> getSession() async{
+  Future<Cookie> getSession() async{
     return _userRepo.getSession().then((value) {
       return value;
     });
@@ -144,8 +163,6 @@ class UserStore extends flux.Store{
   bool get isFollowedLoading => _isFollowedLoading;
   bool get isCreatedLoading => _isCreatedLoading;
 
-  String get redirectURL => _redirectURL;
-
 }
 //Profile Actions
 final flux.Action refreshFollowedAction = new flux.Action();
@@ -153,6 +170,7 @@ final flux.Action refreshCreatedAction = new flux.Action();
 final flux.Action<Event> cancelEventAction = new flux.Action();
 //AccountCreation and Auth Actions
 final flux.Action callAuthAction = new flux.Action();
+final flux.Action resetLoginError = new flux.Action();
 final flux.Action<UserRole> selectRoleAction = new flux.Action();
 final flux.Action<String> searchedTagAction = new flux.Action();
 final flux.Action<MapEntry<Tag,bool>> toggleTagAction = new flux.Action();

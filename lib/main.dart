@@ -11,6 +11,7 @@ import 'package:flutter_driver/driver_extension.dart';
 Future<void> main() async {
 //  enableFlutterDriverExtension(handler: TestHandler.dataHandler);
   WidgetsFlutterBinding.ensureInitialized();
+  Utils.clearAllPreferences();
   Utils.checkSharedPrefs();
   runApp(InTheNouApp());
 }

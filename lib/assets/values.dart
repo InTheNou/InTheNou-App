@@ -86,6 +86,7 @@ const SMART_NOTIFICATION_LIST = "smartNotificationList";
 const DEFAULT_NOTIFICATION_LIST = "defaultNotificationList";
 const NOTIFICATION_ID_KEY = "notificationId";
 const LAST_RECOMMENDATION_DATE_KEY = "lastRecommendationDate";
+const USER_KEY = "useraccount";
 
 // Notification group IDs
 const SMART_NOTIFICATION_GID = "smartNotificationList";

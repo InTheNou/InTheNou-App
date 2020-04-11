@@ -50,7 +50,7 @@ class _BuildingViewState extends State<BuildingView>
               250.0 : 0,
               floating: false,
               pinned: true,
-              title: Text(_infoBaseStore.detailBuilding.name,
+              title: Text(_infoBaseStore.detailBuilding.commonName,
                 style: Theme.of(context).textTheme.headline6.copyWith(
                     color: Theme.of(context).canvasColor
                 ),

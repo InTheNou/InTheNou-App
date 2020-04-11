@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/building.dart';
@@ -8,208 +7,226 @@ import 'package:InTheNou/models/phone_number.dart';
 import 'package:InTheNou/models/room.dart';
 import 'package:InTheNou/models/service.dart';
 import 'package:InTheNou/models/website.dart';
+import 'package:InTheNou/repos/api_connection.dart';
+import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert' as convert;
 
 class InfoBaseRepo {
 
   static final InfoBaseRepo _instance = InfoBaseRepo._internal();
   var client = http.Client();
+  final ApiConnection apiConnection = ApiConnection();
+  Dio dio;
 
   factory InfoBaseRepo() {
     return _instance;
   }
 
-  InfoBaseRepo._internal();
+  InfoBaseRepo._internal(){
+    dio = apiConnection.dio;
+  }
 
   Future<List<Building>> getAllBuildings() async{
-    return client.get(API_URL
-        +"/App/Buildings/offset=0/limit=1000").then((response) {
-      if (response.statusCode == HttpStatus.ok) {
-        List<Building> buildingResults = new List();
-        List jsonResponse = convert.jsonDecode(response.body);
-        if(jsonResponse != null){
-          jsonResponse.forEach((element) {
-            buildingResults.add(Building.fromJson(element));
-          });
-        }
-        return buildingResults;
-      } else {
-        return Utils.createError("Getting Buildings ",
-            response.statusCode, convert.jsonDecode(response.body)["Error"]);
+    try{
+      Response response = await dio.get("/App/Buildings/offset=0/limit=1000");
+      List<Building> buildingResults = new List();
+      List jsonResponse = response.data;
+      if(jsonResponse != null){
+        jsonResponse.forEach((element) {
+          buildingResults.add(Building.fromJson(element));
+        });
       }
-    });
+      return buildingResults;
+    } catch(e){
+      if (e is DioError) {
+        return Future.error(Utils.handleDioError(e, "Getting Buildings") );
+      } else {
+        return Future.error("Internal app error Getting Buildings");
+      }
+    }
   }
   Future<List<Building>> searchBuildings(String keyword) async{
-    return client.get(API_URL
-        +"/App/Rooms/searchstring=$keyword/offset=0/limit=10000").then((response) {
-      if (response.statusCode == HttpStatus.ok) {
-        List<Building> buildingResults = List();
-        List<dynamic> jsonResponse =
-          convert.jsonDecode(response.body)["buildings"];
-        if(jsonResponse != null){
-          jsonResponse.forEach((element) {
-            buildingResults.add(Building.resultFromJson(element));
-          });
-        }
-        return buildingResults;
-      } else {
-        return Utils.createError("Searching Buildings ",
-            response.statusCode, convert.jsonDecode(response.body)["Error"]);
+    try{
+      Response response = await dio.get("/App/Buildings/Search/searchstring="
+          "$keyword/offset=0/limit=10000");
+      List<Building> buildingResults = new List();
+      List jsonResponse = response.data;
+      if(jsonResponse != null){
+        jsonResponse.forEach((element) {
+          buildingResults.add(Building.fromJson(element));
+        });
       }
-    });
+      return buildingResults;
+    } catch(e){
+      if (e is DioError) {
+        return Future.error(Utils.handleDioError(e, "Searching Buildings") );
+      } else {
+        return Future.error("Internal app error Searching Buildings");
+      }
+    }
   }
   Future<Building> getBuilding(int buildingUID) async{
-    return client.get(API_URL
-        +"/App/Buildings/bid=$buildingUID").then((response) {
-      if (response.statusCode == HttpStatus.ok) {
-        Building buildingResult;
-        Map<String, dynamic> jsonResponse = convert.jsonDecode(response.body);
-        if(jsonResponse != null){
-          buildingResult =  Building.fromJson(jsonResponse);
-        }
-        return buildingResult;
-      } else {
-        return Utils.createError("Getting Building ",
-            response.statusCode, convert.jsonDecode(response.body)["Error"]);
+    try{
+      Response response = await dio.get("/App/Buildings/bid=$buildingUID");
+      Building buildingResult;
+      Map<String, dynamic> jsonResponse = response.data;
+      if(jsonResponse != null){
+        buildingResult =  Building.fromJson(jsonResponse);
       }
-    });
+      return buildingResult;
+    } catch(e){
+      if (e is DioError) {
+        return Future.error(Utils.handleDioError(e, "Getting Building") );
+      } else {
+        return Future.error("Internal app error Getting Building");
+      }
+    }
   }
   Future<List<Room>> getRoomsOfFloor(int buildingUID, int floor) async{
-    return client.get(API_URL
-        +"/App/Rooms/bid=$buildingUID/rfloor=$floor").then((response) {
-      if (response.statusCode == HttpStatus.ok) {
-        List<Room> roomResults = new List();
-        if(response.body != null){
-          Building b = Building
-              .resultFromJson(convert.jsonDecode(response.body)['building']);
-          List jsonResponse = convert.jsonDecode(response.body)['rooms'];
-          if(jsonResponse != null){
-            jsonResponse.forEach((element) {
-              roomResults.add(Room.fromJson(element, b));
-            });
-          }
+    try{
+      Response response = await dio.get("/App/Rooms/bid=$buildingUID/rfloor=$floor");
+      List<Room> roomResults = new List();
+      if(response.data != null){
+        Building b = Building
+            .resultFromJson(response.data['building']);
+        List jsonResponse = response.data['rooms'];
+        if(jsonResponse != null){
+          jsonResponse.forEach((element) {
+            roomResults.add(Room.fromJson(element, b));
+          });
         }
-        return roomResults;
-      } else {
-        return Utils.createError("Searching Room ",
-            response.statusCode, convert.jsonDecode(response.body)["Error"]);
       }
-    });
+      return roomResults;
+    } catch(e){
+      if (e is DioError) {
+        return Future.error(Utils.handleDioError(e, "Getting Rooms in Floor") );
+      } else {
+        return Future.error("Internal app error Getting Rooms in Floor");
+      }
+    }
   }
   Future<List<Room>> searchRoomsByKeyword(String keyword) async{
-    return client.get(API_URL
-        +"/App/Rooms/searchstring=$keyword/offset=0/limit=10000").then((response) {
-      if (response.statusCode == HttpStatus.ok) {
-        List<Room> roomsResult = List();
-        List<dynamic> jsonResponse = convert.jsonDecode(response.body)["rooms"];
+    try{
+      Response response = await dio.get("/App/Rooms/searchstring=$keyword/"
+          "offset=0/limit=10000");
+      List<Room> roomResults = new List();
+      print(response.data);
+      if(response.data != null){
+        List<dynamic> jsonResponse = response.data["rooms"];
         if(jsonResponse != null){
           jsonResponse.forEach((element) {
             Building b = Building.resultFromJson(element['building']);
-            roomsResult.add(Room.fromJson(element, b));
+            roomResults.add(Room.fromJson(element, b));
           });
         }
-        return roomsResult;
-      } else {
-        return Utils.createError("Searching Rooms ",
-            response.statusCode, convert.jsonDecode(response.body)["Error"]);
       }
-    });
+      return roomResults;
+    } catch(e){
+      if (e is DioError) {
+        return Future.error(Utils.handleDioError(e, "Searching Rooms by "
+            "keyword") );
+      } else {
+        return Future.error("Internal app error Searching Rooms by keyword");
+      }
+    }
   }
   Future<List<Room>> searchRoomsByCode(String abrev, String code) async{
-    return client.get(API_URL
-        +"/App/Rooms/babbrev=$abrev/rcode=$code/offset=0/limit=10000")
-        .then((response) {
-      if (response.statusCode == HttpStatus.ok) {
-        List<Room> roomsResult = List();
-        List<dynamic> jsonResponse = convert.jsonDecode(response.body)["rooms"];
+    try{
+      Response response = await dio.get("/App/Rooms/babbrev=$abrev/"
+          "rcode=$code/offset=0/limit=10000");
+      List<Room> roomResults = new List();
+      if(response.data != null){
+        List<dynamic> jsonResponse = response.data["rooms"];
         if(jsonResponse != null){
           jsonResponse.forEach((element) {
             Building b = Building.resultFromJson(element['building']);
-            roomsResult.add(Room.fromJson(element, b));
+            roomResults.add(Room.fromJson(element, b));
           });
         }
-        return roomsResult;
-      } else {
-        return Utils.createError("Searching Rooms ",
-            response.statusCode, convert.jsonDecode(response.body)["Error"]);
       }
-    });
+      return roomResults;
+    } catch(e){
+      if (e is DioError) {
+        return Future.error(Utils.handleDioError(e, "Searching Rooms by "
+            "Code") );
+      } else {
+        return Future.error("Internal app error Searching Rooms by Code");
+      }
+    }
   }
   Future<Room> getRoom(int roomUID) async{
-    return client.get(API_URL
-        +"/App/Rooms/rid=$roomUID").then((response) {
-      if (response.statusCode == HttpStatus.ok) {
-        Room roomResult;
-        Map<String, dynamic> jsonResponse = convert.jsonDecode(response.body);
-        if(jsonResponse != null){
-          Building b = Building.resultFromJson(jsonResponse['building']);
-          roomResult = Room.fromJson(jsonResponse, b);
+    try{
+      Response response = await dio.get("/App/Rooms/rid=$roomUID");
+      Room roomResult;
+      Map<String, dynamic> jsonResponse = response.data;
+      if(jsonResponse != null){
+        Building b = Building.resultFromJson(jsonResponse['building']);
+        roomResult = Room.fromJson(jsonResponse, b);
 
-          List servicesJson = convert.jsonDecode(response.body)['services'];
-          List<Service> services = List();
-          if(servicesJson != null){
-            servicesJson.forEach((service) {
+        List servicesJson = response.data['services'];
+        List<Service> services = List();
+        if(servicesJson != null){
+          servicesJson.forEach((service) {
             services.add(Service.fromJson(service, roomResult));
-            });
-          }
-          roomResult.services = services;
-        }
-        return roomResult;
-      } else {
-        return Utils.createError("Getting Room ",
-            response.statusCode, convert.jsonDecode(response.body)["Error"]);
-      }
-    });
-  }
-  Future<List<Service>> searchServices(String keyword) async{
-    return client.get(API_URL
-        +"/App/Services/searchstring=$keyword/offset=0/limit=10000")
-        .then((response) {
-      if (response.statusCode == HttpStatus.ok) {
-        List<Service> serviceResult = List();
-        List<dynamic> jsonResponse = convert.jsonDecode(response.body)
-        ["services"];
-        if(jsonResponse != null){
-          jsonResponse.forEach((element) {
-            Building b = Building.resultFromJson(element["room"]['building']);
-            Room r = Room.fromJson(element["room"], b);
-            serviceResult.add(Service.fromJson(element, r));
           });
         }
-        return serviceResult;
-      } else {
-        return Utils.createError("Searching Services ",
-            response.statusCode, convert.jsonDecode(response.body)["Error"]);
+        roomResult.services = services;
       }
-    });
+      return roomResult;
+    } catch(e){
+      if (e is DioError) {
+        return Future.error(Utils.handleDioError(e, "Getting Room") );
+      } else {
+        return Future.error("Internal app error Getting Room");
+      }
+    }
+  }
+  Future<List<Service>> searchServices(String keyword) async{
+    try{
+      Response response = await dio.get("/App/Services/searchstring=$keyword/"
+          "offset=0/limit=10000");
+      List<Service> serviceResult = List();
+      List<dynamic> jsonResponse = response.data["services"];
+      if(jsonResponse != null){
+        jsonResponse.forEach((element) {
+          Building b = Building.resultFromJson(element["room"]['building']);
+          Room r = Room.fromJson(element["room"], b);
+          serviceResult.add(Service.fromJson(element, r));
+        });
+      }
+      return serviceResult;
+    } catch(e){
+      if (e is DioError) {
+        return Future.error(Utils.handleDioError(e, "Searching Services") );
+      } else {
+        return Future.error("Internal app error Searching Services");
+      }
+    }
   }
 
-  Future<Service> getService(int serviceUID){
-    return client.get(API_URL
-        +"/App/Services/sid=$serviceUID").then((response) {
-      if (response.statusCode == HttpStatus.ok) {
-        Room roomResult;
-        Service service;
-        Map<String, dynamic> jsonResponse = convert.jsonDecode(response.body);
+  Future<Service> getService(int serviceUID) async{
+    try{
+      Response response = await dio.get("/App/Services/sid=$serviceUID");
+      Room roomResult;
+      Service service;
+      Map<String, dynamic> jsonResponse = response.data;
+      if(jsonResponse != null){
+        Building b = Building.resultFromJson
+          (jsonResponse['room']['building']);
+        roomResult = Room.fromJson(jsonResponse["room"], b);
         if(jsonResponse != null){
-          Building b = Building.resultFromJson
-            (jsonResponse['room']['building']);
-          roomResult = Room.fromJson(jsonResponse["room"], b);
-
-          Map<String,dynamic> servicesJson =
-            convert.jsonDecode(response.body);
-
-          if(servicesJson != null){
-            service = Service.fromJson(servicesJson, roomResult);
-          }
+          service = Service.fromJson(jsonResponse, roomResult);
+          print(service.schedule);
         }
-        return service;
-      } else {
-        return Utils.createError("Getting Service ",
-            response.statusCode, convert.jsonDecode(response.body)["Error"]);
       }
-    });
+      return service;
+    } catch(e){
+      if (e is DioError) {
+        return Future.error(Utils.handleDioError(e, "Getting Service") );
+      } else {
+        return Future.error("Internal app error Getting Service");
+      }
+    }
   }
 
 //---------------------- DEBUGGING STUFF ----------------------

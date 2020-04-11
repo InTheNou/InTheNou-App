@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 import 'dart:convert' as convert;
 import 'package:InTheNou/assets/utils.dart';
@@ -7,12 +6,20 @@ import 'package:InTheNou/models/coordinate.dart';
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/models/room.dart';
 import 'package:InTheNou/models/tag.dart';
+import 'package:InTheNou/models/user.dart';
 import 'package:InTheNou/models/website.dart';
+import 'package:InTheNou/repos/api_connection.dart';
+import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EventsRepo {
+  Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
   static final EventsRepo _instance = EventsRepo._internal();
+  final ApiConnection apiConnection = ApiConnection();
+  Dio dio;
+
   Random rand = Random();
   var client = http.Client();
 
@@ -20,7 +27,10 @@ class EventsRepo {
     return _instance;
   }
 
-  EventsRepo._internal();
+  EventsRepo._internal(){
+    dio = apiConnection.dio;
+  }
+
   /// Calls teh back-end to get the Events for the General Feed
   ///
   /// The method returns all active and non-dismissed Events in the system. The
@@ -29,23 +39,28 @@ class EventsRepo {
   /// permits performing pagination and only showing a few Events at a time.
   /// To get all the Events at once just supply a very bit number to [numEvents]
   Future<List<Event>> getGenEvents (int skipEvents, int numEvents) async{
-    return client.get(API_URL+
-        "/App/Events/General/uid=4/offset=$skipEvents/limit=$numEvents")
-        .then((response) {
-      if (response.statusCode == HttpStatus.ok) {
-        List<Event> eventResults = new List();
-        List jsonResponse = convert.jsonDecode(response.body)["events"];
-        if(jsonResponse != null){
-          jsonResponse.forEach((element) {
-            eventResults.add(Event.resultFromJson(element));
-          });
-        }
-        return eventResults;
-      } else {
-        return Utils.createError("Getting General Events",
-            response.statusCode, convert.jsonDecode(response.body)["Error"]);
+    SharedPreferences prefs = await _prefs;
+    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
+
+    try{
+      Response response = await dio.get(
+          "/App/Events/General/uid=${user.UID}/offset=$skipEvents"
+              "/limit=$numEvents");
+      List<Event> eventResults = new List();
+      List jsonResponse = response.data["events"];
+      if(jsonResponse != null){
+        jsonResponse.forEach((element) {
+          eventResults.add(Event.resultFromJson(element));
+        });
       }
-    });
+      return eventResults;
+    } catch(e){
+      if (e is DioError) {
+        return Future.error(Utils.handleDioError(e, "Getting General Events") );
+      } else {
+        return Future.error("Internal app error Getting General Events");
+      }
+    }
   }
 
   /// Calls teh back-end to get the Events for the Personal Feed.
@@ -58,23 +73,28 @@ class EventsRepo {
   /// To get all the Events at once just supply a very bit number to
   /// [numEvents].
   Future<List<Event>> getPerEvents(int skipEvents, int numEvents) async{
-    return client.get(API_URL+
-        "/App/Events/Recommended/uid=4/offset=$skipEvents/limit=$numEvents")
-        .then((response) {
-          if (response.statusCode == HttpStatus.ok) {
-            List<Event> eventResults = new List();
-            List jsonResponse = convert.jsonDecode(response.body)["events"];
-            if(jsonResponse != null){
-              jsonResponse.forEach((element) {
-                eventResults.add(Event.resultFromJson(element));
-              });
-            }
-            return eventResults;
-          } else {
-            return Utils.createError("Getting Recommended Events",
-                response.statusCode, convert.jsonDecode(response.body)["Error"]);
-          }
+    SharedPreferences prefs = await _prefs;
+    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
+
+    try{
+      Response response = await dio.get(
+          "/App/Events/Recommended/uid=${user.UID}/offset=$skipEvents/"
+              "limit=$numEvents");
+      List<Event> eventResults = new List();
+      List jsonResponse = response.data["events"];
+      if(jsonResponse != null){
+        jsonResponse.forEach((element) {
+          eventResults.add(Event.resultFromJson(element));
         });
+      }
+      return eventResults;
+    } catch(e){
+      if (e is DioError) {
+        return Future.error(Utils.handleDioError(e, "Getting Personal Events"));
+      } else {
+        return Future.error("Internal app error Getting Personal Events");
+      }
+    }
   }
 
   /// Contacts the back-end to get [Event]s created after [lastDate].
@@ -99,23 +119,28 @@ class EventsRepo {
   /// To get all the Events at once just supply a very bit number to [numEvents]
   Future<List<Event>> searchGenEvents(String keyword, int skipEvents,
       int numEvents) async{
-    return client.get(API_URL+
-        "/App/Events/General/search=$keyword/offset=$skipEvents/limit=$numEvents"
-            "/uid=4").then((response) {
-          if (response.statusCode == HttpStatus.ok) {
-            List<Event> eventResults = new List();
-            List jsonResponse = convert.jsonDecode(response.body)["events"];
-            if(jsonResponse != null){
-              jsonResponse.forEach((element) {
-                eventResults.add(Event.resultFromJson(element));
-              });
-            }
-            return eventResults;
-          } else {
-            return Utils.createError("Searching General Events",
-                response.statusCode, convert.jsonDecode(response.body)["Error"]);
-          }
+    SharedPreferences prefs = await _prefs;
+    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
+
+    try{
+      Response response = await dio.get(
+          "/App/Events/General/search=$keyword/offset=$skipEvents/limit=$numEvents"
+              "/uid=${user.UID}");
+      List<Event> eventResults = new List();
+      List jsonResponse = response.data["events"];
+      if(jsonResponse != null){
+        jsonResponse.forEach((element) {
+          eventResults.add(Event.resultFromJson(element));
         });
+      }
+      return eventResults;
+    } catch(e){
+      if (e is DioError) {
+        return Future.error(Utils.handleDioError(e, "Searching General Events"));
+      } else {
+        return Future.error("Internal app error Searching General Events");
+      }
+    }
   }
 
   /// Calls the back-end with a search query for the Personal Feed
@@ -129,23 +154,29 @@ class EventsRepo {
   /// To get all the Events at once just supply a very bit number to [numEvents]
   Future<List<Event>> searchPerEvents(String keyword, int skipEvents,
       int numEvents) async{
-    return client.get(API_URL+
-        "/App/Events/Recommended/search=$keyword/offset=$skipEvents/limit"
-            "=$numEvents/uid=4").then((response) {
-          if (response.statusCode == HttpStatus.ok) {
-            List<Event> eventResults = new List();
-            List jsonResponse = convert.jsonDecode(response.body)["events"];
-            if(jsonResponse != null){
-              jsonResponse.forEach((element) {
-                eventResults.add(Event.resultFromJson(element));
-              });
-            }
-            return eventResults;
-          } else {
-            return Utils.createError("Searching Recommended Events",
-                response.statusCode, convert.jsonDecode(response.body)["Error"]);
-          }
+    SharedPreferences prefs = await _prefs;
+    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
+
+    try{
+      Response response = await dio.get(
+          "/App/Events/Recommended/search=$keyword/offset=$skipEvents/limit"
+              "=$numEvents/uid=${user.UID}");
+      List<Event> eventResults = new List();
+      List jsonResponse = response.data["events"];
+      if(jsonResponse != null){
+        jsonResponse.forEach((element) {
+          eventResults.add(Event.resultFromJson(element));
         });
+      }
+      return eventResults;
+    } catch(e){
+      if (e is DioError) {
+        return Future.error(Utils.handleDioError(e,
+            "Searching Personal Events"));
+      } else {
+        return Future.error("Internal app error Searching Personal Events");
+      }
+    }
   }
 
   /// Calls the back-end to get all the information on a specific [Event].
@@ -153,15 +184,20 @@ class EventsRepo {
   /// Given the [Event._UID] through the [eventUID] parameter, the back-end
   /// will return detailed information about the [Event] that matches the UID.
   Future<Event> getEvent(int eventUID) async{
-    return client.get(API_URL+ "/App/Events/eid=$eventUID/uid=4").then(
-            (response) {
-       if (response.statusCode == HttpStatus.ok) {
-         return Event.fromJson(convert.jsonDecode(response.body));
-       } else {
-         return Utils.createError("Getting Event", response.statusCode,
-             convert.jsonDecode(response.body)["Error"]);
-       }
-    });
+    SharedPreferences prefs = await _prefs;
+    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
+
+    try{
+      Response response = await dio.get("/App/Events/eid=$eventUID/"
+          "uid=${user.UID}");
+      return Event.fromJson(response.data);
+    } catch(e){
+      if (e is DioError) {
+        return Future.error(Utils.handleDioError(e, "Getting Event"));
+      } else {
+        return Future.error("Internal app error while Getting Event");
+      }
+    }
   }
 
   /// Requests for an [Event] to be marked as Followed in the back-end.
@@ -169,15 +205,20 @@ class EventsRepo {
   /// Given the [Event._UID] through the [eventUID] parameter, the back-end
   /// marks it as being Followed by this user by setting [Event.followed]
   Future<bool> requestFollowEvent(int eventUID) async{
-    return client.post(API_URL+
-        "/App/Events/eid=$eventUID/uid=4/Follow").then((response) {
-          if (response.statusCode == HttpStatus.created) {
-            return convert.jsonDecode(response.body)["event"]["eid"] == eventUID;
-          } else {
-            return Utils.createError("Follow", response.statusCode,
-                convert.jsonDecode(response.body)["Error"]);
-          }
-        });
+    SharedPreferences prefs = await _prefs;
+    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
+
+    try{
+      Response response = await dio.post("/App/Events/eid=$eventUID/"
+          "uid=${user.UID}/Follow");
+      return response.data["event"]["eid"] == eventUID;
+    } catch(e){
+      if (e is DioError) {
+        return Future.error(Utils.handleDioError(e, "Follow Event"));
+      } else {
+        return Future.error("Internal app error while Follwing Event");
+      }
+    }
   }
 
   /// Requests for an [Event] to be marked as UnFollowed in the back-end.
@@ -185,15 +226,20 @@ class EventsRepo {
   /// Given the [Event._UID] through the [eventUID] parameter, the back-end
   /// marks it as being UnFollowed by this user by setting [Event.followed]
   Future<bool> requestUnFollowEvent(int eventUID) async{
-    return client.post(API_URL+
-        "/App/Events/eid=$eventUID/uid=4/Unfollow").then((response) {
-      if (response.statusCode == HttpStatus.created) {
-        return convert.jsonDecode(response.body)["event"]["eid"] == eventUID;
+    SharedPreferences prefs = await _prefs;
+    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
+
+    try{
+      Response response = await dio.post("/App/Events/eid=$eventUID/"
+          "uid=${user.UID}/Unfollow");
+      return response.data["event"]["eid"] == eventUID;
+    } catch(e){
+      if (e is DioError) {
+        return Future.error(Utils.handleDioError(e, "UnFollow Event"));
       } else {
-        return Utils.createError("Unfollow", response.statusCode,
-            convert.jsonDecode(response.body)["Error"]);
+        return Future.error("Internal app error while UnFollwing Event");
       }
-    });
+    }
   }
 
   /// Requests for an [Event] to be marked as Dismissed in the back-end.
@@ -202,15 +248,20 @@ class EventsRepo {
   /// marks it as being Dismissed by this user. Events marked with being
   /// Dismissed will not be returned by other queries.
   Future<bool> requestDismissEvent(int eventUID) async{
-    return client.post(API_URL+ "/App/Events/eid=$eventUID/uid=4/Dismiss")
-        .then((response) {
-      if (response.statusCode == HttpStatus.created) {
-        return convert.jsonDecode(response.body)["event"]["eid"] == eventUID;
+    SharedPreferences prefs = await _prefs;
+    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
+
+    try{
+      Response response = await dio.post("/App/Events/eid=$eventUID/"
+          "uid=${user.UID}/Dismiss");
+      return response.data["event"]["eid"] == eventUID;
+    } catch(e){
+      if (e is DioError) {
+        return Future.error(Utils.handleDioError(e, "Dismiss Event"));
       } else {
-        return Utils.createError("Dismiss", response.statusCode,
-            convert.jsonDecode(response.body)["Error"]);
+        return Future.error("Internal app error while Dismissing Event");
       }
-    });
+    }
   }
 
   /// Requests for an [Event] to be marked as Recommended in the back-end.
@@ -220,22 +271,23 @@ class EventsRepo {
   /// [Event.recommended]. Events marked as such will show up in the Personal
   /// Feed.
   Future<List<bool>> requestRecommendation(List<Event> events) async{
+    SharedPreferences prefs = await _prefs;
+    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
+
     Future<List<bool>> result;
     result = Future.wait<bool>(events.map((event) async{
-      return await client.post(API_URL+
-          "/App/Events/eid=${event.UID}/uid=4/recommendstatus="
-              "${event.recommended}").then((response) {
-        if (response.statusCode == HttpStatus.created) {
-          if(convert.jsonDecode(response.body)["eid"] == event.UID){
-            return true;
-          } else {
-            return Utils.createError("Reccomendation", null, null);
-          }
+      try{
+        Response response = await dio.post(
+            "/App/Events/eid=${event.UID}/uid=${user.UID}/"
+                "recommendstatus=${event.recommended}");
+        return response.data["eid"] == event.UID;
+      } catch(e){
+        if (e is DioError) {
+          return Future.error(Utils.handleDioError(e, "Recommendation Event"));
         } else {
-          return Utils.createError("Reccomendation", response.statusCode,
-              convert.jsonDecode(response.body)["Error"]);
+          return Future.error("Internal app error while Recommending Event");
         }
-      });
+      }
     }));
     return result;
   }
@@ -248,16 +300,22 @@ class EventsRepo {
   /// An Event created this way will show up in the General Feed, and the
   /// Personal Feed if recommended to a user.
   Future<bool> createEvent(Event event) async{
-    return client.post(API_URL+ "/App/Events/Create",
-        headers: {"Content-Type": "application/json"},
-        body: convert.jsonEncode(event.toJson())).then((response) {
-      if (response.statusCode == HttpStatus.created) {
-        return convert.jsonDecode(response.body)["eid"] == event.UID;
+    SharedPreferences prefs = await _prefs;
+    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
+
+    try{
+      Map<String, dynamic> eventJson = event.toJson();
+      eventJson["ecreator"] = user.UID;
+      Response response = await dio.post(API_URL+ "/App/Events/Create",
+        data: convert.jsonEncode(eventJson));
+      return response.data["eid"] == event.UID;
+    } catch(e){
+      if (e is DioError) {
+        return Future.error(Utils.handleDioError(e, "Create Event"));
       } else {
-        return Utils.createError("Create Event", response.statusCode,
-            convert.jsonDecode(response.body)["Error"]);
+        return Future.error("Internal app error while Createing Event");
       }
-    });
+    }
   }
 
   //---------------------- DEBUGGING STUFF ----------------------

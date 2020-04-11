@@ -117,26 +117,25 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
                     image: isURL(building.image) ? building.image : "",
                   ),
                   const Padding(padding: EdgeInsets.only(left: 16.0)),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        building.name,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.headline6,
-                        softWrap: true,
-                      ),
-                      Padding(padding: EdgeInsets.only(top: 8.0,
-                          left: 8.0),
-                          child: Text(
-                            building.commonName,
-                            style: Theme.of(context).textTheme.subtitle1,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          )
-                      ),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          building.commonName,
+                          maxLines: 2,
+                          style: Theme.of(context).textTheme.headline6,
+                          softWrap: true,
+                        ),
+                        const Padding(padding: EdgeInsets.only(top: 8.0)),
+                        Text(
+                          building.name,
+                          maxLines: 2,
+                          style: Theme.of(context).textTheme.subtitle1,
+                          softWrap: true,
+                        )
+                      ],
+                    ),
                   ),
                 ],
               ),

@@ -37,7 +37,7 @@ class _AccountCreationViewState extends State<AccountCreationView>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Container(
-                  height: 200,
+                  height: 150,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
@@ -49,32 +49,32 @@ class _AccountCreationViewState extends State<AccountCreationView>
                     ],
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: Text("Role",
-                      style: Theme.of(context).textTheme.subtitle1.copyWith(
-                          color: Theme.of(context).canvasColor
-                      )),
-                ),
-                Card(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 16.0, right: 16.0),
-                      child: DropdownButtonFormField<UserRole>(
-                        value: _userStore.selectedRole,
-                        decoration: InputDecoration.collapsed(
-                            hintText: "Role"),
-                        autovalidate: _autoValidate,
-                        items: _userStore.userRoles.map((UserRole role) {
-                          return DropdownMenuItem<UserRole>(
-                              value: role,
-                              child: Text(Utils.userRoleString(role)));
-                        }).toList(),
-                        onChanged: (value) => selectRoleAction(value),
-                        validator: (value) =>
-                        value == null? "Please choose a Role" : null,
-                      ),
-                    )
-                ),
+//                Padding(
+//                  padding: const EdgeInsets.only(left: 8.0),
+//                  child: Text("Role",
+//                      style: Theme.of(context).textTheme.subtitle1.copyWith(
+//                          color: Theme.of(context).canvasColor
+//                      )),
+//                ),
+//                Card(
+//                    child: Padding(
+//                      padding: const EdgeInsets.only(left: 16.0, right: 16.0),
+//                      child: DropdownButtonFormField<UserRole>(
+//                        value: _userStore.selectedRole,
+//                        decoration: InputDecoration.collapsed(
+//                            hintText: "Role"),
+//                        autovalidate: _autoValidate,
+//                        items: _userStore.userRoles.map((UserRole role) {
+//                          return DropdownMenuItem<UserRole>(
+//                              value: role,
+//                              child: Text(Utils.userRoleString(role)));
+//                        }).toList(),
+//                        onChanged: (value) => selectRoleAction(value),
+//                        validator: (value) =>
+//                        value == null? "Please choose a Role" : null,
+//                      ),
+//                    )
+//                ),
                 const Padding(padding: EdgeInsets.only(top:16),),
                 Padding(
                   padding: const EdgeInsets.only(left: 8.0),

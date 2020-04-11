@@ -49,7 +49,7 @@ class BackgroundHandler {
 
     BackgroundFetch.scheduleTask(TaskConfig(
         taskId: "com.inthenou.app.reccomendation",
-        delay: 60000,
+        delay: RECOMMENDATION_INTERVAL_MINUTES*60000,
         periodic: true,
         forceAlarmManager: true,
         stopOnTerminate: false,

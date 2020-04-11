@@ -1,110 +1,71 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:convert' as convert;
+import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/event.dart';
-import 'package:InTheNou/models/session.dart';
 import 'package:InTheNou/models/tag.dart';
 import 'package:InTheNou/models/user.dart';
 import 'package:InTheNou/repos/api_connection.dart';
 import 'package:InTheNou/repos/events_repo.dart';
-import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
-import 'package:dio_cookie_manager/dio_cookie_manager.dart';
-import 'package:flutter_web_auth/flutter_web_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import 'package:url_launcher/url_launcher.dart';
 
 class UserRepo {
   Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   var client = http.Client();
 
   static final UserRepo _instance = UserRepo._internal();
+  final ApiConnection apiConnection = ApiConnection();
+  Dio dio;
 
   GoogleSignInAccount _userAccount;
+  int _userID;
 
   factory UserRepo() {
     return _instance;
   }
 
-  UserRepo._internal();
+  UserRepo._internal(){
+    dio = apiConnection.dio;
+  }
 
   GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: [
+      'https://www.googleapis.com/auth/userinfo.profile',
       'https://www.googleapis.com/auth/userinfo.email',
       'https://www.googleapis.com/auth/contacts.readonly',
-      "openid"
+      "openid",
     ]
   );
 
-  _launchURL(String URL) async {
-    if (await canLaunch(URL)) {
-      await launch(URL);
-    } else {
-      throw 'Could not launch $URL';
-    }
-  }
-  ApiConnection apiConnection = ApiConnection();
-
-  Future<bool> callAuthService() async {
+  Future<int> callAuthService() async {
 //    _userAccount = await _googleSignIn.signIn();
-//    print(_userAccount.toString());
-//    var response = await client.get("/App/login");
-//    debugPrint('Response body: ${response.body}');
-//    RegExp reg = RegExp(r"(https:)(.*)(?=, 'OCAK')",multiLine: true);
-//    String url = reg.stringMatch(response.body).split(RegExp(r"', "))[0];
-//    url = url.replaceAll(RegExp(r'\\x3d'),"=");
-//    url = url.replaceAll(RegExp(r'\\x26'),"&");
-//    url = url.replaceAll(RegExp(r'\\/'),r"/");
-//    print(url);
-    String url = "https://25.128.255.65/App/login";
-
-    HttpClient client = new HttpClient();
-
-//    HttpClientRequest clientRequest =
-//    await client.getUrl(Uri.parse("https://inthenou.uprm.edu/Dashboard/Users/Delegated"));
-//    Cookie session = Cookie("session", ""
-//        ".eJyVTstqw0AQ-xUzZ1O8r9ld_0aPJYSZ2ZnE4ObgjQ8l5N-70C8oOkhCAukFV9up37XD-vWC6TkIvrV3uinM8HmKDGPnvv9Mfbs9tE3b4wMu7_k_5cs8Zg7td1ifx6nDbQ1WcM2YiES1cW4-VlSvUQKjoFtSTiQRgyteAzUUx9UtmAeK4tCZ1XLL3rRVjowlGCWyZNVVKzJCcktBl-IiPofAjIiRgo-RfSkpjc_Xs-vx9ybC-xc6olK-.Xo6a0A.D5QLQR_3kCcEaIPYdG-WAqaGd3A");
+//    var auth = await _userAccount.authentication;
+//    Map values = {
+//      "access_token": auth.accessToken,
+//      "id": _userAccount.id,
+//      "email":_userAccount.email,
+//      "display_name":_userAccount.displayName,
+//    };
 //
-//    session.domain = ".inthenou.uprm.edu";
-//    session.path = "/";
-//    clientRequest.cookies.add(session);
-//    HttpClientResponse clientResponse = await clientRequest.close();
-//    clientResponse.transform(utf8.decoder).listen((body) {
-//      var document = convert.jsonDecode(body);
-//      print(document);
-//    });
-    Dio dio =  apiConnection.dio;
-
-//    _launchURL(url);
-    // Present the dialog to the user
-
-//    return FlutterWebAuth.authenticate(url: url,
-//        callbackUrlScheme: "inthenou").then((value) async{
-//          var uri = Uri.parse(value);
-//          print(uri);
-//          print(uri.queryParameters['uid']);
-//          print(uri.queryParameters['newAccount']);
-//          print(uri.queryParameters["session"]);
-////          print(convert.jsonDecode(uri.queryParameters["session"]));
-//          var cj = CookieJar();
-//          List<Cookie> results = cj.loadForRequest(Uri.parse(url));
-//          print(results);
-//          await dio.get(url).then((value) {
-//            print(value);
-//            print(value.headers.toString());
-//            print(apiConnection.cookies);
-//            print(apiConnection.session);
-//
-//          }).catchError((e){
-//            print(e);
-//          });
-//        return Uri.parse(value).queryParameters['newAccount'] == "True";
-//        });
-
-    return true;
+//    try{
+//      Response response = await dio.post("/App/login",
+//          data: convert.jsonEncode(values));
+//      print(response.data['uid']);
+//      print(response.data['newAccount']);
+//      return int.parse(response.data['uid']);
+//    } catch(error, stacktrace){
+//      if (error is DioError) {
+//        return Future.error(Utils.handleDioError(error, "Sign in") );
+//      } else {
+//        debugPrint("Exception: $error stackTrace: $stacktrace");
+//        return Future.error("Internal app error while Signing in");
+//      }
+//    }
+    return 4;
   }
 
 
@@ -113,55 +74,94 @@ class UserRepo {
   /// If there is one, check with he backend to see if its valid. In the
   /// case that it is valid then the user can be routed to the app,
   /// otherwise the user is routed to the login to re-auth.
-  Future<Session> getSession() async{
-    final SharedPreferences prefs = await _prefs;
-//    _googleSignIn.signInSilently().then((GoogleSignInAccount acc) {
-//      if(acc == null){
-//
-//      } else{
-//        _userAccount = acc;
-//      }
-//    });
-    return Future.delayed(Duration(seconds: 3)).then((onValue) {
-      Session session = Session(prefs.getString(USER_SESSION_KEY));
-      if(session.value == null){
-        return null;
-      }
-      return checkSession(session).then((value) {
-        return value ? session : null;
-      });
+  Future<Cookie> getSession() async{
+    await _googleSignIn.signInSilently().then((GoogleSignInAccount acc) {
+      _userAccount = acc;
+    });
+    if(_userAccount == null){
+      return null;
+    }
+    Cookie session = apiConnection.session;
+    if(session == null){
+      return null;
+    }
+    return checkSession(session).then((value) {
+      return value ? session : null;
     });
   }
 
   /// Calls the API and check if the session is not expired
   /// [session] being the locally saved Flask Session cookie
-  Future<bool> checkSession(Session session){
+  Future<bool> checkSession(Cookie session){
     return Future.delayed(Duration(seconds: 1)).then((onValue) {
       return true;
     });
   }
 
-
-  /// Calls the backend to get the user information after the login redirect.
-  /// Also, the session returned by the backend is saved locally.
-  Future<User> getUserInfo() async{
-    return dummyUser;
+  /// Calls the backend to get the user information after the login.
+  Future<User> getUserInfo(int uid) async{
+    SharedPreferences prefs = await _prefs;
+    try{
+      Response response = await dio.get("/App/Users/uid=$uid");
+      User user;
+      Map<String, dynamic> jsonResponse = (response.data);
+      if(jsonResponse != null){
+        user = User.fromJson(jsonResponse);
+      }
+      prefs.setString(USER_KEY, convert.jsonEncode(user.toJson()));
+      return user;
+    } catch(error, stacktrace){
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error, "User Data") );
+      } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        return Future.error("Internal app error while getting User Data in");
+      }
+    }
   }
 
-  Future<User> createUser(UserRole role, List<Tag> tags) async{
-    final SharedPreferences prefs = await _prefs;
-    prefs.setString(USER_SESSION_KEY, "totally valid session");
+  Future<User> createUser(List<Tag> tags) async{
+    try{
+//      List<Map<String, dynamic>> tagsJson = Tag.toJsonList(tags);
+//
+//      Response response = await dio.post("/App/Tags/User/Add",
+//        data: convert.jsonEncode(tagsJson));
+//      print(response);
+      User newUser = await getUserFromPrefrs();
+      newUser.tags = tags;
+      SharedPreferences prefs = await _prefs;
 
-    return Future.delayed(Duration(seconds: 3)).then((onValue) {
-      dummyUser = new User("Alguien", "Importante",
-          "alguien.importante@upr.edu",role, tags, UserPrivilege.EventCreator);
-      return dummyUser;
-    });
+      prefs.setString(USER_KEY, convert.jsonEncode(newUser.toJson()));
+
+      return newUser;
+    } catch(error, stacktrace){
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error, "Create User") );
+      } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        return Future.error("Internal app error while Creating User");
+      }
+    }
+    return await getUserFromPrefrs();
   }
 
-  User getUser(){
-    return dummyUser;
+  Future<User> getUserFromPrefrs() async{
+    SharedPreferences prefs = await _prefs;
+    if(prefs.get(USER_KEY) == null)
+      return null;
+    return User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
   }
+
+  Future<int> getUserID() async{
+    if(_userID != null){
+      return _userID;
+    }
+    SharedPreferences prefs = await _prefs;
+    if(prefs.get(USER_KEY) == null)
+      return null;
+    return convert.jsonDecode(prefs.get(USER_KEY))["uid"];
+  }
+
 
   /// Removes the Session from the local storage so that the user may sign
   /// back in.
@@ -176,47 +176,51 @@ class UserRepo {
   }
 
   Future<List<Event>> getFollowedEvents(int skipEvents, int numEvents) async{
-    return client.get(API_URL
-        +"/App/Events/Following//uid=4/offset=$skipEvents/limit=$numEvents")
-        .then((response) {
-          if (response.statusCode == HttpStatus.ok) {
-            List<Event> eventResults = new List();
-            List jsonResponse = convert.jsonDecode(response.body)["events"];
-            if(jsonResponse != null){
-              jsonResponse.forEach((element) {
-                eventResults.add(Event.resultFromJson(element,
-                    isFollowed: true));
-              });
-            }
-            return eventResults;
-          } else {
-            return Future.error("Request failed with status: ${response
-                .statusCode} please try again");
-          }
+    try{
+      Response response = await dio.get(
+          "/App/Events/Following//uid=${getUserID()}/offset=$skipEvents/limit=$numEvents");
+      List<Event> eventResults = new List();
+      List jsonResponse = response.data["events"];
+      if(jsonResponse != null){
+        jsonResponse.forEach((element) {
+          eventResults.add(Event.resultFromJson(element,
+              isFollowed: true));
         });
-//    return getFollowedEventsFromSecretPlace();
+      }
+      return eventResults;
+    } catch(error, stacktrace){
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error, "Followed Events") );
+      } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        return Future.error("Internal app error while getting Followed Events");
+      }
+    }
   }
 
   Future<List<Event>> getCreatedEvents(int skipEvents, int numEvents) async{
-    return client.get(API_URL
-        +"/App/Events/Created//uid=4/offset=$skipEvents/limit=$numEvents")
-        .then((response) {
-      if (response.statusCode == HttpStatus.ok) {
-        List<Event> eventResults = new List();
-        List jsonResponse = convert.jsonDecode(response.body)["events"];
-        if(jsonResponse != null){
-          jsonResponse.forEach((element) {
-            eventResults.add(Event.resultFromJson(element));
-          });
-        }
-        return eventResults;
-      } else {
-        return Future.error("Request failed with status: ${response
-            .statusCode} please try again");
+    try{
+      Response response = await dio.get(
+          "/App/Events/Created//uid=${getUserID()}/offset=$skipEvents/limit=$numEvents");
+      List<Event> eventResults = new List();
+      List jsonResponse = response.data["events"];
+      if(jsonResponse != null){
+        jsonResponse.forEach((element) {
+          eventResults.add(Event.resultFromJson(element,
+              isFollowed: true));
+        });
       }
-    });
-    return getFollowedEventsFromSecretPlace2();
+      return eventResults;
+    } catch(error, stacktrace){
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error, "Credted Events") );
+      } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        return Future.error("Internal app error while getting Created Events");
+      }
+    }
   }
+
   bool requestDeleteEvents(Event event){
     _eventRepo.deleteEvent(event);
     return true;
@@ -226,7 +230,7 @@ class UserRepo {
   }
 
   // debug stuff
-  static User dummyUser = new User("Alguien", "Importante",
+  static User dummyUser = new User(4,"Alguien", "Importante",
       "alguien.importante@upr.edu",UserRole.Student,
       [Tag(1,"ADMI",INITIAL_TAG_WEIGHT), Tag(2,"ADOF",INITIAL_TAG_WEIGHT),
         Tag(3,"AGRO",INITIAL_TAG_WEIGHT), Tag(4,"ALEM",INITIAL_TAG_WEIGHT),
@@ -234,21 +238,7 @@ class UserRepo {
       UserPrivilege.EventCreator);
 
   EventsRepo _eventRepo = new EventsRepo();
-  Future<List<Event>> getFollowedEventsFromSecretPlace() async{
-    return _eventRepo.getGenEvents(0,10000000).then((List<Event> value) {
-      return value.where((element){
-        return element.followed;
-      }).toList();
-    });
 
-  }
-  Future<List<Event>> getFollowedEventsFromSecretPlace2() async{
-    return _eventRepo.getGenEvents(0,10000000).then((List<Event> value) {
-      return value.where((element){
-        return element.creator == "alguien.importante@upr.edu"
-            && element.startDateTime.isAfter(DateTime.now());
-      }).toList();
-    });
-  }
+
 
 }

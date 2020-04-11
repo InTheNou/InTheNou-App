@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/coordinate.dart';
 import 'package:InTheNou/models/floor.dart';
+import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -21,16 +22,34 @@ class Utils {
       telephoneType == PhoneType.E ? "E" :
       telephoneType == PhoneType.F ? "F" :
       telephoneType == PhoneType.L ? "L" : "M";
+  static PhoneType telephoneTypeFromString(String privilege) =>
+      privilege == "E" ? PhoneType.E :
+      privilege == "F" ? PhoneType.F:
+      privilege == "L" ? PhoneType.L:
+      PhoneType.M;
 
   static String userPrivilegeString(UserPrivilege type) =>
       type == UserPrivilege.User ? "User" :
       type == UserPrivilege.EventCreator ? "Event Creator" :
       type == UserPrivilege.Moderator ? "Moderator" : "Administrator";
+  static int userPrivilegeKey(UserPrivilege type) =>
+      type == UserPrivilege.User ? 1 :
+      type == UserPrivilege.EventCreator ? 2 :
+      type == UserPrivilege.Moderator ? 3 : 4;
+  static UserPrivilege userPrivilegeFromInt(int privilege) =>
+      privilege == 1 ? UserPrivilege.User :
+      privilege == 2 ? UserPrivilege.EventCreator:
+      privilege == 3 ? UserPrivilege.Moderator:
+      UserPrivilege.Administrator;
 
   static String userRoleString(UserRole type) =>
       type == UserRole.Student ? "Student" :
       type == UserRole.TeachingPersonnel ? "Teaching Personnel" :
       "Non Teaching Personnel";
+  static UserRole userRoleFromString(String role) =>
+      role ==  "Student" ? UserRole.Student :
+      role == "Teaching Personnel" ? UserRole.TeachingPersonnel:
+      UserRole.NonTeachingPersonnel;
 
   static String notificationTypeString(NotificationType type) =>
       type == NotificationType.SmartNotification ? "SmartNotification" :
@@ -90,6 +109,7 @@ class Utils {
     _prefs.remove(DEFAULT_NOTIFICATION_LIST);
     _prefs.remove(NOTIFICATION_ID_KEY);
     _prefs.remove(LAST_RECOMMENDATION_DATE_KEY);
+    _prefs.remove(USER_KEY);
   }
 
   ///
@@ -277,6 +297,30 @@ class Utils {
         break;
     }
     return Future.error("$feature Request failed unknown error.");
+  }
+
+  static String handleDioError(DioError error, String feature) {
+    switch (error.type) {
+      case DioErrorType.CANCEL:
+        return "$feature Request to API server was cancelled";
+        break;
+      case DioErrorType.CONNECT_TIMEOUT:
+        return "Connection timeout with server";
+        break;
+      case DioErrorType.DEFAULT:
+        return "Connection to API server failed due to internet connection";
+        break;
+      case DioErrorType.RECEIVE_TIMEOUT:
+        return "$feature Recieve timeout with server";
+        break;
+      case DioErrorType.RESPONSE:
+        return "$feature Request received invalid status code: "
+            "${error.response.statusCode}";
+        break;
+      case DioErrorType.SEND_TIMEOUT:
+        return "$feature Send timeout in connection with API server";
+        break;
+    }
   }
 
 }

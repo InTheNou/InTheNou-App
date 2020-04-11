@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:InTheNou/assets/values.dart';
 import 'package:cookie_jar/cookie_jar.dart';
+import 'package:dio/adapter.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:path_provider/path_provider.dart';
@@ -18,7 +19,7 @@ class ApiConnection {
     init();
   }
 
-  String session;
+  Cookie session;
   List<Cookie> _cookies;
 
   Dio get dio => _dio;
@@ -41,11 +42,24 @@ class ApiConnection {
     try {
       final Directory dir = await _localCookieDirectory;
       final cookiePath = dir.path;
-      _persistentCookies = new PersistCookieJar(dir: '$cookiePath');
-//      persistentCookies.deleteAll(); //clearing any existing cookies for a fresh start
+      _persistentCookies = new PersistCookieJar(
+          dir: '$cookiePath',
+          persistSession: true);
+      _cookies = _persistentCookies.loadForRequest(
+          Uri.parse(API_URL));
+      _cookies = _persistentCookies.loadForRequest(
+          Uri.parse("https://25.130.82.125"));
+      session = cookies.firstWhere((c) => c.name == 'session', orElse: () => null);
+      print(session);
+//      _persistentCookies.deleteAll(); //clearing any existing cookies for a fresh start
       _dio.interceptors.add(
           CookieManager(_persistentCookies)
       );
+      (_dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate
+      = (HttpClient client) {
+        client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+        return client;
+      };
       _dio.options = new BaseOptions(
         baseUrl: API_URL,
         responseType: ResponseType.json,
@@ -53,25 +67,24 @@ class ApiConnection {
         receiveTimeout: 100000,
         headers: {
         },
-      ); //BaseOptions will be persisted throughout subsequent requests made with _dio
+      );
       _dio.interceptors.add(
           InterceptorsWrapper(
               onResponse:(Response response) {
                 _cookies = _persistentCookies.loadForRequest(
                     Uri.parse(API_URL));
-              _cookies = _persistentCookies.loadForRequest(
-                  Uri.parse("https://google.com"));
-                session = cookies.firstWhere((c) => c.name == 'session', orElse: () => null)?.value;
-                if (session != null) {
-                  _dio.options.headers['session'] = session;
+                _cookies = _persistentCookies.loadForRequest(
+                    Uri.parse("https://25.130.82.125"));
+                session = cookies.firstWhere((c) => c.name == 'session', orElse: () => null);
+                if(session != null){
+                  _dio.options.headers['Cookie'] = session;
                 }
                 return response;
               }
           )
       );
-//      await _dio.get("/accounts/login/");
     } catch (error, stacktrace) {
-      print("Exception occured: $error stackTrace: $stacktrace");
+      print("Exception Initializing Dio: $error stackTrace: $stacktrace");
       return null;
     }
   }

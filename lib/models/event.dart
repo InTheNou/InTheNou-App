@@ -102,7 +102,7 @@ class Event {
         "etitle": _title,
         "edescription": _description,
         "photourl": _image.isEmpty ? null : _image,
-        "ecreator": 4,
+        "ecreator": 0,
         "estart": Utils.formatTimeStamp(_startDateTime.toUtc()),
         "eend": Utils.formatTimeStamp(_endDateTime.toUtc()),
         "roomid": _room.UID,

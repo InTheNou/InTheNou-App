@@ -79,7 +79,7 @@ class EventFeedStore extends flux.Store{
     );
     triggerOnConditionalAction(openEventDetail, (int eventID){
       if(_eventDetail !=null && _eventDetail.UID == eventID){
-        return false;
+        return true;
       }
       _eventDetail = null;
       trigger();

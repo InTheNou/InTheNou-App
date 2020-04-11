@@ -14,11 +14,12 @@ class Building {
   String _image;
 
   Building.result({int UID, String abbreviation, String name,
-    String commonName}){
+    String commonName, String image}){
     this._UID = UID;
     this._abbreviation = abbreviation;
     this._name = name;
     this._commonName = commonName;
+    this._image = image;
   }
 
   Building(this._UID, this._abbreviation, this._name, this._commonName,
@@ -29,7 +30,7 @@ class Building {
     return Building(
       json['bid'],
       json['babbrev'],
-      json['bname'].toString().replaceAll(RegExp(r"(\()(.*)(\))"),""),
+      json['bname'].trim(),
       json['bcommonname'] ?? "error",
       json['numfloors'],
       Floor.fromJsonToList(json['distinctfloors']),
@@ -46,8 +47,9 @@ class Building {
     return Building.result(
       UID: json['bid'],
       abbreviation: json['babbrev'],
-      name: json['bname'].toString().replaceAll(RegExp(r"(\()(.*)(\))"),""),
-      commonName: json['bname'],
+      name: json['bname'],
+      commonName: json['bcommonname'],
+      image: json['photourl'],
     );
   }
 
