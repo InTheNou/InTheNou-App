@@ -41,31 +41,33 @@ class UserRepo {
     ]
   );
 
-  Future<int> callAuthService() async {
-//    _userAccount = await _googleSignIn.signIn();
-//    var auth = await _userAccount.authentication;
-//    Map values = {
-//      "access_token": auth.accessToken,
-//      "id": _userAccount.id,
-//      "email":_userAccount.email,
-//      "display_name":_userAccount.displayName,
-//    };
-//
-//    try{
-//      Response response = await dio.post("/App/login",
-//          data: convert.jsonEncode(values));
-//      print(response.data['uid']);
-//      print(response.data['newAccount']);
-//      return int.parse(response.data['uid']);
-//    } catch(error, stacktrace){
-//      if (error is DioError) {
-//        return Future.error(Utils.handleDioError(error, "Sign in") );
-//      } else {
-//        debugPrint("Exception: $error stackTrace: $stacktrace");
-//        return Future.error("Internal app error while Signing in");
-//      }
-//    }
-    return 4;
+  Future<int> logIn() async {
+    _userAccount = await _googleSignIn.signIn();
+    var auth = await _userAccount.authentication;
+    Map values = {
+      "access_token": auth.accessToken,
+      "id": _userAccount.id,
+      "email":_userAccount.email,
+      "display_name":_userAccount.displayName,
+    };
+
+    try{
+      Response response = await dio.post("/App/login",
+          data: convert.jsonEncode(values));
+      // this is becuase we recieve an error and no uid when the user is new
+      if(response.data["uid"] == null){
+        return null;
+      }
+      print(response.headers.toString());
+      return int.parse(response.data['uid']);
+    } catch(error, stacktrace){
+      debugPrint("Exception: $error stackTrace: $stacktrace");
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error, "Sign in") );
+      } else {
+        return Future.error("Internal app error while Signing in");
+      }
+    }
   }
 
 
@@ -111,34 +113,45 @@ class UserRepo {
       prefs.setString(USER_KEY, convert.jsonEncode(user.toJson()));
       return user;
     } catch(error, stacktrace){
+      debugPrint("Exception: $error stackTrace: $stacktrace");
       if (error is DioError) {
         return Future.error(Utils.handleDioError(error, "User Data") );
       } else {
-        debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error("Internal app error while getting User Data in");
       }
     }
   }
 
-  Future<User> createUser(List<Tag> tags) async{
+  Future<User> signUp(List<Tag> tags) async{
     try{
-//      List<Map<String, dynamic>> tagsJson = Tag.toJsonList(tags);
-//
-//      Response response = await dio.post("/App/Tags/User/Add",
-//        data: convert.jsonEncode(tagsJson));
-//      print(response);
-      User newUser = await getUserFromPrefrs();
-      newUser.tags = tags;
-      SharedPreferences prefs = await _prefs;
+      // Prepare the data to create the user account
+      var auth = await _userAccount.authentication;
+      List<Map<String, dynamic>> tagsJson = Tag.toJsonList(tags);
+      Map values = {
+        "access_token": auth.accessToken,
+        "id": _userAccount.id,
+        "email":_userAccount.email,
+        "display_name":_userAccount.displayName,
+        "tags": tagsJson
+      };
+      // Do the signup request
+      Response response = await dio.post("/App/signup",
+        data: convert.jsonEncode(values));
 
+      // Get the complete information of the user given the response UID
+      User newUser = await getUserInfo(response.data["uid"]);
+
+      // Save that user to the local storage
+      SharedPreferences prefs = await _prefs;
       prefs.setString(USER_KEY, convert.jsonEncode(newUser.toJson()));
+      print(prefs.get(USER_KEY));
 
       return newUser;
     } catch(error, stacktrace){
+      debugPrint("Exception: $error stackTrace: $stacktrace");
       if (error is DioError) {
         return Future.error(Utils.handleDioError(error, "Create User") );
       } else {
-        debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error("Internal app error while Creating User");
       }
     }
@@ -165,14 +178,11 @@ class UserRepo {
 
   /// Removes the Session from the local storage so that the user may sign
   /// back in.
-  Future<bool> logOut() async{
+  logOut() async{
     final SharedPreferences prefs = await _prefs;
-    return Future.delayed(Duration(seconds: 1)).then((onValue) {
-      prefs.setString(USER_SESSION_KEY, null);
-      dummyUser = null; // debug
-      return true;
-    });
-//    _googleSignIn.signOut();
+    prefs.setString(USER_SESSION_KEY, null);
+    apiConnection.deleteSession();
+    _googleSignIn.signOut();
   }
 
   Future<List<Event>> getFollowedEvents(int skipEvents, int numEvents) async{
@@ -189,10 +199,10 @@ class UserRepo {
       }
       return eventResults;
     } catch(error, stacktrace){
+      debugPrint("Exception: $error stackTrace: $stacktrace");
       if (error is DioError) {
         return Future.error(Utils.handleDioError(error, "Followed Events") );
       } else {
-        debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error("Internal app error while getting Followed Events");
       }
     }
@@ -212,10 +222,10 @@ class UserRepo {
       }
       return eventResults;
     } catch(error, stacktrace){
+      debugPrint("Exception: $error stackTrace: $stacktrace");
       if (error is DioError) {
         return Future.error(Utils.handleDioError(error, "Credted Events") );
       } else {
-        debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error("Internal app error while getting Created Events");
       }
     }
@@ -232,9 +242,7 @@ class UserRepo {
   // debug stuff
   static User dummyUser = new User(4,"Alguien", "Importante",
       "alguien.importante@upr.edu",UserRole.Student,
-      [Tag(1,"ADMI",INITIAL_TAG_WEIGHT), Tag(2,"ADOF",INITIAL_TAG_WEIGHT),
-        Tag(3,"AGRO",INITIAL_TAG_WEIGHT), Tag(4,"ALEM",INITIAL_TAG_WEIGHT),
-        Tag(5,"ANTR",INITIAL_TAG_WEIGHT)],
+      null,
       UserPrivilege.EventCreator);
 
   EventsRepo _eventRepo = new EventsRepo();

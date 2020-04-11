@@ -123,9 +123,14 @@ class _SettingsViewState extends State<SettingsView>
                     ),
                     onTap: () async {
                       await logoutAction();
+                      // Move the HomePage navigator to the Personal feed for
+                      // the next sign in
                       navigateToAction(0);
+                      // Cancel all Preferences and Notifications of the
+                      // current user
                       NotificationHandler.cancelAllSmartNotifications();
                       Utils.clearAllPreferences();
+                      // Disable the background tasks
                       BackgroundHandler.onClickEnable(false);
                       Navigator.pushNamedAndRemoveUntil(
                         context, "/login", (Route<dynamic> route) => false,);

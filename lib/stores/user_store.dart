@@ -33,7 +33,8 @@ class UserStore extends flux.Store{
   String _followedEventError;
   String _createdEventError;
 
-//  Future<User> loginUser;
+  Future<User> loginUser;
+  Future<Cookie> session;
 
   UserStore() {
 //    _userRepo.getUser().then((value) {
@@ -73,26 +74,36 @@ class UserStore extends flux.Store{
       _userRepo.requestDeleteEvents(event);
     });
     triggerOnConditionalAction(callAuthAction, (_) async{
-      return await _userRepo.callAuthService().then((uid) async{
+      return _userRepo.logIn().then((uid) async{
         if(uid != null){
-          return await _userRepo.getUserInfo(uid).then((user){
-//            loginUser = Future.value(user);
+          return _userRepo.getUserInfo(uid).then((user){
+            loginUser = Future.value(user);
             print(user);
             _user = user;
             return true;
           }).catchError((e){
-//            loginUser = Future.error(e);
+            loginUser = Future.error(e);
             return true;
           });
         }
+        loginUser = Future.value(null);
         return true;
       }).catchError((e){
-//        loginUser = Future.error(e);
+        loginUser = Future.error(e);
         return true;
       });
     });
+    triggerOnConditionalAction(fetchSession, (_) {
+      return getSession().then((value) {
+        session = Future.value(value);
+        return true;
+      });
+    });
+    triggerOnAction(resetStartUpError, (_) {
+      session = null;
+    });
     triggerOnAction(resetLoginError, (_) {
-//      loginUser = null;
+      loginUser = null;
     });
     triggerOnAction(selectRoleAction, (UserRole role) {
       _selectedRole = role;
@@ -117,12 +128,14 @@ class UserStore extends flux.Store{
       }
     });
     triggerOnConditionalAction(createUserAction, (_){
-      return _userRepo.createUser(_selectedTags).then(
-              (value) {
+      loginUser = Future.value(null);
+      trigger();
+      return _userRepo.signUp(_selectedTags).then((value) {
                 _user = value;
                 _selectedRole = null;
                 _selectedTags = List();
                 _searchTags = _allTags;
+                loginUser = Future.value(value);
                 return true;
       });
     });
@@ -169,7 +182,9 @@ final flux.Action refreshFollowedAction = new flux.Action();
 final flux.Action refreshCreatedAction = new flux.Action();
 final flux.Action<Event> cancelEventAction = new flux.Action();
 //AccountCreation and Auth Actions
+final flux.Action fetchSession = new flux.Action();
 final flux.Action callAuthAction = new flux.Action();
+final flux.Action resetStartUpError = new flux.Action();
 final flux.Action resetLoginError = new flux.Action();
 final flux.Action<UserRole> selectRoleAction = new flux.Action();
 final flux.Action<String> searchedTagAction = new flux.Action();

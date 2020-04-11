@@ -4,6 +4,7 @@ import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/adapter.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:path_provider/path_provider.dart';
 
 class ApiConnection {
@@ -47,11 +48,10 @@ class ApiConnection {
           persistSession: true);
       _cookies = _persistentCookies.loadForRequest(
           Uri.parse(API_URL));
-      _cookies = _persistentCookies.loadForRequest(
-          Uri.parse("https://25.130.82.125"));
       session = cookies.firstWhere((c) => c.name == 'session', orElse: () => null);
-      print(session);
-//      _persistentCookies.deleteAll(); //clearing any existing cookies for a fresh start
+      if(session != null ){
+        debugPrint("SEssion Loaded");
+      }
       _dio.interceptors.add(
           CookieManager(_persistentCookies)
       );
@@ -73,8 +73,6 @@ class ApiConnection {
               onResponse:(Response response) {
                 _cookies = _persistentCookies.loadForRequest(
                     Uri.parse(API_URL));
-                _cookies = _persistentCookies.loadForRequest(
-                    Uri.parse("https://25.130.82.125"));
                 session = cookies.firstWhere((c) => c.name == 'session', orElse: () => null);
                 if(session != null){
                   _dio.options.headers['Cookie'] = session;
@@ -87,5 +85,9 @@ class ApiConnection {
       print("Exception Initializing Dio: $error stackTrace: $stacktrace");
       return null;
     }
+  }
+
+  deleteSession(){
+    _persistentCookies.deleteAll();
   }
 }

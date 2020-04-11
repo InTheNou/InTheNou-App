@@ -10,7 +10,7 @@ import 'package:InTheNou/models/user.dart';
 import 'package:InTheNou/models/website.dart';
 import 'package:InTheNou/repos/api_connection.dart';
 import 'package:dio/dio.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class EventsRepo {
@@ -21,7 +21,6 @@ class EventsRepo {
   Dio dio;
 
   Random rand = Random();
-  var client = http.Client();
 
   factory EventsRepo() {
     return _instance;
@@ -54,9 +53,11 @@ class EventsRepo {
         });
       }
       return eventResults;
-    } catch(e){
-      if (e is DioError) {
-        return Future.error(Utils.handleDioError(e, "Getting General Events") );
+    } catch(error,stacktrace){
+      debugPrint("Exception: $error stackTrace: $stacktrace");
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error, "Getting General "
+            "Events") );
       } else {
         return Future.error("Internal app error Getting General Events");
       }
@@ -88,9 +89,11 @@ class EventsRepo {
         });
       }
       return eventResults;
-    } catch(e){
-      if (e is DioError) {
-        return Future.error(Utils.handleDioError(e, "Getting Personal Events"));
+    } catch(error,stacktrace){
+      debugPrint("Exception: $error stackTrace: $stacktrace");
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error, "Getting Personal "
+            "Events"));
       } else {
         return Future.error("Internal app error Getting Personal Events");
       }
@@ -134,9 +137,11 @@ class EventsRepo {
         });
       }
       return eventResults;
-    } catch(e){
-      if (e is DioError) {
-        return Future.error(Utils.handleDioError(e, "Searching General Events"));
+    } catch(error,stacktrace){
+      debugPrint("Exception: $error stackTrace: $stacktrace");
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error, "Searching General "
+            "Events"));
       } else {
         return Future.error("Internal app error Searching General Events");
       }
@@ -169,9 +174,10 @@ class EventsRepo {
         });
       }
       return eventResults;
-    } catch(e){
-      if (e is DioError) {
-        return Future.error(Utils.handleDioError(e,
+    } catch(error,stacktrace){
+      debugPrint("Exception: $error stackTrace: $stacktrace");
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error,
             "Searching Personal Events"));
       } else {
         return Future.error("Internal app error Searching Personal Events");
@@ -191,9 +197,10 @@ class EventsRepo {
       Response response = await dio.get("/App/Events/eid=$eventUID/"
           "uid=${user.UID}");
       return Event.fromJson(response.data);
-    } catch(e){
-      if (e is DioError) {
-        return Future.error(Utils.handleDioError(e, "Getting Event"));
+    } catch(error,stacktrace){
+      debugPrint("Exception: $error stackTrace: $stacktrace");
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error, "Getting Event"));
       } else {
         return Future.error("Internal app error while Getting Event");
       }
@@ -212,9 +219,10 @@ class EventsRepo {
       Response response = await dio.post("/App/Events/eid=$eventUID/"
           "uid=${user.UID}/Follow");
       return response.data["event"]["eid"] == eventUID;
-    } catch(e){
-      if (e is DioError) {
-        return Future.error(Utils.handleDioError(e, "Follow Event"));
+    } catch(error,stacktrace){
+      debugPrint("Exception: $error stackTrace: $stacktrace");
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error, "Follow Event"));
       } else {
         return Future.error("Internal app error while Follwing Event");
       }
@@ -233,9 +241,10 @@ class EventsRepo {
       Response response = await dio.post("/App/Events/eid=$eventUID/"
           "uid=${user.UID}/Unfollow");
       return response.data["event"]["eid"] == eventUID;
-    } catch(e){
-      if (e is DioError) {
-        return Future.error(Utils.handleDioError(e, "UnFollow Event"));
+    } catch(error,stacktrace){
+      debugPrint("Exception: $error stackTrace: $stacktrace");
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error, "UnFollow Event"));
       } else {
         return Future.error("Internal app error while UnFollwing Event");
       }
@@ -255,9 +264,10 @@ class EventsRepo {
       Response response = await dio.post("/App/Events/eid=$eventUID/"
           "uid=${user.UID}/Dismiss");
       return response.data["event"]["eid"] == eventUID;
-    } catch(e){
-      if (e is DioError) {
-        return Future.error(Utils.handleDioError(e, "Dismiss Event"));
+    } catch(error,stacktrace){
+      debugPrint("Exception: $error stackTrace: $stacktrace");
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error, "Dismiss Event"));
       } else {
         return Future.error("Internal app error while Dismissing Event");
       }
@@ -281,9 +291,11 @@ class EventsRepo {
             "/App/Events/eid=${event.UID}/uid=${user.UID}/"
                 "recommendstatus=${event.recommended}");
         return response.data["eid"] == event.UID;
-      } catch(e){
-        if (e is DioError) {
-          return Future.error(Utils.handleDioError(e, "Recommendation Event"));
+      } catch(error,stacktrace){
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        if (error is DioError) {
+          return Future.error(Utils.handleDioError(error, "Recommendation "
+              "Event"));
         } else {
           return Future.error("Internal app error while Recommending Event");
         }
@@ -309,9 +321,10 @@ class EventsRepo {
       Response response = await dio.post(API_URL+ "/App/Events/Create",
         data: convert.jsonEncode(eventJson));
       return response.data["eid"] == event.UID;
-    } catch(e){
-      if (e is DioError) {
-        return Future.error(Utils.handleDioError(e, "Create Event"));
+    } catch(error,stacktrace){
+      debugPrint("Exception: $error stackTrace: $stacktrace");
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error, "Create Event"));
       } else {
         return Future.error("Internal app error while Createing Event");
       }

@@ -114,7 +114,8 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
                     placeholder: "lib/assets/placeholder.png",
                     height: 120.0,
                     width: 150.0,
-                    image: isURL(building.image) ? building.image : "",
+                    image: (building.image !=null && isURL(building.image)) ?
+                      building.image : "",
                   ),
                   const Padding(padding: EdgeInsets.only(left: 16.0)),
                   Expanded(

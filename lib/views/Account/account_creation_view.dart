@@ -18,6 +18,7 @@ class _AccountCreationViewState extends State<AccountCreationView>
   final _formKey = GlobalKey<FormState>();
   var _autoValidate = false;
   UserStore _userStore;
+
   @override
   void initState() {
     super.initState();
@@ -26,6 +27,43 @@ class _AccountCreationViewState extends State<AccountCreationView>
 
   @override
   Widget build(BuildContext context) {
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if(_userStore.loginUser != null){
+        _userStore.loginUser.then((user){
+          if(user==null){
+            // Show a progress bar while the backend creates the Account
+            showProgressBar();
+          }
+          else{
+            // The backend brought back user info
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              "/home", (Route<dynamic> route) => false,
+            );
+            _userStore.loginUser = null;
+          }
+        }).catchError((e){
+          Navigator.of(context).pop();
+          showDialog<String>(
+            context: context,
+            builder: (BuildContext context) => AlertDialog(
+              title: const Text('Error'),
+              content: Text(e.toString()),
+              actions: <Widget>[
+                FlatButton(
+                    child: const Text('OK'),
+                    onPressed: (){
+                      Navigator.of(context).pop();
+                      resetLoginError();
+                    }
+                ),
+              ],
+            ),
+          );
+        });
+      }
+    });
+
     return Scaffold(
       backgroundColor: Theme.of(context).primaryColor,
       body:SingleChildScrollView(
@@ -154,7 +192,7 @@ class _AccountCreationViewState extends State<AccountCreationView>
     if(_formKey.currentState.validate() && _userStore.selectedTags.length == 5){
       showSubmitConfirmation().then((value) {
         if(value != null && value){
-          showProgressBar();
+          createUserAction();
         }
       });
     }
@@ -193,11 +231,6 @@ class _AccountCreationViewState extends State<AccountCreationView>
   void showProgressBar(){
     showDialog(context: context,
         builder: (_) {
-          createUserAction().then((value) {
-            Navigator.of(context).pushNamedAndRemoveUntil(
-              "/home", (Route<dynamic> route) => false,
-            );
-          });
           return Scaffold(
             backgroundColor: Colors.transparent,
             body: Center(

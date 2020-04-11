@@ -1,20 +1,14 @@
 import 'package:InTheNou/assets/utils.dart';
-import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/building.dart';
-import 'package:InTheNou/models/coordinate.dart';
-import 'package:InTheNou/models/floor.dart';
-import 'package:InTheNou/models/phone_number.dart';
 import 'package:InTheNou/models/room.dart';
 import 'package:InTheNou/models/service.dart';
-import 'package:InTheNou/models/website.dart';
 import 'package:InTheNou/repos/api_connection.dart';
 import 'package:dio/dio.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 
 class InfoBaseRepo {
 
   static final InfoBaseRepo _instance = InfoBaseRepo._internal();
-  var client = http.Client();
   final ApiConnection apiConnection = ApiConnection();
   Dio dio;
 
@@ -37,9 +31,10 @@ class InfoBaseRepo {
         });
       }
       return buildingResults;
-    } catch(e){
-      if (e is DioError) {
-        return Future.error(Utils.handleDioError(e, "Getting Buildings") );
+    } catch(error,stacktrace){
+      debugPrint("Exception: $error stackTrace: $stacktrace");
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error, "Getting Buildings") );
       } else {
         return Future.error("Internal app error Getting Buildings");
       }
@@ -57,9 +52,11 @@ class InfoBaseRepo {
         });
       }
       return buildingResults;
-    } catch(e){
-      if (e is DioError) {
-        return Future.error(Utils.handleDioError(e, "Searching Buildings") );
+    } catch(error,stacktrace){
+      debugPrint("Exception: $error stackTrace: $stacktrace");
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error, "Searching "
+            "Buildings") );
       } else {
         return Future.error("Internal app error Searching Buildings");
       }
@@ -74,9 +71,10 @@ class InfoBaseRepo {
         buildingResult =  Building.fromJson(jsonResponse);
       }
       return buildingResult;
-    } catch(e){
-      if (e is DioError) {
-        return Future.error(Utils.handleDioError(e, "Getting Building") );
+    } catch(error,stacktrace){
+      debugPrint("Exception: $error stackTrace: $stacktrace");
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error, "Getting Building") );
       } else {
         return Future.error("Internal app error Getting Building");
       }
@@ -97,9 +95,11 @@ class InfoBaseRepo {
         }
       }
       return roomResults;
-    } catch(e){
-      if (e is DioError) {
-        return Future.error(Utils.handleDioError(e, "Getting Rooms in Floor") );
+    } catch(error,stacktrace){
+      debugPrint("Exception: $error stackTrace: $stacktrace");
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error, "Getting Rooms in "
+            "Floor") );
       } else {
         return Future.error("Internal app error Getting Rooms in Floor");
       }
@@ -121,9 +121,10 @@ class InfoBaseRepo {
         }
       }
       return roomResults;
-    } catch(e){
-      if (e is DioError) {
-        return Future.error(Utils.handleDioError(e, "Searching Rooms by "
+    } catch(error,stacktrace){
+      debugPrint("Exception: $error stackTrace: $stacktrace");
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error, "Searching Rooms by "
             "keyword") );
       } else {
         return Future.error("Internal app error Searching Rooms by keyword");
@@ -145,9 +146,10 @@ class InfoBaseRepo {
         }
       }
       return roomResults;
-    } catch(e){
-      if (e is DioError) {
-        return Future.error(Utils.handleDioError(e, "Searching Rooms by "
+    } catch(error,stacktrace){
+      debugPrint("Exception: $error stackTrace: $stacktrace");
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error, "Searching Rooms by "
             "Code") );
       } else {
         return Future.error("Internal app error Searching Rooms by Code");
@@ -173,9 +175,10 @@ class InfoBaseRepo {
         roomResult.services = services;
       }
       return roomResult;
-    } catch(e){
-      if (e is DioError) {
-        return Future.error(Utils.handleDioError(e, "Getting Room") );
+    } catch(error,stacktrace){
+      debugPrint("Exception: $error stackTrace: $stacktrace");
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error, "Getting Room") );
       } else {
         return Future.error("Internal app error Getting Room");
       }
@@ -195,9 +198,10 @@ class InfoBaseRepo {
         });
       }
       return serviceResult;
-    } catch(e){
-      if (e is DioError) {
-        return Future.error(Utils.handleDioError(e, "Searching Services") );
+    } catch(error,stacktrace){
+      debugPrint("Exception: $error stackTrace: $stacktrace");
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error, "Searching Services") );
       } else {
         return Future.error("Internal app error Searching Services");
       }
@@ -220,100 +224,13 @@ class InfoBaseRepo {
         }
       }
       return service;
-    } catch(e){
-      if (e is DioError) {
-        return Future.error(Utils.handleDioError(e, "Getting Service") );
+    } catch(error,stacktrace){
+      debugPrint("Exception: $error stackTrace: $stacktrace");
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error, "Getting Service") );
       } else {
         return Future.error("Internal app error Getting Service");
       }
-    }
-  }
-
-//---------------------- DEBUGGING STUFF ----------------------
-  List<Building> dummyBuildings = new List.generate(2,
-          (index) => new Building(index, "B$index","Building $index",
-              "Cool Building $index",
-              2,List.generate(2, (i) => Floor.fromJson(i)), "academic", new
-              Coordinate(18.209641, -67.139923,0),
-              "https://pbs.twimg.com/media/DN8sEJpUEAAyuyF?format=jpg&name=large"));
-
-  var dummyRooms = <int,List<Room>>{
-      0: new List.generate(20,(index) =>
-        new Room(index, "S-"+(index%2).toString()+"$index", "Building 0",
-            (index%2), "nice room", 20, "email@upr.edu",
-            new Coordinate(18.209641, -67.139923,0))),
-      1: new List.generate(20,(index) =>
-      new Room(index+100, "S-"+(index%2).toString()+"$index", "Building 0",
-          (index%2), "nice room", 20, "email@upr.edu",
-          new Coordinate(18.209641, -67.139923,0))),
-  };
-
-  var dummyServices = <int,List<Service>>{
-    0: new List.generate(20,(index) =>
-    new Service(index,"Service B0 $index", "Nice service inside B0",
-        "S-"+(index%2).toString()+"$index", "Schedule $index \nSchedule $index",
-        [PhoneNumber("787-123-4567,1234", PhoneType.E),
-          PhoneNumber("787-123-4567", PhoneType.F)],
-        new List<Website>.filled(2,
-            new Website("https://portal.upr.edu/rum/portal.php?a=rea_login",
-                "Portal"))
-    )),
-    1: new List.generate(20,(index) =>
-    new Service(index+100,"Service B1 $index", "Nice service inside B1",
-      "S-"+(index%2).toString()+"$index", "Schedule $index \nSchedule $index",
-      [PhoneNumber("787-123-4567,1234", PhoneType.E),
-        PhoneNumber("787-123-4567", PhoneType.L)],
-      new List<Website>.filled(2,
-          new Website("https://portal.upr.edu/rum/portal.php?a=rea_login", "P"
-              "ortal"))
-    ))
-  };
-
-  List<Building> buildingsSearch = new List();
-  void runLocalBuildingSearch(String keyword){
-    if (keyword.isNotEmpty) {
-      buildingsSearch.clear();
-      dummyBuildings.forEach((element) {
-        if (element.name.contains(keyword)){
-          buildingsSearch.add(element);
-        } else if (element.commonName.contains(keyword)){
-          buildingsSearch.add(element);
-        }
-      });
-    }
-  }
-  List<Room> roomsSearch = new List();
-  void runLocalRoomSearch(String keyword){
-    if (keyword.isNotEmpty) {
-      roomsSearch.clear();
-      dummyRooms.entries.forEach((element) {
-        element.value.forEach((room) {
-          if (room.description.contains(keyword)){
-            roomsSearch.add(room);
-          } else if (room.code.contains(keyword)){
-            roomsSearch.add(room);
-          } else if (room.building.contains(keyword)){
-            roomsSearch.add(room);
-          }
-        });
-      });
-    }
-  }
-  List<Service> servicesSearch = new List();
-  void runLocalServiceSearch(String keyword){
-    if (keyword.isNotEmpty) {
-      servicesSearch.clear();
-      dummyServices.entries.forEach((element) {
-        element.value.forEach((service) {
-          if (service.description.contains(keyword)){
-            servicesSearch.add(service);
-          } else if (service.name.contains(keyword)){
-            servicesSearch.add(service);
-          } else if (service.roomCode.contains(keyword)){
-            servicesSearch.add(service);
-          }
-        });
-      });
     }
   }
 }

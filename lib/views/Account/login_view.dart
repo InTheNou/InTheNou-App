@@ -1,4 +1,3 @@
-import 'package:InTheNou/models/user.dart';
 import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_auth_buttons/flutter_auth_buttons.dart';
@@ -28,52 +27,41 @@ class _LoginViewState extends State<LoginView>
   Widget build(BuildContext context) {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if(_userStore.user!=null){
-        // This means the backend recognizes this as a new user
-        if(_userStore.user.tags == null){
-          Navigator.of(context).pushReplacementNamed("/accountcreation");
-        }
-        // The backend brought back a returning user info
-        else{
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            "/home", (Route<dynamic> route) => false,
+      if(_userStore.loginUser != null){
+        _userStore.loginUser.then((user){
+          if(user==null){
+            // This means the backend recognizes this as a new user
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              "/accountcreation", (Route<dynamic> route) => false,
+            );
+          }
+          else{
+            // The backend brought back a returning user info
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              "/home", (Route<dynamic> route) => false,
+            );
+          }
+          _userStore.loginUser = null;
+        }).catchError((e){
+          Navigator.of(context).pop();
+          showDialog<String>(
+            context: context,
+            builder: (BuildContext context) => AlertDialog(
+              title: const Text('Error'),
+              content: Text(e.toString()),
+              actions: <Widget>[
+                FlatButton(
+                    child: const Text('OK'),
+                    onPressed: (){
+                      Navigator.of(context).pop();
+                      resetLoginError();
+                    }
+                ),
+              ],
+            ),
           );
-        }
+        });
       }
-//      if(_userStore.loginUser != null){
-//        _userStore.loginUser.then((user){
-//          if(_userStore.user!=null){
-//            // This means the backend recognizes this as a new user
-//            if(_userStore.user.tags == null){
-//              Navigator.of(context).pushReplacementNamed("/accountcreation");
-//            }
-//            // The backend brought back a returning user info
-//            else{
-//              Navigator.of(context).pushNamedAndRemoveUntil(
-//                "/home", (Route<dynamic> route) => false,
-//              );
-//            }
-//          }
-//        }).catchError((e){
-//          Navigator.of(context).pop();
-//          showDialog<String>(
-//            context: context,
-//            builder: (BuildContext context) => AlertDialog(
-//              title: const Text('Error'),
-//              content: Text(e.toString()),
-//              actions: <Widget>[
-//                FlatButton(
-//                    child: const Text('OK'),
-//                    onPressed: (){
-//                      Navigator.of(context).pop();
-//                      resetLoginError();
-//                    }
-//                ),
-//              ],
-//            ),
-//          );
-//        });
-//      }
     });
 
     return Scaffold(

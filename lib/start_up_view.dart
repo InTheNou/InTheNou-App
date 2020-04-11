@@ -26,7 +26,7 @@ class _StartUpViewState extends State<StartUpView>
       else{
         _userStore.getUser().then((user) {
           print(user);
-          if(user == null || user.tags == null){
+          if(user == null){
             Navigator.of(context).pushReplacementNamed("/accountcreation");
           } else {
             Navigator.of(context).pushReplacementNamed("/home");

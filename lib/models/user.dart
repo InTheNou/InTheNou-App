@@ -29,10 +29,8 @@ class User {
   factory User.fromJson(Map<String,dynamic> json){
     return User(
         json["uid"],
-        json["first_name"],
-        json["last_name"],
-//        json["display_name"].toString().split(" ")[0],
-//        json["display_name"],
+        json["display_name"].toString().split(" ")[0],
+        json["display_name"],
         json["email"],
         Utils.userRoleFromString(json["type"]),
         null,
@@ -43,8 +41,7 @@ class User {
     return {
       "uid" : _UID,
       "first_name" : _firstName,
-      "last_name" : _fullName,
-//      "display_name" : _fullName,
+      "display_name" : _fullName,
       "email" : _email,
       "type" : Utils.userRoleString(_role),
       "tags" : Tag.toJsonList(_tags),
