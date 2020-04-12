@@ -1,5 +1,3 @@
-import 'package:InTheNou/assets/utils.dart';
-import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/tag.dart';
 import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/material.dart';
@@ -33,7 +31,7 @@ class _AccountCreationViewState extends State<AccountCreationView>
         _userStore.loginUser.then((user){
           if(user==null){
             // Show a progress bar while the backend creates the Account
-            showProgressBar();
+            showCreatingAccountLoading();
           }
           else{
             // The backend brought back user info
@@ -43,23 +41,7 @@ class _AccountCreationViewState extends State<AccountCreationView>
             _userStore.loginUser = null;
           }
         }).catchError((e){
-          Navigator.of(context).pop();
-          showDialog<String>(
-            context: context,
-            builder: (BuildContext context) => AlertDialog(
-              title: const Text('Error'),
-              content: Text(e.toString()),
-              actions: <Widget>[
-                FlatButton(
-                    child: const Text('OK'),
-                    onPressed: (){
-                      Navigator.of(context).pop();
-                      resetLoginError();
-                    }
-                ),
-              ],
-            ),
-          );
+
         });
       }
     });
@@ -188,6 +170,34 @@ class _AccountCreationViewState extends State<AccountCreationView>
     );
   }
 
+  /// Shows the user any account creation errors.
+  void showErrorDialog(Exception e){
+    Navigator.of(context).pop();
+    showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Error'),
+        content: Text(e.toString()),
+        actions: <Widget>[
+          FlatButton(
+              child: const Text('OK'),
+              onPressed: (){
+                Navigator.of(context).pop();
+                resetLoginError();
+              }
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Validates the information provided by the user.
+  ///
+  /// If the user hasn't selected the appropriate number of tags then the
+  /// user is shown a notice using [showTagWarning] otherwise
+  /// they are asked to confirm their input using [showSubmitConfirmation].
+  /// If they choose to confirm then their account is created by calling
+  /// [createUserAction].
   void validate(){
     if(_formKey.currentState.validate() && _userStore.selectedTags.length == 5){
       showSubmitConfirmation().then((value) {
@@ -204,6 +214,11 @@ class _AccountCreationViewState extends State<AccountCreationView>
     }
   }
 
+  /// Shows the user a confirmation [AlertDialog] before creating their account
+  ///
+  /// If the user dismissed the AlertDialog then this returns null and the
+  /// account creation does not proceed. Otherwise the user clicks Confirm
+  /// which returns true and the account creation continues.
   Future<bool> showSubmitConfirmation(){
     return showDialog<bool>(context: context,
         builder: (_) {
@@ -228,7 +243,9 @@ class _AccountCreationViewState extends State<AccountCreationView>
     );
   }
 
-  void showProgressBar(){
+  /// Shows a loading screen to the user while the account is created in the
+  /// backend.
+  void showCreatingAccountLoading(){
     showDialog(context: context,
         builder: (_) {
           return Scaffold(
@@ -260,6 +277,8 @@ class _AccountCreationViewState extends State<AccountCreationView>
     );
   }
 
+  /// Shows an [AlertDialog] informing the user hasn't selected the correct
+  /// number of [Tag]s.
   void showTagWarning(){
     showDialog(context: context,
         builder: (_) {

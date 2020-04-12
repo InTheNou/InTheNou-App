@@ -3,6 +3,7 @@ import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/models/tag.dart';
 import 'package:InTheNou/models/user.dart';
+import 'package:InTheNou/repos/events_repo.dart';
 import 'package:InTheNou/repos/tag_repo.dart';
 import 'package:InTheNou/repos/user_repo.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
@@ -12,12 +13,14 @@ class UserStore extends flux.Store{
   static final flux.StoreToken userStoreToken = new flux.StoreToken(new
     UserStore());
   static final UserRepo _userRepo = new UserRepo();
+  static final EventsRepo _eventRepo = new EventsRepo();
   static final TagRepo _tagRepo = new TagRepo();
 
   User _user;
-  List<Event> _followedEvents = new List();
-  List<Event> _createdEvents = new List();
-  
+  Future<List<Event>> _followedEvents;
+  Future<List<Event>> _createdEvents;
+  Future<bool> _cancelEventResult= Future.value(null);
+
   UserRole _selectedRole;
   List<Tag> _selectedTags = new List();
   Map<Tag, bool> _allTags = new Map();
@@ -43,35 +46,14 @@ class UserStore extends flux.Store{
     _allTags = _tagRepo.getAllTagsAsMap();
     _searchTags = _tagRepo.getAllTagsAsMap();
 
-    triggerOnConditionalAction(refreshFollowedAction, (_){
-      _isFollowedLoading = true;
-      trigger();
-      return _userRepo.getFollowedEvents(0, EVENTS_TO_FETCH).then(
-              (List<Event> value) {
-        _followedEvents = value;
-        _isFollowedLoading = false;
-        return true;
-      }).catchError((error){
-        _followedEventError = error.toString();
-        _isFollowedLoading = false;
-        return true;
-      });
+    triggerOnAction(refreshFollowedAction, (_){
+      _followedEvents = _userRepo.getFollowedEvents(0, EVENTS_TO_FETCH);
     });
-    triggerOnConditionalAction(refreshCreatedAction, (_){
-      _isCreatedLoading = true;
-      trigger();
-      return _userRepo.getCreatedEvents(0, EVENTS_TO_FETCH).then((value) {
-        _createdEvents = value;
-        _isCreatedLoading = false;
-        return true;
-      }).catchError((error){
-        _createdEventError = error.toString();
-        _isCreatedLoading = false;
-        return true;
-      });
+    triggerOnAction(refreshCreatedAction, (_){
+      _createdEvents = _userRepo.getCreatedEvents(0, EVENTS_TO_FETCH);
     });
-    triggerOnAction(cancelEventAction, (Event event){
-      _userRepo.requestDeleteEvents(event);
+    triggerOnAction(cancelEventAction, (Event event) {
+      _cancelEventResult = _eventRepo.cancelEvent(event);
     });
     triggerOnConditionalAction(callAuthAction, (_) async{
       return _userRepo.logIn().then((uid) async{
@@ -94,10 +76,8 @@ class UserStore extends flux.Store{
       });
     });
     triggerOnConditionalAction(fetchSession, (_) {
-      return getSession().then((value) {
-        session = Future.value(value);
-        return true;
-      });
+      session = getSession();
+      return true;
     });
     triggerOnAction(resetStartUpError, (_) {
       session = null;
@@ -139,6 +119,14 @@ class UserStore extends flux.Store{
                 return true;
       });
     });
+
+    triggerOnConditionalAction(changeUserPrivilegeAction, (_){
+      _user.userPrivilege = _user.userPrivilege == UserPrivilege.User?
+        UserPrivilege.EventCreator :
+        UserPrivilege.User;
+      return true;
+    });
+
   }
 
   ///
@@ -164,8 +152,10 @@ class UserStore extends flux.Store{
   }
 
   User get user => _user;
-  List<Event> get followedEvents => _followedEvents;
-  List<Event> get createdEvents => _createdEvents;
+  Future<List<Event>> get followedEvents => _followedEvents;
+  Future<List<Event>> get createdEvents => _createdEvents;
+  Future<bool> get cancelEventResult => _cancelEventResult;
+
   UserRole get selectedRole => _selectedRole;
   List<UserRole> get userRoles => _userRoles;
   Map<Tag, bool> get searchTags => _searchTags;
@@ -190,3 +180,5 @@ final flux.Action<UserRole> selectRoleAction = new flux.Action();
 final flux.Action<String> searchedTagAction = new flux.Action();
 final flux.Action<MapEntry<Tag,bool>> toggleTagAction = new flux.Action();
 final flux.Action createUserAction = new flux.Action();
+
+final flux.Action changeUserPrivilegeAction = new flux.Action();

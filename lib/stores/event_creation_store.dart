@@ -48,7 +48,7 @@ class EventCreationStore extends flux.Store {
       _newEvent = new Event(rand.nextInt(100)+30,_title, _description,
           "jonathan.santiago27@upr.edu", _image, _startDateTime,
           _endDateTime,DateTime.now(), _selectedRoom, _websites,
-        _selectedTags, false, null);
+        _selectedTags, false, null, "active");
       _eventsRepo.createEvent(_newEvent);
       reset();
     });

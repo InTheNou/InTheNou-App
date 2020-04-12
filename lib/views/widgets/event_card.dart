@@ -53,41 +53,44 @@ class EventCard extends StatelessWidget {
                           style: Theme.of(context).textTheme.subtitle2
                       ),
                       const Padding(padding: EdgeInsets.only(bottom: 8.0)),
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: <Widget>[
-                            OutlineButton(
-                              child: Text('DISMISS'),
-                              textColor: Theme.of(context).accentColor,
-                              highlightedBorderColor: Theme.of(context).accentColor,
-                              onPressed: () {
-                                _event.followed ?
-                                _showDismissUnableDialog(context) :
-                                _dismissEvent(_event, context);
-                              },
-                            ),
-                            Padding(padding: EdgeInsets.only(left: 30.0)),
-                            ButtonTheme(
-                                minWidth: 120.0,
-                                child: OutlineButton(
-                                  child: Text(_event.followed ?
-                                  "UNFOLLOW":'FOLLOW'
-                                  ),
-                                  textColor: Theme.of(context).primaryColor,
-                                  borderSide: BorderSide(
-                                      color: Theme.of(context).primaryColor,
-                                      width: _event.followed ? 1.5 : 0.0
-                                  ),
-                                  onPressed: () {
-                                    _event.followed ?
-                                    unFollowEventAction
-                                      (MapEntry(_feedType, _event)):
-                                    followEventAction
-                                      (MapEntry(_feedType, _event));
-                                  },
-                                )
-                            )
-                          ]
+                      Visibility(
+                        visible: _event.status == "active",
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: <Widget>[
+                              OutlineButton(
+                                child: Text('DISMISS'),
+                                textColor: Theme.of(context).accentColor,
+                                highlightedBorderColor: Theme.of(context).accentColor,
+                                onPressed: () {
+                                  _event.followed ?
+                                  _showDismissUnableDialog(context) :
+                                  _dismissEvent(_event, context);
+                                },
+                              ),
+                              Padding(padding: EdgeInsets.only(left: 30.0)),
+                              ButtonTheme(
+                                  minWidth: 120.0,
+                                  child: OutlineButton(
+                                    child: Text(_event.followed ?
+                                    "UNFOLLOW":'FOLLOW'
+                                    ),
+                                    textColor: Theme.of(context).primaryColor,
+                                    borderSide: BorderSide(
+                                        color: Theme.of(context).primaryColor,
+                                        width: _event.followed ? 1.5 : 0.0
+                                    ),
+                                    onPressed: () {
+                                      _event.followed ?
+                                      unFollowEventAction
+                                        (MapEntry(_feedType, _event)):
+                                      followEventAction
+                                        (MapEntry(_feedType, _event));
+                                    },
+                                  )
+                              )
+                            ]
+                        ),
                       ),
                     ],
                   ),

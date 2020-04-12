@@ -318,7 +318,7 @@ class EventsRepo {
     try{
       Map<String, dynamic> eventJson = event.toJson();
       eventJson["ecreator"] = user.UID;
-      Response response = await dio.post(API_URL+ "/App/Events/Create",
+      Response response = await dio.post("/App/Events/Create",
         data: convert.jsonEncode(eventJson));
       return response.data["eid"] == event.UID;
     } catch(error,stacktrace){
@@ -327,6 +327,25 @@ class EventsRepo {
         return Future.error(Utils.handleDioError(error, "Create Event"));
       } else {
         return Future.error("Internal app error while Createing Event");
+      }
+    }
+  }
+
+  Future<bool> cancelEvent(Event event) async{
+    SharedPreferences prefs = await _prefs;
+    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
+
+    try{
+      Response response = await dio.post("/App/Events/eid=${event.UID}"
+          "/uid=${user.UID}/estatus=deleted");
+      return response.data["eid"] == event.UID;
+    } catch(error,stacktrace){
+      if (error is DioError) {
+        debugPrint("Exception: $error");
+        return Future.error(Utils.handleDioError(error, "Cancel Event"));
+      } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        return Future.error("Internal app error while Cancelling Event");
       }
     }
   }
@@ -360,7 +379,7 @@ class EventsRepo {
             Random().nextInt(7) + 3,
             (i) => eventTags[randList[i]]
             ),
-          false, null
+          false, null, "active"
           );
         }
   );
@@ -391,10 +410,6 @@ class EventsRepo {
         }
       });
     }
-  }
-
-  void deleteEvent(Event event){
-    dummyEvents.remove(event);
   }
 
   static List<Tag> eventTags = [Tag(1,"ADMI",0), Tag(2,"ADOF",0),

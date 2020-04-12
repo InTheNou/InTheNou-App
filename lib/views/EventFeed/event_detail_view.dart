@@ -158,46 +158,49 @@ class _EventDetailViewState extends State<EventDetailView>
                                         style: Theme.of(context).textTheme.subtitle1
                                     ),
                                     const Padding(padding: EdgeInsets.only(bottom: 8.0)),
-                                    Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: <Widget>[
-                                          ButtonTheme(
-                                              minWidth: 120.0,
-                                              child: OutlineButton(
-                                                child: const Text('DISMISS'),
-                                                textColor: Theme.of(context).accentColor,
-                                                highlightedBorderColor: Theme.of(context).accentColor,
-                                                onPressed: () =>
+                                    Visibility(
+                                      visible: _detailEvent.status == "active",
+                                      child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: <Widget>[
+                                            ButtonTheme(
+                                                minWidth: 120.0,
+                                                child: OutlineButton(
+                                                  child: const Text('DISMISS'),
+                                                  textColor: Theme.of(context).accentColor,
+                                                  highlightedBorderColor: Theme.of(context).accentColor,
+                                                  onPressed: () =>
+                                                      _detailEvent.followed ?
+                                                      _showDismissUnableDialog() :
+                                                      _showDismissDialog(),
+                                                )
+                                            ),
+                                            Padding(padding: EdgeInsets.only(
+                                                left: 80.0)),
+                                            ButtonTheme(
+                                                minWidth: 120.0,
+                                                child: OutlineButton(
+                                                  child: Text(_detailEvent.followed ?
+                                                  "UNFOLLOW":'FOLLOW'
+                                                  ),
+                                                  textColor: Theme.of(context).primaryColor,
+                                                  borderSide: BorderSide(
+                                                      color: Theme.of(context).primaryColor,
+                                                      width: _detailEvent.followed ? 1.5 : 0.0
+                                                  ),
+                                                  onPressed: () {
                                                     _detailEvent.followed ?
-                                                    _showDismissUnableDialog() :
-                                                    _showDismissDialog(),
-                                              )
-                                          ),
-                                          Padding(padding: EdgeInsets.only(
-                                              left: 80.0)),
-                                          ButtonTheme(
-                                              minWidth: 120.0,
-                                              child: OutlineButton(
-                                                child: Text(_detailEvent.followed ?
-                                                "UNFOLLOW":'FOLLOW'
-                                                ),
-                                                textColor: Theme.of(context).primaryColor,
-                                                borderSide: BorderSide(
-                                                    color: Theme.of(context).primaryColor,
-                                                    width: _detailEvent.followed ? 1.5 : 0.0
-                                                ),
-                                                onPressed: () {
-                                                  _detailEvent.followed ?
-                                                  unFollowEventAction
-                                                  (MapEntry(FeedType.Detail, _detailEvent
-                                                  )) :
-                                                  followEventAction
-                                                  (MapEntry(FeedType.Detail, _detailEvent
-                                                  ));
-                                                },
-                                              )
-                                          )
-                                        ]
+                                                    unFollowEventAction
+                                                    (MapEntry(FeedType.Detail, _detailEvent
+                                                    )) :
+                                                    followEventAction
+                                                    (MapEntry(FeedType.Detail, _detailEvent
+                                                    ));
+                                                  },
+                                                )
+                                            )
+                                          ]
+                                      ),
                                     ),
                                   ],
                                 )

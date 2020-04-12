@@ -48,7 +48,7 @@ class TestHandler {
                   Random().nextInt(7) + 3,
                       (i) => EventsRepo.eventTags[randList[i]]
               ),
-              false, null
+              false, null, 'active'
           );
         }
     );

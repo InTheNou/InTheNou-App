@@ -15,17 +15,6 @@ class User {
   User(this._UID, this._firstName, this._fullName, this._email, this._role,
       this._tags, this._userPrivilege);
 
-  User.newUser(this._role, this._tags);
-
-  User.copy(User user){
-    this._firstName = user._firstName;
-    this._fullName = user._fullName;
-    this._email = user._email;
-    this._role = user._role;
-    this._tags = user._tags;
-    this._userPrivilege = user._userPrivilege;
-  }
-
   factory User.fromJson(Map<String,dynamic> json){
     return User(
         json["uid"],

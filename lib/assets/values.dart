@@ -55,7 +55,7 @@ enum RecommendationType{
 }
 
 //Constants
-const EVENTS_TO_FETCH = 20;
+const EVENTS_TO_FETCH = 100000;
 const DEFAULT_NOTIFICATION_TIME = 5;
 const SMART_NOTIFICATION_STATE = false;
 const AVERAGE_WALKING_SPEED = 3.0;

@@ -1,10 +1,9 @@
 import 'package:InTheNou/assets/utils.dart';
-import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/background/background_handler.dart';
 import 'package:InTheNou/background/notification_handler.dart';
 import 'package:InTheNou/home_page.dart';
-import 'package:InTheNou/repos/user_repo.dart';
 import 'package:InTheNou/stores/settings_store.dart';
+import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 import 'package:geolocator/geolocator.dart';
@@ -170,11 +169,7 @@ class _SettingsViewState extends State<SettingsView>
                             child: Text("User Privilege CHnage")
                         ),
                         onTap: () {
-                          UserRepo.dummyUser.userPrivilege =
-                              UserRepo.dummyUser.userPrivilege ==
-                                  UserPrivilege.User?
-                              UserPrivilege.EventCreator :
-                              UserPrivilege.User;
+                          changeUserPrivilegeAction();
                         }
                     )
                 ),
@@ -186,10 +181,11 @@ class _SettingsViewState extends State<SettingsView>
     );
   }
 
-  ///
-  /// Here we check if the permission has been changed after the lat time the
+  /// Checks if the permission has been changed after the lat time the
   /// setting was changed.
-  /// If the Permission has been revoked and the user
+  ///
+  /// If the Permission has been revoked and the user then an Alerrt Dialog
+  /// is shown
   void checkPermissionAndUpdate(bool setting) async{
     await Geolocator()
         .checkGeolocationPermissionStatus().then(
@@ -204,6 +200,8 @@ class _SettingsViewState extends State<SettingsView>
         });
   }
 
+  /// Show an alert to the user if they try to enable SmartNotifications
+  /// while not providing the Location Permission
   void showDenied() async{
     showDialog(context: context, builder: (_){
       return AlertDialog(

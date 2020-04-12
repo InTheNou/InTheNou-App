@@ -21,30 +21,16 @@ class Event {
   List<Tag> _tags;
   bool followed;
   String recommended;
+  String status;
 
   Event(this._UID,this._title, this._description, this._creator, this._image,
       this._startDateTime, this._endDateTime, this._timestamp,
-      this._room, this._websites, this._tags, this.followed, this.recommended);
-
-  Event.copy (Event event){
-    this._UID = event._UID;
-    this._title = event._title;
-    this._description = event._description;
-    this._creator = event._creator;
-    this._image = event._image;
-    this._startDateTime = event._startDateTime;
-    this._endDateTime = event._endDateTime;
-    this._timestamp = event._timestamp;
-    this._room = event._room;
-    this._websites = event._websites;
-    this._tags = event._tags;
-    this.followed = event.followed;
-    this.recommended = event.recommended;
-  }
+      this._room, this._websites, this._tags, this.followed, this.recommended,
+      this.status);
 
   Event.result({int UID, String title, String description,  String image,
       DateTime startDateTime,  DateTime endDateTime, DateTime timestamp,
-     Room room, bool followed}) {
+     Room room, bool followed, String status}) {
     this._UID = UID;
     this._title = title;
     this._description = description;
@@ -57,6 +43,7 @@ class Event {
     this._tags = new List(10);
     this.followed = followed;
     this.recommended = null;
+    this.status = status;
   }
 
   static DateFormat df = DateFormat("yyyy-MM-dd HH:mm:ss");
@@ -69,7 +56,7 @@ class Event {
         json['eid'],
         json['etitle'],
         json['edescription'],
-        json['ecreator']["first_name"],
+        json['ecreator']["display_name"],
         json['photourl'],
         df.parseUTC(json['estart']).toLocal(),
         df.parseUTC(json['eend']).toLocal(),
@@ -78,7 +65,8 @@ class Event {
         Website.jsonToList(json["websites"]),
         Tag.fromJsonToList(json["tags"]),
         json['itype'] == Utils.interactionTypeToString(InteractionType.Following),
-        null
+        null,
+        json["estatus"] ?? "active"
     );
   }
 
@@ -94,7 +82,9 @@ class Event {
         timestamp: df.parseUTC(json['ecreation']).toLocal(),
         room: Room.forEventFromJson(json['room']),
         followed: isFollowed ? true :
-          json['itype'] == Utils.interactionTypeToString(InteractionType.Following)
+          json['itype'] == Utils.interactionTypeToString(InteractionType
+              .Following),
+        status: json["estatus"] ?? "active"
     );
   }
 
