@@ -1,12 +1,8 @@
-import 'dart:io';
-
 import 'package:InTheNou/RouteGenerator.dart';
 import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/colors.dart';
 import 'package:InTheNou/start_up_view.dart';
-import 'package:InTheNou/test_handler.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_driver/driver_extension.dart';
 
 Future<void> main() async {
 //  enableFlutterDriverExtension(handler: TestHandler.dataHandler);
@@ -54,7 +50,7 @@ class InTheNouApp extends StatelessWidget {
             child: Text(
               "Oops, an error happend. \nPlease restart the application "
                   "or contact the Development Team.",
-              style: Theme.of(context).textTheme.title,
+              style: Theme.of(context).textTheme.headline5,
             ),
           ),
         )

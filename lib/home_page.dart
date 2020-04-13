@@ -5,7 +5,6 @@ import 'package:InTheNou/background/background_handler.dart';
 import 'package:InTheNou/background/notification_handler.dart';
 import 'package:InTheNou/stores/settings_store.dart';
 import 'package:InTheNou/views/EventFeed/feed_view.dart';
-import 'package:InTheNou/views/EventFeed/personal_feed_view.dart';
 import 'package:InTheNou/views/InformoationBase/infobase_category_view.dart';
 import 'package:InTheNou/views/Profile/profile_view.dart';
 import 'package:background_fetch/background_fetch.dart';
@@ -228,13 +227,16 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
   Future onSelectNotification(String payload) async {
     NotificationObject notification =
     NotificationObject.fromJson(jsonDecode(payload));
-
+    print(notification.toJson());
     if (notification.type == NotificationType.SmartNotification) {
       Navigator.of(context).pushNamed("/eventdetail",
           arguments: int.parse(notification.payload));
       return;
-    }
-    if (notification.type == NotificationType.DefaultNotification) {
+    } else if (notification.type == NotificationType.DefaultNotification) {
+      Navigator.of(context).pushNamed("/eventdetail",
+          arguments: int.parse(notification.payload));
+      return;
+    } else if (notification.type == NotificationType.Cancellation) {
       Navigator.of(context).pushNamed("/eventdetail",
           arguments: int.parse(notification.payload));
       return;

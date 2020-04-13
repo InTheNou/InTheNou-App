@@ -1,4 +1,3 @@
-import 'dart:convert' as convert;
 
 class Tag {
 
@@ -39,6 +38,8 @@ class Tag {
     return new List.generate(tags.length, (i) => tags[i].toJson());
   }
 
+
+  int get UID => _UID;
   String get name => _name;
   int get weight => _weight;
 

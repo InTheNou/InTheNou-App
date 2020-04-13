@@ -1,52 +1,67 @@
-import 'dart:convert' as convert;
-import 'dart:io';
+import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/tag.dart';
-import 'package:http/http.dart' as http;
+import 'package:InTheNou/repos/api_connection.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 
 class TagRepo {
 
   static final TagRepo _instance = TagRepo._internal();
-  var client = http.Client();
+  final ApiConnection apiConnection = ApiConnection();
+  Dio dio;
 
   factory TagRepo() {
     return _instance;
   }
 
-  TagRepo._internal();
+  TagRepo._internal(){
+    dio = apiConnection.dio;
+  }
 
   Future<List<Tag>> getAllTags() async{
-    return client.get(API_URL
-        +"/App/Tags").then((response) {
-      if (response.statusCode == HttpStatus.ok) {
-        List<Tag> tagResults;
-        List<dynamic> jsonResponse =
-          convert.jsonDecode(response.body)["tags"];
-        if(jsonResponse != null){
-          tagResults = Tag.fromJsonToList(jsonResponse);
-        }
-        return tagResults;
-      } else {
-        return Future.error("Request failed with status: ${response
-            .statusCode} please try again");
+    try{
+      Response response = await dio.get(API_URL +"/App/Tags");
+      List<Tag> tagResults;
+      List<dynamic> jsonResponse = response.data["tags"];
+
+      if(jsonResponse != null){
+        tagResults = Tag.fromJsonToList(jsonResponse);
       }
-    });
-    return new List.of(dummyTags);
+      return tagResults;
+    } catch(error,stacktrace){
+      if (error is DioError) {
+        debugPrint("Exception: $error");
+        return Future.error(Utils.handleDioError(error, "Getting Tags") );
+      } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        return Future.error("Internal app error Getting Tags");
+      }
+    }
   }
 
-  Map<Tag, bool> getAllTagsAsMap(){
-    return new Map<Tag,bool>.fromIterable(dummyTags,
-        key: (tag) => tag,
-        value: (tag) => false
-    );
+  Future<Map<Tag, bool>> getAllTagsAsMap() async{
+    try{
+      Response response = await dio.get(API_URL +"/App/Tags");
+      List<Tag> tagResults;
+      List<dynamic> jsonResponse = response.data["tags"];
+
+      if(jsonResponse != null){
+        tagResults = Tag.fromJsonToList(jsonResponse);
+      }
+      return Map<Tag,bool>.fromIterable(tagResults,
+          key: (tag) => tag,
+          value: (tag) => false
+      );
+    } catch(error,stacktrace){
+      if (error is DioError) {
+        debugPrint("Exception: $error");
+        return Future.error(Utils.handleDioError(error, "Getting Tags") );
+      } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        return Future.error("Internal app error Getting Tags");
+      }
+    }
   }
-
-  // Debug stuff
-  List<Tag> dummyTags = [Tag(1,"ADMI",0), Tag(2,"ADOF",0),
-    Tag(3,"AGRO",0), Tag(4,"ALEM",0), Tag(5,"ANTR",0), Tag(6,"ARTE",0),
-    Tag(7,"ASTR",0), Tag(8,"BIND",0), Tag(9,"BIOL",0), Tag(10,"BOTA",0),
-    Tag(11,"CFIT",0), Tag(12,"CHIN",0), Tag(13,"CIAN",0), Tag(14,"CIBI",0),
-    Tag(15,"CIFI",0), Tag(16,"CIIC",0), Tag(17,"CIMA",0)];
-
 }

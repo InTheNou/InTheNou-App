@@ -11,6 +11,8 @@ import 'package:InTheNou/views/InformoationBase/room_view.dart';
 import 'package:InTheNou/views/InformoationBase/service_view.dart';
 import 'package:InTheNou/views/Profile/created_events_view.dart';
 import 'package:InTheNou/views/Profile/followed_events_view.dart';
+import 'package:InTheNou/views/Profile/history_events_view.dart';
+import 'package:InTheNou/views/Profile/my_tags_view.dart';
 import 'package:InTheNou/views/Profile/settings_view.dart';
 import "package:flutter/material.dart";
 
@@ -77,6 +79,14 @@ class RouteGenerator{
         return MaterialPageRoute(
             settings: settings,
             builder: (_) => FollowedEventsView());
+      case '/profile/event_history':
+        return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => HistoryEventsView());
+      case '/profile/my_tags':
+        return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => MyTagsView());
       case '/profile/created_events':
         return MaterialPageRoute(
             settings: settings,

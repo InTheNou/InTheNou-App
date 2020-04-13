@@ -1,20 +1,18 @@
-import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/event.dart';
-import 'package:InTheNou/stores/event_feed_store.dart';
 import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
 
-class FollowedEventsView extends StatefulWidget {
+class HistoryEventsView extends StatefulWidget {
 
   @override
-  _FollowedEventsViewState createState() => new _FollowedEventsViewState();
+  _HistoryEventsViewState createState() => new _HistoryEventsViewState();
 
 }
 
-class _FollowedEventsViewState extends State<FollowedEventsView>
-  with flux.StoreWatcherMixin<FollowedEventsView>{
+class _HistoryEventsViewState extends State<HistoryEventsView>
+  with flux.StoreWatcherMixin<HistoryEventsView>{
 
   UserStore _userStore;
 
@@ -22,13 +20,14 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
   void initState() {
     super.initState();
     _userStore = listenToStore(UserStore.userStoreToken);
+    refreshFollowedAction();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Followed Events"),
+        title: Text("Event History"),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -130,58 +129,6 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
                                 style: Theme.of(context).textTheme.subtitle2
                             ),
                             const Padding(padding: EdgeInsets.only(bottom: 8.0)),
-                            Visibility(
-                              visible: _event.status == "active",
-                              child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: <Widget>[
-                                    ButtonTheme(
-                                        minWidth: 120.0,
-                                        child: OutlineButton(
-                                          child: Text(_event.followed ?
-                                          "UNFOLLOW":'FOLLOW'
-                                          ),
-                                          textColor: Theme.of(context).primaryColor,
-                                          borderSide: BorderSide(
-                                              color: Theme.of(context).primaryColor,
-                                              width: _event.followed ? 1.5 : 0.0
-                                          ),
-                                          onPressed: () {
-                                            _event.followed ?
-                                            unFollowEventAction
-                                              (MapEntry(FeedType.Detail, _event
-                                            )) :
-                                            followEventAction
-                                              (MapEntry(FeedType.Detail, _event
-                                            ));
-                                            refreshFollowedAction();
-                                          },
-                                        )
-                                    )
-                                  ]
-                              ),
-                            ),
-                            Visibility(
-                              visible: _event.status == "deleted",
-                              child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: <Widget>[
-                                    ButtonTheme(
-                                        minWidth: 120.0,
-                                        disabledColor: Colors.grey[200],
-                                        child: OutlineButton(
-                                          child: Text('CANCELLED'),
-                                          textColor: Theme.of(context).primaryColor,
-                                          borderSide: BorderSide(
-                                              color: Theme.of(context).primaryColor,
-                                              width: _event.followed ? 1.5 : 0.0
-                                          ),
-                                          onPressed: null
-                                        )
-                                    )
-                                  ]
-                              ),
-                            ),
                           ],
                         ),
                       ),

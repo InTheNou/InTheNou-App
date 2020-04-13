@@ -221,7 +221,7 @@ class _EventDetailViewState extends State<EventDetailView>
                                       style: TextStyle(
                                         color: Theme.of(context).primaryColor,
                                         fontSize: Theme.of(context).textTheme
-                                            .body2.fontSize,
+                                            .bodyText1.fontSize,
                                         fontWeight: FontWeight.w300,
                                       ),
                                     ),
@@ -263,7 +263,7 @@ class _EventDetailViewState extends State<EventDetailView>
                                           style: TextStyle(
                                             color: Theme.of(context).primaryColor,
                                             fontSize: Theme.of(context).textTheme
-                                                .body2.fontSize,
+                                                .bodyText1.fontSize,
                                             fontWeight: FontWeight.w300,
                                           ),
                                         ),
@@ -307,7 +307,7 @@ class _EventDetailViewState extends State<EventDetailView>
                                           style: TextStyle(
                                             color: Theme.of(context).primaryColor,
                                             fontSize: Theme.of(context).textTheme
-                                                .body2.fontSize,
+                                                .bodyText1.fontSize,
                                             fontWeight: FontWeight.w300,
                                           ),
                                         ),

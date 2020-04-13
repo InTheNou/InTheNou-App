@@ -299,6 +299,32 @@ class UserRepo {
     }
   }
 
+  Future<List<Event>> getFEventsHistory(int skipEvents, int numEvents) async{
+    try{
+      int uid = await getUserID();
+      Response response = await dio.get(
+          "/App/Events/History//uid=$uid/offset=$skipEvents/limit"
+              "=$numEvents");
+      var eventResults = new List<Event>();
+
+      if(response.data["events"] != null){
+        response.data["events"].forEach((element) {
+          eventResults.add(Event.resultFromJson(element,
+              isFollowed: true));
+        });
+      }
+      return eventResults;
+    } catch(error, stacktrace){
+      if (error is DioError) {
+        debugPrint("Exception: $error");
+        return Future.error(Utils.handleDioError(error, "Events History") );
+      } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        return Future.error("Internal app error while getting Events History");
+      }
+    }
+  }
+
   /// Calls the backend to get the Created [Event]s by the current [User]
   ///
   /// The method calls the backend to get the Created events by the current
@@ -310,7 +336,6 @@ class UserRepo {
       Response response = await dio.get(
           "/App/Events/Created//uid=$uid/offset=$skipEvents/limit=$numEvents");
       var eventResults = new List<Event>();
-
       if(response.data["events"] != null){
         response.data["events"].forEach((element) {
           eventResults.add(Event.resultFromJson(element,

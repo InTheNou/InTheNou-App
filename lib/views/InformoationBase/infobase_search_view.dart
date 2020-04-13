@@ -68,18 +68,12 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
     if(_infoBaseStore.getError(widget.searchType) !=null){
       showErrorDialog(_infoBaseStore.getError(widget.searchType));
     }
-    switch (widget.searchType){
-      case InfoBaseSearchType.Building:
-        return showBuildingsResults();
-        break;
-      case InfoBaseSearchType.Room:
-        return showRoomsResults();
-        break;
-      case InfoBaseSearchType.Service:
-        return showServicesResults();
-        break;
-      case InfoBaseSearchType.Floor:
-        break;
+    if(widget.searchType == InfoBaseSearchType.Building){
+      return showBuildingsResults();
+    } else if (widget.searchType == InfoBaseSearchType.Service){
+      return showRoomsResults();
+    } else {
+      return showServicesResults();
     }
   }
 
@@ -227,18 +221,12 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
   }
 
   String _buildHint(InfoBaseSearchType type){
-    switch(type){
-      case InfoBaseSearchType.Building:
-       return "Search: Stefani";
-        break;
-      case InfoBaseSearchType.Room:
-        return "Search: S-100, Salon";
-        break;
-      case InfoBaseSearchType.Service:
-        return "Search: Oficina";
-        break;
-      case InfoBaseSearchType.Floor:
-        break;
+    if(type == InfoBaseSearchType.Building){
+      return "Search: Stefani";
+    } else if (type == InfoBaseSearchType.Service){
+      return "Search: S-100, Salon";
+    } else {
+      return "Search: Oficina";
     }
   }
 

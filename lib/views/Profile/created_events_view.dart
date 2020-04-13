@@ -128,19 +128,25 @@ class _CreatedEventsViewState extends State<CreatedEventsView>
                             ),
                             const Padding(padding: EdgeInsets.only(bottom: 8.0)),
                             Visibility(
-                              visible: _event.endDateTime.isAfter(DateTime.now())
-                               && _event.status == "active",
+                              visible:
+                              (_event.endDateTime.isAfter(DateTime.now())
+                               && _event.status == "active") ||
+                                  _event.status == "deleted",
                               child: Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: <Widget>[
                                     ButtonTheme(
                                         minWidth: 120.0,
                                         child: RaisedButton(
-                                            child: Text("CANCEL"),
+                                            child: _event.status == "active"
+                                                ? Text("CANCEL") :
+                                                  Text("CANCELLED"),
                                             color: Theme.of(context).accentColor,
                                             textColor: Theme.of(context).canvasColor,
-                                            onPressed: () =>
-                                                _showCancelConfirmation(_event)
+                                            disabledColor: Colors.grey[200],
+                                            onPressed:
+                                            _event.status == "deleted"? null :
+                                                () => _showCancelConfirmation(_event)
                                         )
                                     )
                                   ]

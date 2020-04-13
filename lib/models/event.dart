@@ -30,7 +30,8 @@ class Event {
 
   Event.result({int UID, String title, String description,  String image,
       DateTime startDateTime,  DateTime endDateTime, DateTime timestamp,
-     Room room, bool followed, String status}) {
+     Room room, List<Tag> tags, bool followed, String recommended,
+    String status}) {
     this._UID = UID;
     this._title = title;
     this._description = description;
@@ -40,9 +41,9 @@ class Event {
     this._timestamp = timestamp;
     this._room = room;
     this._websites = null;
-    this._tags = new List(10);
+    this._tags = Tag.fromJsonToList(tags);
     this.followed = followed;
-    this.recommended = null;
+    this.recommended = recommended;
     this.status = status;
   }
 
@@ -85,6 +86,14 @@ class Event {
           json['itype'] == Utils.interactionTypeToString(InteractionType
               .Following),
         status: json["estatus"] ?? "active"
+    );
+  }
+
+  factory Event.recommendationFromJson(Map<String, dynamic> json,
+      {bool isFollowed = false}) {
+    return Event.result(
+        UID: json['eid'],
+        tags: Tag.fromJsonToList(json["tags"])
     );
   }
 
@@ -155,6 +164,18 @@ class Event {
   String toString() {
     return 'Event{_UID: $_UID, _title: $_title, _description: $_description, _creator: $_creator, _image: $_image, _startDateTime: $_startDateTime, _endDateTime: $_endDateTime, _timestamp: $_timestamp, _room: $_room, _websites: $_websites, _tags: $_tags, followed: $followed, recommended: $recommended}';
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is Event &&
+              runtimeType == other.runtimeType &&
+              _UID == other._UID;
+
+  @override
+  int get hashCode => _UID.hashCode;
+
+
 
 
 }

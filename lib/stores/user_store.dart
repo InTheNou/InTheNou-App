@@ -18,8 +18,10 @@ class UserStore extends flux.Store{
 
   User _user;
   Future<List<Event>> _followedEvents;
+  Future<List<Event>> _historyEvents;
   Future<List<Event>> _createdEvents;
   Future<bool> _cancelEventResult= Future.value(null);
+  Future<List<Tag>> _userTags;
 
   UserRole _selectedRole;
   List<Tag> _selectedTags = new List();
@@ -40,20 +42,26 @@ class UserStore extends flux.Store{
   Future<Cookie> session;
 
   UserStore() {
-//    _userRepo.getUser().then((value) {
-//       _user = value;
-//    });
-    _allTags = _tagRepo.getAllTagsAsMap();
-    _searchTags = _tagRepo.getAllTagsAsMap();
+
+     _tagRepo.getAllTagsAsMap().then((tags) {
+       _allTags = tags;
+       _searchTags = tags;
+     });
 
     triggerOnAction(refreshFollowedAction, (_){
       _followedEvents = _userRepo.getFollowedEvents(0, EVENTS_TO_FETCH);
+    });
+    triggerOnAction(refreshHistoryAction, (_){
+      _historyEvents = _userRepo.getFEventsHistory(0, EVENTS_TO_FETCH);
     });
     triggerOnAction(refreshCreatedAction, (_){
       _createdEvents = _userRepo.getCreatedEvents(0, EVENTS_TO_FETCH);
     });
     triggerOnAction(cancelEventAction, (Event event) {
       _cancelEventResult = _eventRepo.cancelEvent(event);
+    });
+    triggerOnAction(getMyTagsAction, (_) {
+      _userTags = _userRepo.getUserTags();
     });
     triggerOnConditionalAction(callAuthAction, (_) async{
       return _userRepo.logIn().then((uid) async{
@@ -155,6 +163,7 @@ class UserStore extends flux.Store{
   Future<List<Event>> get followedEvents => _followedEvents;
   Future<List<Event>> get createdEvents => _createdEvents;
   Future<bool> get cancelEventResult => _cancelEventResult;
+  Future<List<Tag>> get userTags => _userTags;
 
   UserRole get selectedRole => _selectedRole;
   List<UserRole> get userRoles => _userRoles;
@@ -169,8 +178,11 @@ class UserStore extends flux.Store{
 }
 //Profile Actions
 final flux.Action refreshFollowedAction = new flux.Action();
+final flux.Action refreshHistoryAction = new flux.Action();
 final flux.Action refreshCreatedAction = new flux.Action();
 final flux.Action<Event> cancelEventAction = new flux.Action();
+final flux.Action getMyTagsAction = new flux.Action();
+
 //AccountCreation and Auth Actions
 final flux.Action fetchSession = new flux.Action();
 final flux.Action callAuthAction = new flux.Action();

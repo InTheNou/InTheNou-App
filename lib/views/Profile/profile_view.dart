@@ -127,6 +127,27 @@ class ProfileState extends State<ProfileView>
                             trailing: Icon(Icons.navigate_next),
                           ),
                         ),
+                        InkWell(
+                          onTap: ()  {
+                            refreshFollowedAction();
+                            Navigator.of(context)
+                                .pushNamed("/profile/event_history");
+                          },
+                          child: ListTile(
+                            title: Text("Events History"),
+                            trailing: Icon(Icons.navigate_next),
+                          ),
+                        ),
+                        InkWell(
+                          onTap: ()  {
+                            Navigator.of(context)
+                                .pushNamed("/profile/my_tags");
+                          },
+                          child: ListTile(
+                            title: Text("My Tags"),
+                            trailing: Icon(Icons.navigate_next),
+                          ),
+                        ),
                         Visibility(
                           visible: _userStore.user.userPrivilege != UserPrivilege.User,
                           child: const Divider(),

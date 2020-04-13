@@ -22,7 +22,7 @@ class Room {
   factory Room.fromJson(Map<String, dynamic> json, Building b) {
     return Room(
         json['rid'],
-        b.abbreviation+"-"+json['rcode'],
+        _createAbbreviation(b.abbreviation, json['rcode']),
         b.name,
         json['rfloor'],
         json['rdescription'],
@@ -44,9 +44,22 @@ class Room {
     Building b = Building.resultFromJson(json['building']);
     return Room.forEvent(
         UID: json['rid'],
-        code: b.abbreviation+json['rcode'],
+        code: _createAbbreviation(b.abbreviation, json['rcode']),
         building: b
     );
+  }
+
+  static String _createAbbreviation(String buildingLetter, String code){
+    if(code.contains(RegExp(r"^\b[a-zA-Z]{1,2}-\d{1,3}[a-zA-Z]?$"))){
+      return code;
+    } else if(code.contains(RegExp(r"^\b[a-zA-Z]{1,2} \d{1,3}[a-zA-Z]?$"))){
+      var codeQuery = RegExp(
+          r"(?<abrev>\b[a-zA-Z]{1,2})(?<space> )(?<code>\d{1,3}[a-zA-Z]?)")
+          .firstMatch(code);
+      return codeQuery.namedGroup("abrev")+"-"+ codeQuery.namedGroup("code");
+    } else {
+      return buildingLetter + "-" + code;
+    }
   }
 
   int get UID => _UID;

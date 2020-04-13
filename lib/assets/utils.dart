@@ -54,12 +54,15 @@ class Utils {
   static String notificationTypeString(NotificationType type) =>
       type == NotificationType.SmartNotification ? "SmartNotification" :
       type == NotificationType.DefaultNotification ? "DefaultNotification" :
-      "RecommendationNotification";
+      type == NotificationType.RecommendationNotification ?
+      "RecommendationNotification" : "Cancellation";
 
   static NotificationType notificationTypeFromString(String type) =>
       type == "SmartNotification" ? NotificationType.SmartNotification :
       type == "DefaultNotification" ? NotificationType.DefaultNotification :
-      NotificationType.RecommendationNotification;
+      type == "RecommendationNotification" ?
+      NotificationType.RecommendationNotification :
+      NotificationType.Cancellation;
 
   static String interactionTypeToString(InteractionType type) =>
       type == InteractionType.Following  ? "following" :
@@ -89,6 +92,10 @@ class Utils {
       prefs.setString(LAST_RECOMMENDATION_DATE_KEY,
           formatTimeStamp(DateTime(2020)));
     }
+    if(!prefs.containsKey(LAST_CANCELLATION_DATE_KEY)) {
+      prefs.setString(LAST_CANCELLATION_DATE_KEY,
+          formatTimeStamp(DateTime(2020)));
+    }
   }
 
   static void clearNotificationsPrefs() async{
@@ -96,6 +103,10 @@ class Utils {
     _prefs = await SharedPreferences.getInstance();
     _prefs.setStringList(SMART_NOTIFICATION_LIST, null);
     _prefs.setStringList(DEFAULT_NOTIFICATION_LIST, null);
+    _prefs.setString(LAST_RECOMMENDATION_DATE_KEY,
+        formatTimeStamp(DateTime(2020)));
+    _prefs.setString(LAST_CANCELLATION_DATE_KEY,
+        formatTimeStamp(DateTime(2020)));
   }
 
   static void clearAllPreferences() async{
@@ -109,6 +120,7 @@ class Utils {
     _prefs.remove(DEFAULT_NOTIFICATION_LIST);
     _prefs.remove(NOTIFICATION_ID_KEY);
     _prefs.remove(LAST_RECOMMENDATION_DATE_KEY);
+    _prefs.remove(LAST_CANCELLATION_DATE_KEY);
     _prefs.remove(USER_KEY);
   }
 
@@ -262,7 +274,7 @@ class Utils {
   }
 
   static String formatTimeStamp(DateTime dateTime){
-    return  DateFormat("yyyy-MM-dd HH:mm:ss").format(dateTime);
+    return  DateFormat("yyyy-MM-dd HH:mm:ss").format(dateTime.toUtc());
   }
 
   static List<int> getRandomNumberList(int length, int min, int max){
@@ -276,27 +288,6 @@ class Utils {
       num = rand.nextInt(max - min) + min;
     }
     return randomList;
-  }
-
-  static Future<T> createError<T>(String feature, int status, String
-  statusString){
-    switch(status){
-      case HttpStatus.badRequest: //400
-        return Future.error("$feature Request failed with error: $status \n"
-            "$statusString");
-        break;
-      case HttpStatus.notFound:   //404
-        return Future.error("$feature Request failed with error: $status \n"
-            "$statusString");
-        break;
-      case HttpStatus.internalServerError:   //500
-        return Future.error("$feature Request failed with error: $status \n"
-            "$statusString \n\n"
-            "Please contact the development team to let them know what "
-            "happened and what you were doing at the time.");
-        break;
-    }
-    return Future.error("$feature Request failed unknown error.");
   }
 
   static String handleDioError(DioError error, String feature) {
@@ -314,13 +305,38 @@ class Utils {
         return "$feature Recieve timeout with server";
         break;
       case DioErrorType.RESPONSE:
-        return "$feature Request received invalid status code: "
-            "${error.response.statusCode}";
+        return _responseString(feature, error.response.statusCode,
+            error.response.data.toString());
         break;
       case DioErrorType.SEND_TIMEOUT:
         return "$feature Send timeout in connection with API server";
         break;
+      default:
+        return "$feature Request failed with unknown network error.";
+        break;
     }
+  }
+
+  static String _responseString(String feature, int status,
+      String statusString){
+    switch(status){
+      case HttpStatus.badRequest: //400
+        return "$feature Request failed with error: $status \n$statusString";
+        break;
+      case HttpStatus.notFound:   //404
+        return "$feature Request failed with error: $status \n$statusString";
+        break;
+      case HttpStatus.internalServerError:   //500
+        return "$feature Request failed with error: $status \n"
+            "$statusString \n\n"
+            "Please contact the development team to let them know what "
+            "happened and what you were doing at the time.";
+        break;
+      default:
+        return "$feature Request failed with unexpected error code $status";
+        break;
+    }
+
   }
 
 }

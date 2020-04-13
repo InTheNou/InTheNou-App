@@ -65,8 +65,6 @@ class ApiConnection {
         responseType: ResponseType.json,
         connectTimeout: 5000,
         receiveTimeout: 100000,
-        headers: {
-        },
       );
       _dio.interceptors.add(
           InterceptorsWrapper(

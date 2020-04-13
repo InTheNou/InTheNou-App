@@ -1,11 +1,10 @@
 import 'dart:math';
-
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/repos/events_repo.dart';
-
 import 'assets/utils.dart';
 import 'models/coordinate.dart';
 import 'models/room.dart';
+import 'models/tag.dart';
 import 'models/website.dart';
 
 class TestHandler {
@@ -23,11 +22,11 @@ class TestHandler {
   }
 
   static void _addEvents(){
-    _eventsRepo.dummyEvents = List<Event>.generate(
+    var dummyEvents = List<Event>.generate(
         5,
             (i) {
           List<int> randList = Utils.getRandomNumberList(10, 0,
-              EventsRepo.eventTags.length);
+              eventTags.length);
           return Event(i, "Test $i", "This is a very long "
               "description fo the event currantly displayed. This is to test "
               "out how good it looks when it cuts off.", "alguien.importante@upr"
@@ -46,12 +45,16 @@ class TestHandler {
               ),
               new List.generate(
                   Random().nextInt(7) + 3,
-                      (i) => EventsRepo.eventTags[randList[i]]
+                      (i) => eventTags[randList[i]]
               ),
               false, null, 'active'
           );
         }
     );
   }
-
+  static List<Tag> eventTags = [Tag(1,"ADMI",0), Tag(2,"ADOF",0),
+    Tag(3,"AGRO",0), Tag(4,"ALEM",0), Tag(5,"ANTR",0), Tag(6,"ARTE",0),
+    Tag(7,"ASTR",0), Tag(8,"BIND",0), Tag(9,"BIOL",0), Tag(10,"BOTA",0),
+    Tag(11,"CFIT",0), Tag(12,"CHIN",0), Tag(13,"CIAN",0), Tag(14,"CIBI",0),
+    Tag(15,"CIFI",0), Tag(16,"CIIC",0), Tag(17,"CIMA",0)];
 }

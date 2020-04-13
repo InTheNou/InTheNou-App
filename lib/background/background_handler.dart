@@ -57,10 +57,19 @@ class BackgroundHandler {
     )).then((value) {
       print('[reccomendation] started: $value');
     });
-
+    BackgroundFetch.scheduleTask(TaskConfig(
+        taskId: "com.inthenou.app.cancellation",
+        delay: 30*60000,
+        periodic: true,
+        forceAlarmManager: true,
+        stopOnTerminate: false,
+        enableHeadless: true
+    )).then((value) {
+      print('[cancellation] started: $value');
+    });
     BackgroundFetch.scheduleTask(TaskConfig(
         taskId: "com.inthenou.app.cleanup",
-        delay: 86400000,
+        delay: 6*60*60000,
         periodic: true,
         forceAlarmManager: false,
         stopOnTerminate: false,
@@ -86,10 +95,10 @@ class BackgroundHandler {
         }
         break;
       case "com.inthenou.app.reccomendation":
-//        if(_prefs.getBool(SMART_NOTIFICATION_KEY)){
-//          _prepareForNotification();
-//        }
-//        _doRecommendation();
+        _doRecommendation();
+        break;
+      case "com.inthenou.app.cancellation":
+        _checkCanceledEvents();
         break;
       case "com.inthenou.app.cleanup":
         NotificationHandler.cleanupNotifications();
@@ -114,7 +123,7 @@ class BackgroundHandler {
       if(value == GeolocationStatus.denied ||
           value == GeolocationStatus.unknown){
         NotificationHandler.showAlertNotification(NotificationObject(
-          id: ALERT_NOTIFICATION_ID,
+          id: LOCATION_ALERT_NOTIFICATION_ID,
           payload: "",
           time: DateTime.now(),
           type: NotificationType.Alert
@@ -152,6 +161,38 @@ class BackgroundHandler {
     _prefs.setStringList(SMART_NOTIFICATION_LIST,jsonNotifications);
   }
 
+  static void _checkCanceledEvents() async{
+    EventsRepo _eventRepo = new EventsRepo();
+    UserRepo _userRepo = new UserRepo();
+    _prefs = await SharedPreferences.getInstance();
+
+    String lastDate = _prefs.getString(LAST_CANCELLATION_DATE_KEY);
+    print(lastDate);
+    List<Event> cancelledEvents = await _eventRepo.getDeletedEvents(lastDate);
+    if(cancelledEvents.length > 0){
+      List<Event> followedEvents = await _userRepo.getFollowedEvents(0,100000);
+      followedEvents.retainWhere((fEvent) {
+        return cancelledEvents.contains(fEvent);
+      });
+      print("reduced");
+      print(followedEvents);
+      int notificationID = _prefs.getInt(NOTIFICATION_ID_KEY);
+      followedEvents.forEach((cancelled) {
+        NotificationHandler.showCancellationNotification(NotificationObject(
+            id: notificationID,
+            payload: cancelled.UID.toString(),
+            time: DateTime.now(),
+            type: NotificationType.Cancellation
+        ), "Event Cancelled", cancelled.title,
+            "The Event \"${cancelled.title}\" that you were following has been "
+                "cancelled.");
+        notificationID ++;
+      });
+      _prefs.setInt(NOTIFICATION_ID_KEY, notificationID + followedEvents.length);
+      _prefs.setString(LAST_CANCELLATION_DATE_KEY,
+          Utils.formatTimeStamp(DateTime.now()));
+    }
+  }
 
   static void _doRecommendation() async{
     EventsRepo _eventRepo = new EventsRepo();
@@ -185,11 +226,13 @@ class BackgroundHandler {
       }
     });
 
+    print("recommend");
+    print(newEvents);
     _eventRepo.requestRecommendation(newEvents);
 
     if(recommendedEvents.length > 0){
       NotificationHandler.scheduleRecommendationNotification
-        (NotificationObject(id: 0,
+        (NotificationObject(id: RECOMMENDATION_NOTIFICATION_ID,
           type: NotificationType.RecommendationNotification,
           time: DateTime.now(),
           payload: ""),"Event Recommendations!",

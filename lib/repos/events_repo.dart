@@ -2,12 +2,8 @@ import 'dart:math';
 import 'dart:convert' as convert;
 import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
-import 'package:InTheNou/models/coordinate.dart';
 import 'package:InTheNou/models/event.dart';
-import 'package:InTheNou/models/room.dart';
-import 'package:InTheNou/models/tag.dart';
 import 'package:InTheNou/models/user.dart';
-import 'package:InTheNou/models/website.dart';
 import 'package:InTheNou/repos/api_connection.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -54,11 +50,12 @@ class EventsRepo {
       }
       return eventResults;
     } catch(error,stacktrace){
-      debugPrint("Exception: $error stackTrace: $stacktrace");
       if (error is DioError) {
+        debugPrint("Exception: $error");
         return Future.error(Utils.handleDioError(error, "Getting General "
             "Events") );
       } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error("Internal app error Getting General Events");
       }
     }
@@ -90,11 +87,11 @@ class EventsRepo {
       }
       return eventResults;
     } catch(error,stacktrace){
-      debugPrint("Exception: $error stackTrace: $stacktrace");
       if (error is DioError) {
         return Future.error(Utils.handleDioError(error, "Getting Personal "
             "Events"));
       } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error("Internal app error Getting Personal Events");
       }
     }
@@ -107,8 +104,58 @@ class EventsRepo {
   /// This method is used in the Recommendation Feature.
   Future<List<Event>> getNewEvents(String lastDate) async{
     DateTime date = DateTime.parse(lastDate);
-    return new List.from(dummyEvents.where((event) =>
-        event.startDateTime.isAfter(date)));
+    SharedPreferences prefs = await _prefs;
+    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
+
+    try{
+      Response response = await dio.get(
+          "/App/Events/CAT/timestamp=${Utils.formatTimeStamp(date)}/"
+              "uid=${user.UID}");
+      List<Event> eventResults = new List();
+      List jsonResponse = response.data["events"];
+      if(jsonResponse != null){
+        jsonResponse.forEach((element) {
+          eventResults.add(Event.recommendationFromJson(element));
+        });
+      }
+      return eventResults;
+    } catch(error,stacktrace){
+      if (error is DioError) {
+        debugPrint("Exception: $error");
+        return Future.error(Utils.handleDioError(error, "Getting New Events "
+            "Events"));
+      } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        return Future.error("Internal app error Getting New Events");
+      }
+    }
+  }
+
+  Future<List<Event>> getDeletedEvents(String lastDate) async{
+    DateTime date = DateTime.parse(lastDate);
+
+    try{
+      Response response = await dio.get(
+          "/App/Events/Deleted/New/timestamp=${Utils.formatTimeStamp(date)}");
+      List<Event> eventResults = new List();
+      List jsonResponse = response.data["events"];
+      print(jsonResponse);
+      if(jsonResponse != null){
+        jsonResponse.forEach((element) {
+          eventResults.add(Event.recommendationFromJson(element));
+        });
+      }
+      return eventResults;
+    } catch(error,stacktrace){
+      if (error is DioError) {
+        debugPrint("Exception: $error");
+        return Future.error(Utils.handleDioError(error, "Getting Cancelled "
+            "Events"));
+      } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        return Future.error("Internal app error Getting Cancelled Events");
+      }
+    }
   }
 
   /// Calls the back-end with a search query for the General Feed
@@ -138,11 +185,12 @@ class EventsRepo {
       }
       return eventResults;
     } catch(error,stacktrace){
-      debugPrint("Exception: $error stackTrace: $stacktrace");
       if (error is DioError) {
+        debugPrint("Exception: $error");
         return Future.error(Utils.handleDioError(error, "Searching General "
             "Events"));
       } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error("Internal app error Searching General Events");
       }
     }
@@ -175,11 +223,12 @@ class EventsRepo {
       }
       return eventResults;
     } catch(error,stacktrace){
-      debugPrint("Exception: $error stackTrace: $stacktrace");
       if (error is DioError) {
+        debugPrint("Exception: $error");
         return Future.error(Utils.handleDioError(error,
             "Searching Personal Events"));
       } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error("Internal app error Searching Personal Events");
       }
     }
@@ -198,10 +247,11 @@ class EventsRepo {
           "uid=${user.UID}");
       return Event.fromJson(response.data);
     } catch(error,stacktrace){
-      debugPrint("Exception: $error stackTrace: $stacktrace");
       if (error is DioError) {
+        debugPrint("Exception: $error");
         return Future.error(Utils.handleDioError(error, "Getting Event"));
       } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error("Internal app error while Getting Event");
       }
     }
@@ -220,10 +270,11 @@ class EventsRepo {
           "uid=${user.UID}/Follow");
       return response.data["event"]["eid"] == eventUID;
     } catch(error,stacktrace){
-      debugPrint("Exception: $error stackTrace: $stacktrace");
       if (error is DioError) {
+        debugPrint("Exception: $error");
         return Future.error(Utils.handleDioError(error, "Follow Event"));
       } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error("Internal app error while Follwing Event");
       }
     }
@@ -242,10 +293,11 @@ class EventsRepo {
           "uid=${user.UID}/Unfollow");
       return response.data["event"]["eid"] == eventUID;
     } catch(error,stacktrace){
-      debugPrint("Exception: $error stackTrace: $stacktrace");
       if (error is DioError) {
+        debugPrint("Exception: $error");
         return Future.error(Utils.handleDioError(error, "UnFollow Event"));
       } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error("Internal app error while UnFollwing Event");
       }
     }
@@ -265,10 +317,11 @@ class EventsRepo {
           "uid=${user.UID}/Dismiss");
       return response.data["event"]["eid"] == eventUID;
     } catch(error,stacktrace){
-      debugPrint("Exception: $error stackTrace: $stacktrace");
       if (error is DioError) {
+        debugPrint("Exception: $error");
         return Future.error(Utils.handleDioError(error, "Dismiss Event"));
       } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error("Internal app error while Dismissing Event");
       }
     }
@@ -292,11 +345,12 @@ class EventsRepo {
                 "recommendstatus=${event.recommended}");
         return response.data["eid"] == event.UID;
       } catch(error,stacktrace){
-        debugPrint("Exception: $error stackTrace: $stacktrace");
         if (error is DioError) {
+          debugPrint("Exception: $error");
           return Future.error(Utils.handleDioError(error, "Recommendation "
               "Event"));
         } else {
+          debugPrint("Exception: $error stackTrace: $stacktrace");
           return Future.error("Internal app error while Recommending Event");
         }
       }
@@ -318,14 +372,16 @@ class EventsRepo {
     try{
       Map<String, dynamic> eventJson = event.toJson();
       eventJson["ecreator"] = user.UID;
+      print(eventJson);
       Response response = await dio.post("/App/Events/Create",
         data: convert.jsonEncode(eventJson));
       return response.data["eid"] == event.UID;
     } catch(error,stacktrace){
-      debugPrint("Exception: $error stackTrace: $stacktrace");
       if (error is DioError) {
+        debugPrint("Exception: $error");
         return Future.error(Utils.handleDioError(error, "Create Event"));
       } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error("Internal app error while Createing Event");
       }
     }
@@ -350,72 +406,5 @@ class EventsRepo {
     }
   }
 
-  //---------------------- DEBUGGING STUFF ----------------------
-  String perSearchKeyword = "";
-  String genSearchKeyword = "";
-
-  List<Event> dummyEvents = List<Event>.generate(
-      10,
-          (i) {
-            List<int> randList = Utils.getRandomNumberList(10, 0,
-                eventTags.length);
-        return Event(i, "Event $i", "This is a very long "
-          "description fo the event currantly displayed. This is to test "
-          "out how good it looks when it cuts off.", "alguien.importante1@upr"
-            ".edu",
-          "https://images.pexels.com/photos/256541/pexels-photo-256541.jpeg",
-          DateTime.now().add(new Duration(minutes: i*2+5)),
-          DateTime.now().add(new Duration(minutes: i*20)),
-          DateTime.now(),
-          new Room(0, "S-200", "Stefani", 2, "Stefani is Cool", 20,
-            "Alguien.importante@upr.edu",
-              new Coordinate(18.209641, -67.139923,0)
-          ),
-          new List.generate(3, (i) => Website(
-            "https://portal.upr.edu/rum/portal.php?a=rea_login",
-            "link $i")
-          ),
-            new List.generate(
-            Random().nextInt(7) + 3,
-            (i) => eventTags[randList[i]]
-            ),
-          false, null, "active"
-          );
-        }
-  );
-
-  List<Event> genSearch = new List();
-  List<Event> perSearch = new List();
-
-  void clearPerSearch() => perSearchKeyword = "";
-  void clearGenSearch() => genSearchKeyword = "";
-  void runLocalSearch(){
-    if (perSearchKeyword.isNotEmpty) {
-      perSearch.clear();
-      dummyEvents.forEach((element) {
-        if (element.title.contains(perSearchKeyword)){
-          perSearch.add(element);
-        } else if (element.description.contains(perSearchKeyword)){
-          perSearch.add(element);
-        }
-      });
-    }
-    if(genSearchKeyword.isNotEmpty) {
-      genSearch.clear();
-      dummyEvents.forEach((element) {
-        if (element.title.contains(genSearchKeyword)){
-          genSearch.add(element);
-        } else if (element.description.contains(genSearchKeyword)){
-          genSearch.add(element);
-        }
-      });
-    }
-  }
-
-  static List<Tag> eventTags = [Tag(1,"ADMI",0), Tag(2,"ADOF",0),
-    Tag(3,"AGRO",0), Tag(4,"ALEM",0), Tag(5,"ANTR",0), Tag(6,"ARTE",0),
-    Tag(7,"ASTR",0), Tag(8,"BIND",0), Tag(9,"BIOL",0), Tag(10,"BOTA",0),
-    Tag(11,"CFIT",0), Tag(12,"CHIN",0), Tag(13,"CIAN",0), Tag(14,"CIBI",0),
-    Tag(15,"CIFI",0), Tag(16,"CIIC",0), Tag(17,"CIMA",0)];
 }
 

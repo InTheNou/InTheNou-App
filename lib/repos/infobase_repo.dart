@@ -32,10 +32,11 @@ class InfoBaseRepo {
       }
       return buildingResults;
     } catch(error,stacktrace){
-      debugPrint("Exception: $error stackTrace: $stacktrace");
       if (error is DioError) {
+        debugPrint("Exception: $error");
         return Future.error(Utils.handleDioError(error, "Getting Buildings") );
       } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error("Internal app error Getting Buildings");
       }
     }
@@ -53,11 +54,12 @@ class InfoBaseRepo {
       }
       return buildingResults;
     } catch(error,stacktrace){
-      debugPrint("Exception: $error stackTrace: $stacktrace");
       if (error is DioError) {
+        debugPrint("Exception: $error");
         return Future.error(Utils.handleDioError(error, "Searching "
             "Buildings") );
       } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error("Internal app error Searching Buildings");
       }
     }
@@ -72,10 +74,11 @@ class InfoBaseRepo {
       }
       return buildingResult;
     } catch(error,stacktrace){
-      debugPrint("Exception: $error stackTrace: $stacktrace");
       if (error is DioError) {
+        debugPrint("Exception: $error");
         return Future.error(Utils.handleDioError(error, "Getting Building") );
       } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error("Internal app error Getting Building");
       }
     }
@@ -96,11 +99,12 @@ class InfoBaseRepo {
       }
       return roomResults;
     } catch(error,stacktrace){
-      debugPrint("Exception: $error stackTrace: $stacktrace");
       if (error is DioError) {
+        debugPrint("Exception: $error");
         return Future.error(Utils.handleDioError(error, "Getting Rooms in "
             "Floor") );
       } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error("Internal app error Getting Rooms in Floor");
       }
     }
@@ -110,7 +114,7 @@ class InfoBaseRepo {
       Response response = await dio.get("/App/Rooms/searchstring=$keyword/"
           "offset=0/limit=10000");
       List<Room> roomResults = new List();
-      print(response.data);
+
       if(response.data != null){
         List<dynamic> jsonResponse = response.data["rooms"];
         if(jsonResponse != null){
@@ -122,11 +126,12 @@ class InfoBaseRepo {
       }
       return roomResults;
     } catch(error,stacktrace){
-      debugPrint("Exception: $error stackTrace: $stacktrace");
       if (error is DioError) {
+        debugPrint("Exception: $error");
         return Future.error(Utils.handleDioError(error, "Searching Rooms by "
             "keyword") );
       } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error("Internal app error Searching Rooms by keyword");
       }
     }
@@ -136,6 +141,7 @@ class InfoBaseRepo {
       Response response = await dio.get("/App/Rooms/babbrev=$abrev/"
           "rcode=$code/offset=0/limit=10000");
       List<Room> roomResults = new List();
+
       if(response.data != null){
         List<dynamic> jsonResponse = response.data["rooms"];
         if(jsonResponse != null){
@@ -147,11 +153,12 @@ class InfoBaseRepo {
       }
       return roomResults;
     } catch(error,stacktrace){
-      debugPrint("Exception: $error stackTrace: $stacktrace");
       if (error is DioError) {
+        debugPrint("Exception: $error");
         return Future.error(Utils.handleDioError(error, "Searching Rooms by "
             "Code") );
       } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error("Internal app error Searching Rooms by Code");
       }
     }
@@ -161,6 +168,7 @@ class InfoBaseRepo {
       Response response = await dio.get("/App/Rooms/rid=$roomUID");
       Room roomResult;
       Map<String, dynamic> jsonResponse = response.data;
+
       if(jsonResponse != null){
         Building b = Building.resultFromJson(jsonResponse['building']);
         roomResult = Room.fromJson(jsonResponse, b);
@@ -176,10 +184,11 @@ class InfoBaseRepo {
       }
       return roomResult;
     } catch(error,stacktrace){
-      debugPrint("Exception: $error stackTrace: $stacktrace");
       if (error is DioError) {
+        debugPrint("Exception: $error");
         return Future.error(Utils.handleDioError(error, "Getting Room") );
       } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error("Internal app error Getting Room");
       }
     }
@@ -190,6 +199,7 @@ class InfoBaseRepo {
           "offset=0/limit=10000");
       List<Service> serviceResult = List();
       List<dynamic> jsonResponse = response.data["services"];
+
       if(jsonResponse != null){
         jsonResponse.forEach((element) {
           Building b = Building.resultFromJson(element["room"]['building']);
@@ -199,10 +209,11 @@ class InfoBaseRepo {
       }
       return serviceResult;
     } catch(error,stacktrace){
-      debugPrint("Exception: $error stackTrace: $stacktrace");
       if (error is DioError) {
+        debugPrint("Exception: $error");
         return Future.error(Utils.handleDioError(error, "Searching Services") );
       } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error("Internal app error Searching Services");
       }
     }
@@ -213,22 +224,20 @@ class InfoBaseRepo {
       Response response = await dio.get("/App/Services/sid=$serviceUID");
       Room roomResult;
       Service service;
-      Map<String, dynamic> jsonResponse = response.data;
-      if(jsonResponse != null){
+
+      if(response.data != null){
         Building b = Building.resultFromJson
-          (jsonResponse['room']['building']);
-        roomResult = Room.fromJson(jsonResponse["room"], b);
-        if(jsonResponse != null){
-          service = Service.fromJson(jsonResponse, roomResult);
-          print(service.schedule);
-        }
+          (response.data['room']['building']);
+        roomResult = Room.fromJson(response.data["room"], b);
+        service = Service.fromJson(response.data, roomResult);
       }
       return service;
     } catch(error,stacktrace){
-      debugPrint("Exception: $error stackTrace: $stacktrace");
       if (error is DioError) {
+        debugPrint("Exception: $error");
         return Future.error(Utils.handleDioError(error, "Getting Service") );
       } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error("Internal app error Getting Service");
       }
     }

@@ -45,7 +45,7 @@ class ServicesCard extends StatelessWidget {
               ),
             )
         )
-    );;
+    );
   }
 
 }

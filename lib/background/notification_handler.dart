@@ -36,7 +36,7 @@ class NotificationHandler {
     EventsRepo eventsRepo = EventsRepo();
     event = await eventsRepo.getEvent(event.UID).catchError((error){
       showAlertNotification(NotificationObject(
-          id: ALERT_NOTIFICATION_ID,
+          id: SMART_ALERT_NOTIFICATION_ID,
           payload: "",
           time: DateTime.now(),
           type: NotificationType.Alert
@@ -328,7 +328,7 @@ class NotificationHandler {
         htmlFormatBigText: true,
         contentTitle: '<b>$title</b>',
         htmlFormatContentTitle: true,
-        summaryText: '<b>Recommendation</b>',
+        summaryText: '<b>Alert</b>',
         htmlFormatSummaryText: true);
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
         'com.inthenou.app.channel.alert',
@@ -338,6 +338,35 @@ class NotificationHandler {
         priority: Priority.High,
         visibility: NotificationVisibility.Public,
         style: AndroidNotificationStyle.BigText,
+        styleInformation: bigTextStyleInformation);
+    var platformChannelSpecifics = NotificationDetails(
+        androidPlatformChannelSpecifics, null);
+
+    await flutterLocalNotificationsPlugin.show(
+        notification.id, title, description,
+        platformChannelSpecifics,
+        payload: convert.jsonEncode(notification));
+  }
+
+  static void showCancellationNotification(
+      NotificationObject notification, String title, String description,
+      String bigDescription) async {
+    var bigTextStyleInformation = BigTextStyleInformation(
+        bigDescription,
+        htmlFormatBigText: true,
+        contentTitle: '<b>$title</b>',
+        htmlFormatContentTitle: true,
+        summaryText: '<b>Cancellations</b>',
+        htmlFormatSummaryText: true);
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+        'com.inthenou.app.channel.cancellations',
+        'Cancellations Notification',
+        'Notifications of Cancelled Events.',
+        importance: Importance.Max,
+        priority: Priority.High,
+        visibility: NotificationVisibility.Public,
+        style: AndroidNotificationStyle.BigText,
+        groupKey: CANCELLATION_NOTIFICATION_GID,
         styleInformation: bigTextStyleInformation);
     var platformChannelSpecifics = NotificationDetails(
         androidPlatformChannelSpecifics, null);

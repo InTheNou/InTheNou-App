@@ -39,7 +39,8 @@ enum NotificationType{
   SmartNotification,
   DefaultNotification,
   RecommendationNotification,
-  Alert
+  Alert,
+  Cancellation
 }
 
 // Used when converting from json received from database for itype
@@ -65,7 +66,10 @@ const WEIGHTED_SUM_THRESHOLD = 20;
 const RELEVANCE_VALUE_FACTOR = 100;
 
 const RECOMMENDATION_NOTIFICATION_ID = 0;
-const ALERT_NOTIFICATION_ID = 1;
+const LOCATION_ALERT_NOTIFICATION_ID = 1;
+const SMART_ALERT_NOTIFICATION_ID = 2;
+const CANCELLATION_ALERT_NOTIFICATION_ID = 3;
+
 
 const NOTIFICATION_ID_START = 20;
 
@@ -86,11 +90,13 @@ const SMART_NOTIFICATION_LIST = "smartNotificationList";
 const DEFAULT_NOTIFICATION_LIST = "defaultNotificationList";
 const NOTIFICATION_ID_KEY = "notificationId";
 const LAST_RECOMMENDATION_DATE_KEY = "lastRecommendationDate";
+const LAST_CANCELLATION_DATE_KEY = "lastCancellationDate";
 const USER_KEY = "useraccount";
 
 // Notification group IDs
 const SMART_NOTIFICATION_GID = "smartNotificationList";
-const DEFAULT_NOTIFICATION_GID = "smartNotificationList";
-const RECOMMENDATION_NOTIFICATION_GID = "smartNotificationList";
+const DEFAULT_NOTIFICATION_GID = "defaultNotificationList";
+const RECOMMENDATION_NOTIFICATION_GID = "recommendationNotificationList";
+const CANCELLATION_NOTIFICATION_GID = "cancellationNotificationList";
 
 
