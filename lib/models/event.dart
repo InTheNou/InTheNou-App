@@ -41,7 +41,7 @@ class Event {
     this._timestamp = timestamp;
     this._room = room;
     this._websites = null;
-    this._tags = Tag.fromJsonToList(tags);
+    this._tags = tags;
     this.followed = followed;
     this.recommended = recommended;
     this.status = status;
@@ -100,7 +100,7 @@ class Event {
   Map<String, dynamic> toJson() => {
         "etitle": _title,
         "edescription": _description,
-        "photourl": _image.isEmpty ? null : _image,
+        "photourl": _image == null? null : _image.isEmpty ? null : _image,
         "ecreator": 0,
         "estart": Utils.formatTimeStamp(_startDateTime.toUtc()),
         "eend": Utils.formatTimeStamp(_endDateTime.toUtc()),

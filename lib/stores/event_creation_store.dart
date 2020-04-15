@@ -23,6 +23,8 @@ class EventCreationStore extends flux.Store {
 
   Random rand = Random();
 
+  Future<bool> creationResult = Future.value(null);
+
   Event _newEvent;
   String _title;
   String _description;
@@ -49,8 +51,13 @@ class EventCreationStore extends flux.Store {
           "jonathan.santiago27@upr.edu", _image, _startDateTime,
           _endDateTime,DateTime.now(), _selectedRoom, _websites,
         _selectedTags, false, null, "active");
-      _eventsRepo.createEvent(_newEvent);
-      reset();
+      return _eventsRepo.createEvent(_newEvent).then((value) {
+        creationResult = Future.value(value);
+        return true;
+      }).catchError((e){
+        creationResult = Future.error(e);
+        return true;
+      });
     });
     triggerOnAction(discardEventAction, (_){
       reset();
@@ -174,7 +181,8 @@ class EventCreationStore extends flux.Store {
   Floor get selectedFloor => _selectedFloor;
   List<Website> get websites => _websites;
   List<Tag> get selectedTags => _selectedTags;
-  Map<Tag, bool> get searchTags => _searchTags;}
+  Map<Tag, bool> get searchTags => _searchTags;
+}
 
 final flux.Action submitEventAction = new flux.Action();
 final flux.Action discardEventAction = new flux.Action();

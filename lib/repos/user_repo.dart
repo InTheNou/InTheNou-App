@@ -247,9 +247,8 @@ class UserRepo {
   logOut() async{
     try{
       // Do the logout request
-//      Response response = await dio.get("/App/logout");
+      Response response = await dio.get("/App/logout");
 
-//      print(response);
       final SharedPreferences prefs = await _prefs;
       prefs.setString(USER_SESSION_KEY, null);
       apiConnection.deleteSession();
@@ -365,6 +364,7 @@ class UserRepo {
         response.data["tags"].forEach((element) {
           tagResults.add(Tag.fromJson(element));
         });
+        tagResults.sort((a, b) => b.weight - a.weight);
       }
       return tagResults;
     } catch(error, stacktrace){

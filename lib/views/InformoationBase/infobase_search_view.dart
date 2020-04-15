@@ -26,6 +26,7 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
   with flux.StoreWatcherMixin<InfoBaseSearchView>{
 
   TextEditingController _searchQueryController;
+  FocusNode _searchFocus;
   ScrollController _scrollController;
   InfoBaseStore _infoBaseStore;
 
@@ -37,29 +38,39 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
     getAllBuildingsAction(widget.searchType);
     _searchQueryController = TextEditingController(
       text: _infoBaseStore.getSearchKeyword(widget.searchType));
+    _searchFocus = FocusNode();
   }
 
   @override
   void dispose() {
     _searchQueryController.dispose();
+    _searchFocus.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: _infoBaseStore.getIsSearching(widget.searchType) ? _buildSearchField() :
-          Text(Utils.infoBaseSearchString(widget.searchType)),
-        actions: _buildActions(),
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: <Widget>[
-          Expanded(
-            child: showCorrectList(),
-          )
-        ],
+    return GestureDetector(
+      onTap: () {
+        FocusScopeNode currentFocus = FocusScope.of(context);
+        if (!currentFocus.hasPrimaryFocus) {
+          currentFocus.unfocus();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: _infoBaseStore.getIsSearching(widget.searchType) ? _buildSearchField() :
+            Text(Utils.infoBaseSearchString(widget.searchType)),
+          actions: _buildActions(),
+        ),
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Expanded(
+              child: showCorrectList(),
+            )
+          ],
+        ),
       ),
     );
   }
@@ -199,11 +210,10 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
   }
 
   Widget _buildSearchField() {
-    _searchQueryController.text =
-        _infoBaseStore.getSearchKeyword(widget.searchType);
     return TextField(
       controller: _searchQueryController,
-      autofocus: true,
+      autofocus: false,
+      focusNode: _searchFocus,
       decoration: InputDecoration(
         hintText: _buildHint(widget.searchType),
         border: InputBorder.none,
@@ -211,11 +221,13 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
       ),
       style: TextStyle(color: Colors.white, fontSize: 16.0),
       onSubmitted: (query) {
-        if(_scrollController.hasClients){
-          _scrollController.animateTo(0.0, curve: Curves.ease,
-              duration: Duration(seconds: 1));
+        if(query.trim().length > 0){
+          if(_scrollController.hasClients){
+            _scrollController.animateTo(0.0, curve: Curves.ease,
+                duration: Duration(seconds: 1));
+          }
+          searchInfoBaseAction(new MapEntry(widget.searchType, query.trim()));
         }
-        searchInfoBaseAction(new MapEntry(widget.searchType, query));
       },
     );
   }
@@ -231,6 +243,7 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
   }
 
   void _startSearch() {
+    _searchFocus.requestFocus();
     ModalRoute.of(context)
         .addLocalHistoryEntry(LocalHistoryEntry(onRemove: _stopSearching));
     setSearchingAction(new MapEntry(widget.searchType, true));

@@ -1,3 +1,4 @@
+import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/tag.dart';
 import 'package:InTheNou/models/website.dart';
 import 'package:validators/validators.dart';
@@ -95,5 +96,19 @@ class Validators {
     return true;
   }
 
+  static bool validateUserRole(UserRole role){
+    return role != null;
+  }
+
+  static bool validateCreationTags(List<Tag> tags){
+    if (tags.isEmpty){
+      return false;
+    } else if(tags.length < 5){
+      return false;
+    } else if(tags.length > 5){
+      return false;
+    }
+    return true;
+  }
 
 }

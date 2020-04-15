@@ -96,6 +96,16 @@ class Utils {
       prefs.setString(LAST_CANCELLATION_DATE_KEY,
           formatTimeStamp(DateTime(2020)));
     }
+
+    if(!prefs.containsKey(RECOMMENDATION_INTERVAL_KEY)){
+      prefs.setInt(RECOMMENDATION_INTERVAL_KEY, 120);
+    }
+    if(!prefs.containsKey(CANCELLATION_INTERVAL_KEY)){
+      prefs.setInt(CANCELLATION_INTERVAL_KEY, 120);
+    }
+    if(!prefs.containsKey(RECOMMENDATION_DEBUG_KEY)){
+      prefs.setBool(RECOMMENDATION_DEBUG_KEY, false);
+    }
   }
 
   static void clearNotificationsPrefs() async{
@@ -122,6 +132,9 @@ class Utils {
     _prefs.remove(LAST_RECOMMENDATION_DATE_KEY);
     _prefs.remove(LAST_CANCELLATION_DATE_KEY);
     _prefs.remove(USER_KEY);
+    _prefs.remove(RECOMMENDATION_INTERVAL_KEY);
+    _prefs.remove(CANCELLATION_INTERVAL_KEY);
+
   }
 
   ///

@@ -1,3 +1,4 @@
+import 'package:InTheNou/assets/validators.dart';
 import 'package:InTheNou/models/tag.dart';
 import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/material.dart';
@@ -41,34 +42,40 @@ class _AccountCreationViewState extends State<AccountCreationView>
             _userStore.loginUser = null;
           }
         }).catchError((e){
-
+          showErrorDialog(e);
         });
       }
     });
-
-    return Scaffold(
-      backgroundColor: Theme.of(context).primaryColor,
-      body:SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Container(
-                  height: 150,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Image.asset(
-                        "lib/assets/InTheNou_logo.png",
-                        width: 275,
-                        semanticLabel: "InTheNou App Logo",
-                      ),
-                    ],
+    return GestureDetector(
+      onTap: () {
+        FocusScopeNode currentFocus = FocusScope.of(context);
+        if (!currentFocus.hasPrimaryFocus) {
+          currentFocus.unfocus();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Theme.of(context).primaryColor,
+        body:SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Container(
+                    height: 150,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Image.asset(
+                          "lib/assets/InTheNou_logo.png",
+                          width: 275,
+                          semanticLabel: "InTheNou App Logo",
+                        ),
+                      ],
+                    ),
                   ),
-                ),
 //                Padding(
 //                  padding: const EdgeInsets.only(left: 8.0),
 //                  child: Text("Role",
@@ -95,78 +102,79 @@ class _AccountCreationViewState extends State<AccountCreationView>
 //                      ),
 //                    )
 //                ),
-                const Padding(padding: EdgeInsets.only(top:16),),
-                Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: Text("Select 5 tags of interest:",
-                      style: Theme.of(context).textTheme.subtitle1.copyWith(
-                          color: Theme.of(context).canvasColor
-                      )),
-                ),
-                Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.0),
+                  const Padding(padding: EdgeInsets.only(top:16),),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Text("Select 5 tags of interest:",
+                        style: Theme.of(context).textTheme.subtitle1.copyWith(
+                            color: Theme.of(context).canvasColor
+                        )),
                   ),
-                  child: Row(
-                    children: <Widget>[
-                      const Padding(padding: EdgeInsets.all(8.0)),
-                      Icon(Icons.search),
-                      const Padding(padding: EdgeInsets.only(
-                          left: 16.0)),
-                      Expanded(
-                        child: TextField(
-                            decoration: InputDecoration.collapsed(
-                              hintText:  "Serach Tags",),
-                            onChanged: (String value) => searchedTagAction(value)
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15.0),
+                    ),
+                    child: Row(
+                      children: <Widget>[
+                        const Padding(padding: EdgeInsets.all(8.0)),
+                        Icon(Icons.search),
+                        const Padding(padding: EdgeInsets.only(
+                            left: 16.0)),
+                        Expanded(
+                          child: TextField(
+                              decoration: InputDecoration.collapsed(
+                                hintText:  "Serach Tags",),
+                              onChanged: (String value) => searchedTagAction(value.trim())
+                          ),
                         ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        boxShadow: kElevationToShadow[2]
+                    ),
+                    constraints: BoxConstraints(
+                        maxHeight: 325.0,
+                        minHeight: 50.0),
+                    child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: _userStore.searchTags.keys.length,
+                        itemBuilder: (BuildContext context, int index){
+                          MapEntry<Tag,bool> tag = _userStore.searchTags
+                              .entries.elementAt(index);
+                          return CheckboxListTile(
+                            title: Text(tag.key.name),
+                            value: tag.value,
+                            onChanged: (bool value){
+                              toggleTagAction(MapEntry(tag.key, value));
+                            },
+                          );
+                        })
                       ),
+                  const Padding(padding: EdgeInsets.only(top:16),),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      RaisedButton(
+                        color: Theme.of(context).accentColor,
+                        child: Text(
+                          "Create Your Account",
+                          style: Theme.of(context).textTheme.headline6.copyWith(
+                              color: Theme.of(context).canvasColor
+                          ),
+                        ),
+                        onPressed: () => validate()
+                      )
                     ],
                   ),
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      boxShadow: kElevationToShadow[2]
-                  ),
-                  constraints: BoxConstraints(
-                      maxHeight: 325.0,
-                      minHeight: 50.0),
-                  child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: _userStore.searchTags.keys.length,
-                      itemBuilder: (BuildContext context, int index){
-                        MapEntry<Tag,bool> tag = _userStore.searchTags
-                            .entries.elementAt(index);
-                        return CheckboxListTile(
-                          title: Text(tag.key.name),
-                          value: tag.value,
-                          onChanged: (bool value){
-                            toggleTagAction(MapEntry(tag.key, value));
-                          },
-                        );
-                      })
-                    ),
-                const Padding(padding: EdgeInsets.only(top:16),),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    RaisedButton(
-                      color: Theme.of(context).accentColor,
-                      child: Text(
-                        "Create Your Account",
-                        style: Theme.of(context).textTheme.headline6.copyWith(
-                            color: Theme.of(context).canvasColor
-                        ),
-                      ),
-                      onPressed: () => validate()
-                    )
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-      )
+        )
+      ),
     );
   }
 
@@ -199,7 +207,8 @@ class _AccountCreationViewState extends State<AccountCreationView>
   /// If they choose to confirm then their account is created by calling
   /// [createUserAction].
   void validate(){
-    if(_formKey.currentState.validate() && _userStore.selectedTags.length == 5){
+    if(_formKey.currentState.validate() &&
+        Validators.validateCreationTags(_userStore.selectedTags)){
       showSubmitConfirmation().then((value) {
         if(value != null && value){
           createUserAction();

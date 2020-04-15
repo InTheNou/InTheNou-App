@@ -189,6 +189,171 @@ class _SettingsViewState extends State<SettingsView>
                   ],
                 ),
               ),
+
+              // Recommendation
+              Card(
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                            "Recommendation Check Interval",
+                            style: Theme.of(context).textTheme.subtitle1
+                        ),
+                      ),
+                    ),
+                    FutureBuilder<int>(
+                        future: _settingsStore.recommendationInterval,
+                        builder: (BuildContext context, AsyncSnapshot<int> time) {
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: new DropdownButton<int>(
+                                value: time.data,
+                                style: Theme.of(context).textTheme.subtitle2,
+                                underline: Container(
+                                  height: 2,
+                                  color: Theme.of(context).primaryColor,
+                                ),
+                                items: _settingsStore.defaultTimes
+                                    .map<DropdownMenuItem<int>>((int value) {
+                                  return DropdownMenuItem<int>(
+                                    value: value,
+                                    child: Text(value.toString()),
+                                  );
+                                }).toList(),
+                                onChanged: (int newValue) {
+                                  changeRecommendationIntervalAction(newValue);
+                                }
+                            ),
+                          );
+                        }),
+                  ],
+                ),
+              ),
+
+              // Smart Interval
+              Card(
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                            "Smart Notification Check Interval",
+                            style: Theme.of(context).textTheme.subtitle1
+                        ),
+                      ),
+                    ),
+                    Text(
+                        "15 min",
+                        style: Theme.of(context).textTheme.subtitle1
+                    ),
+                  ],
+                ),
+              ),
+
+              // Cancellation Interval
+              Card(
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                            "Cancellation Check Interval",
+                            style: Theme.of(context).textTheme.subtitle1
+                        ),
+                      ),
+                    ),
+                    FutureBuilder<int>(
+                        future: _settingsStore.cancellationInterval,
+                        builder: (BuildContext context, AsyncSnapshot<int> time) {
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: new DropdownButton<int>(
+                                value: time.data,
+                                style: Theme.of(context).textTheme.subtitle2,
+                                underline: Container(
+                                  height: 2,
+                                  color: Theme.of(context).primaryColor,
+                                ),
+                                items: _settingsStore.defaultTimes
+                                    .map<DropdownMenuItem<int>>((int value) {
+                                  return DropdownMenuItem<int>(
+                                    value: value,
+                                    child: Text(value.toString()),
+                                  );
+                                }).toList(),
+                                onChanged: (int newValue) {
+                                  changeCancellationIntervalAction(newValue);
+                                }
+                            ),
+                          );
+                        }),
+                  ],
+                ),
+              ),
+              Card(
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                            "Smart Notification",
+                            style: Theme.of(context).textTheme.subtitle1
+                        ),
+                      ),
+                    ),
+                    FutureBuilder<bool>(
+                        future: _settingsStore.recommendationDebug,
+                        initialData: false,
+                        builder: (BuildContext context,
+                            AsyncSnapshot<bool>toggle) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 4.0, bottom: 4.0,
+                                right: 8.0),
+                            child: new Switch(
+                                value: toggle.data,
+                                onChanged: (value)  async =>
+                                    changeRecommendationDebugAction(value)
+                            ),
+                          );
+                        }),
+                  ],
+                ),
+              ),
+              Text("Click this if you change the above times"),
+              Card(
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                        child: InkWell(
+                            child: Padding(
+                              padding: const EdgeInsets.only(top:16.0, bottom: 16.0,
+                                  left: 8.0),
+                              child: Text("Re-init Background tasks",
+                                  style: Theme.of(context).textTheme.subtitle1.copyWith(
+                                      color: Theme.of(context).accentColor
+                                  )
+                              ),
+                            ),
+                            onTap: () async {
+                              // Disable the background tasks
+                              BackgroundHandler.restart();
+                              Scaffold.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Background Tasks times '
+                                        'changed.'),
+                                  )
+                              );
+                            }
+                        )
+                    ),
+                  ],
+                ),
+              ),
             ],
           );
         },

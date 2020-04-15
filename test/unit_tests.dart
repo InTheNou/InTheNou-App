@@ -1,5 +1,7 @@
 import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/validators.dart';
+import 'package:InTheNou/assets/values.dart';
+import 'package:InTheNou/background/background_handler.dart';
 import 'package:InTheNou/models/coordinate.dart';
 import 'package:InTheNou/models/tag.dart';
 import 'package:InTheNou/models/website.dart';
@@ -284,7 +286,48 @@ void main(){
         }
       });
     });
+    group("Reccomendation Calculations", (){
+      test('Event with 1 common tag', () {
+        List<Tag> userTags = [Tag(0,"Tag0",60), Tag(1,"Tag1",120),
+          Tag(2,"Tag2",15), Tag(3,"Tag3",150)];
+        List<Tag> eventTags = [Tag(0,"Tag0",60)];
+        List<Tag> commonTags = BackgroundHandler.checkTagsSimilarity(eventTags, userTags);
 
+        expect(commonTags.length, 1);
+      });
+      test('Event with 3 common tags', () {
+        List<Tag> userTags = [Tag(0,"Tag0",60), Tag(1,"Tag1",120),
+          Tag(2,"Tag2",15), Tag(3,"Tag3",150)];
+        List<Tag> eventTags = [Tag(0,"Tag0",0), Tag(3,"Tag3",0),
+          Tag(1,"Tag1",0)];
+        List<Tag> commonTags = BackgroundHandler.checkTagsSimilarity(eventTags, userTags);
+
+        expect(commonTags.length, 3);
+      });
+      test('Event with weightedSUm > 20', () {
+        List<Tag> userTags = [Tag(0,"Tag0",60), Tag(1,"Tag1",120),
+          Tag(2,"Tag2",15), Tag(3,"Tag3",150)];
+        List<Tag> eventTags = [Tag(0,"Tag0",0), Tag(3,"Tag3",0),
+          Tag(1,"Tag1",0), Tag(4,"Tag4",0), Tag(5,"Tag5",0),
+            Tag(6,"Tag6",0)];
+        List<Tag> commonTags = BackgroundHandler.checkTagsSimilarity(eventTags, userTags);
+        double weight = BackgroundHandler.calcWeightedSum(commonTags, eventTags.length);
+
+        expect(weight >= WEIGHTED_SUM_THRESHOLD, true);
+      });
+      test('Event with weightedSUm < 20', () {
+        List<Tag> userTags = [Tag(0,"Tag0",60), Tag(1,"Tag1",120),
+          Tag(2,"Tag2",15), Tag(3,"Tag3",150)];
+        List<Tag> eventTags = [Tag(0,"Tag0",0), Tag(2,"Tag2",0),
+          Tag(4,"Tag4",0), Tag(5,"Tag5",0),
+          Tag(6,"Tag6",0), Tag(7,"Tag7",0), Tag(8,"Tag8",0)];
+        List<Tag> commonTags = BackgroundHandler.checkTagsSimilarity(eventTags, userTags);
+        double weight = BackgroundHandler.calcWeightedSum(commonTags, eventTags.length);
+        expect(weight >= WEIGHTED_SUM_THRESHOLD, false);
+      });
+
+
+    });
     group("Default Notification not in the past",(){
       test('Event Start in the Past', () {
         DateTime timestamp = new DateTime.now();
@@ -299,6 +342,41 @@ void main(){
         expect(Utils.isScheduleDefaultNecessary(startDateTime, timestamp), true);
       });
     });
+    group("Account Creation",(){
+      group("User Role Validation", (){
+        test('Not Selected Role yet', () {
+          UserRole role;
+          expect(Validators.validateUserRole(role), false);
+        });
+        test('Slected Student Role', () {
+          UserRole role = UserRole.Student;
+          expect(Validators.validateUserRole(role), true);
+        });
+        test('Slected TeachingPersonnel Role', () {
+          UserRole role = UserRole.TeachingPersonnel;
+          expect(Validators.validateUserRole(role), true);
+        });
+        test('Slected NonTeachingPersonnel Role', () {
+          UserRole role = UserRole.NonTeachingPersonnel;
+          expect(Validators.validateUserRole(role), true);
+        });
+      });
+      group("Account Tags Validation", (){
+        test('Account Tags Empty', () {
+          expect(Validators.validateCreationTags(List<Tag>()), false);
+        });
+        test('Account Tags < 5', () {
+          expect(Validators.validateCreationTags(List<Tag>(2)), false);
+        });
+        test('Account Tags > 5', () {
+          expect(Validators.validateCreationTags(List<Tag>(6)), false);
+        });
+        test('Account Tags = 5', () {
+          expect(Validators.validateCreationTags(List<Tag>(5)), true);
+        });
+      });
+    });
+
   });
 
 }

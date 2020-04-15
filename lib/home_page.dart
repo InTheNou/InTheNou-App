@@ -45,9 +45,9 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
   @override
   void initState() {
     super.initState();
+    Utils.checkSharedPrefs();
     BackgroundHandler.initBackgroundTasks();
     BackgroundFetch.registerHeadlessTask(BackgroundHandler.onBackgroundFetch);
-    Utils.checkSharedPrefs();
     initializeNotifications();
     checkLocationPermission();
     navigationStore = listenToStore(navigationToken);
@@ -206,8 +206,6 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
   /// This methods gets ran evey time the app is started to make sure the
   /// Notifications are initialized adn setup.
   void initializeNotifications() async {
-    notificationAppLaunchDetails =
-    await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
     var initializationSettingsAndroid = AndroidInitializationSettings
       ('ic_notification');
     // Here is where we could add the iOS settings when the platform gets
@@ -225,21 +223,24 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
   /// Here can handle multiple types of notifications by analyzing the
   /// [payload].
   Future onSelectNotification(String payload) async {
-    NotificationObject notification =
-    NotificationObject.fromJson(jsonDecode(payload));
-    print(notification.toJson());
-    if (notification.type == NotificationType.SmartNotification) {
-      Navigator.of(context).pushNamed("/eventdetail",
-          arguments: int.parse(notification.payload));
-      return;
-    } else if (notification.type == NotificationType.DefaultNotification) {
-      Navigator.of(context).pushNamed("/eventdetail",
-          arguments: int.parse(notification.payload));
-      return;
-    } else if (notification.type == NotificationType.Cancellation) {
-      Navigator.of(context).pushNamed("/eventdetail",
-          arguments: int.parse(notification.payload));
-      return;
+    notificationAppLaunchDetails =
+    await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
+    if(notificationAppLaunchDetails.didNotificationLaunchApp){
+      NotificationObject notification =
+      NotificationObject.fromJson(jsonDecode(payload));
+      if (notification.type == NotificationType.SmartNotification) {
+        Navigator.of(context).pushNamed("/eventdetail",
+            arguments: int.parse(notification.payload));
+        return;
+      } else if (notification.type == NotificationType.DefaultNotification) {
+        Navigator.of(context).pushNamed("/eventdetail",
+            arguments: int.parse(notification.payload));
+        return;
+      } else if (notification.type == NotificationType.Cancellation) {
+        Navigator.of(context).pushNamed("/eventdetail",
+            arguments: int.parse(notification.payload));
+        return;
+      }
     }
   }
 }

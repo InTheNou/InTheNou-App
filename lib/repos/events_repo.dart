@@ -42,9 +42,9 @@ class EventsRepo {
           "/App/Events/General/uid=${user.UID}/offset=$skipEvents"
               "/limit=$numEvents");
       List<Event> eventResults = new List();
-      List jsonResponse = response.data["events"];
-      if(jsonResponse != null){
-        jsonResponse.forEach((element) {
+
+      if(response.data["events"] != null){
+        response.data["events"].forEach((element) {
           eventResults.add(Event.resultFromJson(element));
         });
       }
@@ -79,9 +79,9 @@ class EventsRepo {
           "/App/Events/Recommended/uid=${user.UID}/offset=$skipEvents/"
               "limit=$numEvents");
       List<Event> eventResults = new List();
-      List jsonResponse = response.data["events"];
-      if(jsonResponse != null){
-        jsonResponse.forEach((element) {
+
+      if(response.data["events"] != null){
+        response.data["events"].forEach((element) {
           eventResults.add(Event.resultFromJson(element));
         });
       }
@@ -112,9 +112,9 @@ class EventsRepo {
           "/App/Events/CAT/timestamp=${Utils.formatTimeStamp(date)}/"
               "uid=${user.UID}");
       List<Event> eventResults = new List();
-      List jsonResponse = response.data["events"];
-      if(jsonResponse != null){
-        jsonResponse.forEach((element) {
+
+      if(response.data["events"] != null){
+        response.data["events"].forEach((element) {
           eventResults.add(Event.recommendationFromJson(element));
         });
       }
@@ -138,10 +138,9 @@ class EventsRepo {
       Response response = await dio.get(
           "/App/Events/Deleted/New/timestamp=${Utils.formatTimeStamp(date)}");
       List<Event> eventResults = new List();
-      List jsonResponse = response.data["events"];
-      print(jsonResponse);
-      if(jsonResponse != null){
-        jsonResponse.forEach((element) {
+
+      if(response.data["events"] != null){
+        response.data["events"].forEach((element) {
           eventResults.add(Event.recommendationFromJson(element));
         });
       }
@@ -372,10 +371,13 @@ class EventsRepo {
     try{
       Map<String, dynamic> eventJson = event.toJson();
       eventJson["ecreator"] = user.UID;
-      print(eventJson);
       Response response = await dio.post("/App/Events/Create",
         data: convert.jsonEncode(eventJson));
-      return response.data["eid"] == event.UID;
+      if(response.data["eid"] == null){
+        return Future.error("We were unable to create the Event, please try "
+            "again.");
+      }
+      return true;
     } catch(error,stacktrace){
       if (error is DioError) {
         debugPrint("Exception: $error");

@@ -76,7 +76,7 @@ const NOTIFICATION_ID_START = 20;
 const INITIAL_TAG_WEIGHT = 50;
 
 const List<int> defaultNotificationTimes = [
-  5, 10, 15, 20, 30
+  1, 5, 10, 15, 20, 30, 60, 120
 ];
 
 const API_URL = "https://inthenou.uprm.edu";
@@ -100,3 +100,7 @@ const RECOMMENDATION_NOTIFICATION_GID = "recommendationNotificationList";
 const CANCELLATION_NOTIFICATION_GID = "cancellationNotificationList";
 
 
+const RECOMMENDATION_INTERVAL_KEY = "recomendationInterval";
+const RECOMMENDATION_DEBUG_KEY = "recommendationDebug";
+const SMART_INTERVAL_KEY = "smartinterval";
+const CANCELLATION_INTERVAL_KEY = "cancellationInterval";

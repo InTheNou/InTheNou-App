@@ -49,7 +49,7 @@ class _WebsiteAlertDialogState extends State<WebsiteAlertDialog> {
                 keyboardType: TextInputType.text,
                 validator: (link) => Validators.validateWebsiteLink(link),
                 onSaved: (value){
-                  _URL = value;
+                  _URL = value.trim();
                 },
               )
             ],

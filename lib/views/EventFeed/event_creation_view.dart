@@ -46,337 +46,345 @@ class _EventCreationViewState extends State<EventCreationView>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Event Creation"),
-        actions: <Widget>[
-          FlatButton(
-            textColor: Colors.white,
-            child: Text(
-              "SUBMIT"
-            ),
-            onPressed: () => validateEventSubmit()
-          )
-        ],
-        leading: IconButton(
-          icon: Icon(Icons.clear),
-          onPressed: () => showExitWarning(),
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Form(
-            key: _formKey,
-            onWillPop: () => showExitWarning(),
-            child: Padding(
-              padding: const EdgeInsets.only(top: 16.0, bottom: 8.0,
-                  left: 8.0, right: 8.0),
-              child: Column(
-                  children: <Widget>[
-                    //
-                    //Title
-                    TextFormField(
-                      decoration: InputDecoration(
-                          labelText: "Event Title",
-                          border: OutlineInputBorder()),
-                      autovalidate: _autoValidate,
-                      maxLines: 1,
-                      maxLength: 50,
-                      textInputAction: TextInputAction.next,
-                      initialValue: _creationStore.title,
-                      validator: (title) => Validators.validateTitle(title),
-                      onChanged: (String title) =>
-                          inputEventTitleAction(title.trim()),
-                    ),
-                    const Padding(padding: EdgeInsets.only(bottom: 8.0)),
-                    //
-                    // Description
-                    TextFormField(
-                      decoration: InputDecoration(
-                          labelText: "Description",
-                          border: OutlineInputBorder()),
-                      autovalidate: _autoValidate,
-                      maxLines: null,
-                      maxLength: 400,
-                      keyboardType: TextInputType.text,
-                      textInputAction: TextInputAction.done,
-                      initialValue: _creationStore.description,
-                      validator: (description) =>
-                          Validators.validateDescription(description),
-                      onChanged: (String description) =>
-                          inputEventDescriptionAction(description.trim()),
-                    ),
-                    const Padding(padding: EdgeInsets.only(bottom: 8.0)),
-                    //
-                    TextFormField(
-                      decoration: InputDecoration(
-                          labelText: "Event Image (Optional)",
-                          border: OutlineInputBorder()),
-                      autovalidate: _autoValidate,
-                      maxLines: 1,
-                      maxLength: 400,
-                      textInputAction: TextInputAction.next,
-                      initialValue: _creationStore.image,
-                      validator: (image) => Validators.validateImage(image),
-                      onChanged: (String image) =>
-                          inputEventImageAction(image),
-                    ),
-                    const Padding(padding: EdgeInsets.only(bottom: 8.0)),
-                    //
-                    //Dates
-                    DateTimeField(
-                      format: format,
-                      decoration: InputDecoration(
-                          labelText: "Event Start Date",
-                          border: OutlineInputBorder()),
-                      autovalidate: _autoValidateDates,
-                      initialValue: _creationStore.startDateTime,
-                      autofocus: false,
-                      focusNode: FocusNode(canRequestFocus: false),
-                      onShowPicker: (context, currentValue) async {
-                        final date = await showDatePicker(
-                           context: context,
-                           firstDate: _initialDaeTime,
-                           initialDate: _creationStore.startDateTime ??
-                               DateTime.now(),
-                           lastDate: DateTime.now()
-                               .add(Duration(days: 60)));
-                        if (date != null) {
-                              final time = await showTimePicker(
-                                context: context,
-                                initialTime:
-                                  TimeOfDay.fromDateTime(_creationStore
-                                  .startDateTime ?? DateTime.now()),
-                              );
-                              inputEventDateAction(MapEntry(true,
-                                  DateTimeField.combine(date, time)));
-                              return DateTimeField.combine(date, time);
-                            } else {
-                          return currentValue;
-                        }
-                      },
-                      validator: (date) => Validators.validateDate(date,
-                          _creationStore.startDateTime,
-                          _creationStore.endDateTime),
-                      onChanged: (value) {
-                        _formKey.currentState.setState(() {
-                          _autoValidateDates = true;
-                          _endDateEnable = value != null;
-                        });
-                      },
-                    ),
-                    const Padding(padding: EdgeInsets.only(bottom: 8.0)),
-                    DateTimeField(
-                      format: format,
-                      enabled: _endDateEnable,
-                      autofocus: false,
-                      focusNode: FocusNode(canRequestFocus: false),
-                      decoration: InputDecoration(
-                          labelText: "Event End Date",
-                          border: OutlineInputBorder()),
-                      autovalidate: _autoValidateDates,
-                      initialValue: _creationStore.endDateTime,
-                      onShowPicker: (context, currentValue) async {
-                        final date = await showDatePicker(
-                            context: context,
-                            firstDate: _initialDaeTime,
-                            initialDate: _creationStore.endDateTime
-                                ?? DateTime.now(),
-                            lastDate: DateTime.now()
-                                .add(Duration(days: 60)));
-                        if (date != null) {
-                          final time = await showTimePicker(
-                            context: context,
-                            initialTime:
-                            TimeOfDay.fromDateTime(_creationStore.endDateTime
-                            ?? DateTime.now()),
-                          );
-                          inputEventDateAction(MapEntry(false,
-                              DateTimeField.combine(date, time)));
-                          return DateTimeField.combine(date, time);
-                        } else {
-                          return currentValue;
-                        }
-                      },
-                      validator: (date) => Validators.validateDate(date,
-                          _creationStore.startDateTime,
-                          _creationStore.endDateTime),
-                    ),
-                    const Padding(padding: EdgeInsets.only(bottom: 16.0)),
-                    //
-                    // Location
-                    Row(
-                      children: <Widget>[
-                        const Padding(padding: EdgeInsets.only(left: 8.0)),
-                        Expanded(
-                          child: Text("Location",
-                              style: Theme.of(context).textTheme.subtitle1),
-                        ),
-                        const Padding(padding: EdgeInsets.only(left: 8.0)),
-                      ],
-                    ),
-                    Card(
-                      child: Padding(
-                        padding: EdgeInsets.only(left: 16.0, right: 8.0),
-                        child: DropdownButtonFormField(
-                          decoration: InputDecoration.collapsed(
-                              hintText: "Building"),
-                          autovalidate: _autoValidate,
-                          value: _creationStore.selectedBuilding,
-                          items: _creationStore.buildings.map((Building building) {
-                            return new DropdownMenuItem(
-                              value: building,
-                              child: new Text(building.name),
-                            );
-                          }).toList(),
-                          onChanged: (value) => buildingSelectAction(value),
-                          validator: (value) =>
-                            value == null? "Please choose a Floor" : null,
-                        ),
-                      ),
-                    ),
-                    Card(
-                      child: Padding(
-                        padding: EdgeInsets.only(left: 16.0, right: 8.0),
-                        child: DropdownButtonFormField(
-                          decoration: InputDecoration.collapsed(
-                              hintText: "Floor"),
-                          autovalidate: _autoValidate,
-                          value: _creationStore.selectedFloor,
-                          items: _creationStore.floors.map((Floor floor) {
-                            return new DropdownMenuItem(
-                              value: floor,
-                              child: new Text(floor.floorName),
-                            );
-                          }).toList(),
-                          onChanged: (value) => floorSelectAction(value),
-                          validator: (value) =>
-                            value == null? "Please choose a Floor" : null,
-                        ),
-                      ),
-                    ),
-                    Card(
-                      child: Padding(
-                        padding: EdgeInsets.only(left: 16.0, right: 8.0),
-                        child: DropdownButtonFormField(
-                          decoration: InputDecoration.collapsed(
-                              hintText: "Room"),
-                          autovalidate: _autoValidate,
-                          value: _creationStore.selectedRoom,
-                          items: _creationStore.roomsInBuilding
-                              .map((Room room) {
-                            return new DropdownMenuItem(
-                              value: room,
-                              child: new Text(room.code),
-                            );
-                          }).toList(),
-                          onChanged: (value) => roomSelectAction(value),
-                          validator: (value) =>
-                            value == null? "Please choose a Room" : null
-                        ),
-                      ),
-                    ),
-                    const Padding(padding: EdgeInsets.only(bottom: 8.0)),
-                    //
-                    // Websites
-                    Row(
-                      children: <Widget>[
-                        const Padding(padding: EdgeInsets.only(left: 8.0)),
-                        Expanded(
-                          child: Row(
-                            children: <Widget>[
-                              Text("Website Links (Optional)",
-                                  style: Theme.of(context).textTheme.subtitle1),
-                              const Padding(padding: EdgeInsets.only(left: 8.0)),
-                              Text("${_creationStore.websites.length}/10",
-                                  style: Theme.of(context).textTheme
-                                      .subtitle1.copyWith(
-                                      fontWeight: FontWeight.w300
-                                  )),
-                            ],
-                          )
-                        ),
-                        IconButton(
-                            icon: Icon(Icons.add),
-                            onPressed: (){
-                              if(Validators.validateWebsiteQuantity(
-                                  _creationStore.websites)){
-                                showDialog(
-                                    context: context,
-                                    barrierDismissible: false,
-                                    builder: (_) => WebsiteAlertDialog()
-                                );
-                              }
-                              else {
-                                showWebsiteWarning();
-                              }
-                            },
-                        ),
-                      ],
-                    ),
-                    Card(
-                      child: ListView.separated(
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: _creationStore.websites.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            Website website = _creationStore.websites[index];
-                            return InkWell(
-                              onTap: (){},
-                              child: Padding(
-                                padding: const EdgeInsets.only(top: 8.0,
-                                    bottom: 8.0, left: 16.0, right: 16.0),
-                                child: Row(
-                                  children: <Widget>[
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          Text (
-                                            website.description,
-                                            style: Theme.of(context).textTheme.subtitle2,
-                                          ),
-                                          Text (
-                                            website.URL,
-                                            style: Theme.of(context).textTheme.bodyText2,
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                    IconButton(
-                                      onPressed: () =>
-                                          modifyWebsiteAction(MapEntry(false,website)),
-                                      icon: Icon(Icons.delete),
-                                    )
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                          separatorBuilder: (BuildContext context, int index)
-                            => Divider()
-                      ),
-                    ),
-                    //
-                    const Padding(padding: EdgeInsets.only(bottom: 24.0)),
-                    //
-                    //Tags
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        const Padding(padding: EdgeInsets.only(left: 8.0)),
-                        Text(
-                          "Select 3 to 10 Tags:",
-                          style:Theme.of(context).textTheme.subtitle1,
-                        ),
-                      ],
-                    ),
-                    TagSelectionWidget(),
-                    //
-                  ]
+    return GestureDetector(
+      onTap: () {
+        FocusScopeNode currentFocus = FocusScope.of(context);
+        if (!currentFocus.hasPrimaryFocus) {
+          currentFocus.unfocus();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("Event Creation"),
+          actions: <Widget>[
+            FlatButton(
+              textColor: Colors.white,
+              child: Text(
+                "SUBMIT"
               ),
+              onPressed: () => validateEventSubmit()
             )
+          ],
+          leading: IconButton(
+            icon: Icon(Icons.clear),
+            onPressed: () => showExitWarning(),
+          ),
         ),
-      )
+        body: SingleChildScrollView(
+          child: Form(
+              key: _formKey,
+              onWillPop: () => showExitWarning(),
+              child: Padding(
+                padding: const EdgeInsets.only(top: 16.0, bottom: 8.0,
+                    left: 8.0, right: 8.0),
+                child: Column(
+                    children: <Widget>[
+                      //
+                      //Title
+                      TextFormField(
+                        decoration: InputDecoration(
+                            labelText: "Event Title",
+                            border: OutlineInputBorder()),
+                        autovalidate: _autoValidate,
+                        maxLines: 1,
+                        maxLength: 50,
+                        textInputAction: TextInputAction.done,
+                        initialValue: _creationStore.title,
+                        validator: (title) => Validators.validateTitle(title),
+                        onChanged: (String title) =>
+                            inputEventTitleAction(title.trim()),
+                      ),
+                      const Padding(padding: EdgeInsets.only(bottom: 8.0)),
+                      //
+                      // Description
+                      TextFormField(
+                        decoration: InputDecoration(
+                            labelText: "Description",
+                            border: OutlineInputBorder()),
+                        autovalidate: _autoValidate,
+                        maxLines: null,
+                        maxLength: 400,
+                        keyboardType: TextInputType.text,
+                        textInputAction: TextInputAction.done,
+                        initialValue: _creationStore.description,
+                        validator: (description) =>
+                            Validators.validateDescription(description),
+                        onChanged: (String description) =>
+                            inputEventDescriptionAction(description.trim()),
+                      ),
+                      const Padding(padding: EdgeInsets.only(bottom: 8.0)),
+                      //
+                      TextFormField(
+                        decoration: InputDecoration(
+                            labelText: "Event Image (Optional)",
+                            border: OutlineInputBorder()),
+                        autovalidate: _autoValidate,
+                        maxLines: 1,
+                        maxLength: 400,
+                        textInputAction: TextInputAction.done,
+                        initialValue: _creationStore.image,
+                        validator: (image) => Validators.validateImage(image),
+                        onChanged: (String image) =>
+                            inputEventImageAction(image.trim()),
+                      ),
+                      const Padding(padding: EdgeInsets.only(bottom: 8.0)),
+                      //
+                      //Dates
+                      DateTimeField(
+                        format: format,
+                        decoration: InputDecoration(
+                            labelText: "Event Start Date",
+                            border: OutlineInputBorder()),
+                        autovalidate: _autoValidateDates,
+                        initialValue: _creationStore.startDateTime,
+                        autofocus: false,
+                        focusNode: FocusNode(canRequestFocus: false),
+                        onShowPicker: (context, currentValue) async {
+                          final date = await showDatePicker(
+                             context: context,
+                             firstDate: _initialDaeTime,
+                             initialDate: _creationStore.startDateTime ??
+                                 DateTime.now(),
+                             lastDate: DateTime.now()
+                                 .add(Duration(days: 60)));
+                          if (date != null) {
+                                final time = await showTimePicker(
+                                  context: context,
+                                  initialTime:
+                                    TimeOfDay.fromDateTime(_creationStore
+                                    .startDateTime ?? DateTime.now()),
+                                );
+                                inputEventDateAction(MapEntry(true,
+                                    DateTimeField.combine(date, time)));
+                                return DateTimeField.combine(date, time);
+                              } else {
+                            return currentValue;
+                          }
+                        },
+                        validator: (date) => Validators.validateDate(date,
+                            _creationStore.startDateTime,
+                            _creationStore.endDateTime),
+                        onChanged: (value) {
+                          _formKey.currentState.setState(() {
+                            _autoValidateDates = true;
+                            _endDateEnable = value != null;
+                          });
+                        },
+                      ),
+                      const Padding(padding: EdgeInsets.only(bottom: 8.0)),
+                      DateTimeField(
+                        format: format,
+                        enabled: _endDateEnable,
+                        autofocus: false,
+                        focusNode: FocusNode(canRequestFocus: false),
+                        decoration: InputDecoration(
+                            labelText: "Event End Date",
+                            border: OutlineInputBorder()),
+                        autovalidate: _autoValidateDates,
+                        initialValue: _creationStore.endDateTime,
+                        onShowPicker: (context, currentValue) async {
+                          final date = await showDatePicker(
+                              context: context,
+                              firstDate: _initialDaeTime,
+                              initialDate: _creationStore.endDateTime
+                                  ?? DateTime.now(),
+                              lastDate: DateTime.now()
+                                  .add(Duration(days: 60)));
+                          if (date != null) {
+                            final time = await showTimePicker(
+                              context: context,
+                              initialTime:
+                              TimeOfDay.fromDateTime(_creationStore.endDateTime
+                              ?? DateTime.now()),
+                            );
+                            inputEventDateAction(MapEntry(false,
+                                DateTimeField.combine(date, time)));
+                            return DateTimeField.combine(date, time);
+                          } else {
+                            return currentValue;
+                          }
+                        },
+                        validator: (date) => Validators.validateDate(date,
+                            _creationStore.startDateTime,
+                            _creationStore.endDateTime),
+                      ),
+                      const Padding(padding: EdgeInsets.only(bottom: 16.0)),
+                      //
+                      // Location
+                      Row(
+                        children: <Widget>[
+                          const Padding(padding: EdgeInsets.only(left: 8.0)),
+                          Expanded(
+                            child: Text("Location",
+                                style: Theme.of(context).textTheme.subtitle1),
+                          ),
+                          const Padding(padding: EdgeInsets.only(left: 8.0)),
+                        ],
+                      ),
+                      Card(
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 16.0, right: 8.0),
+                          child: DropdownButtonFormField(
+                            decoration: InputDecoration.collapsed(
+                                hintText: "Building"),
+                            autovalidate: _autoValidate,
+                            value: _creationStore.selectedBuilding,
+                            items: _creationStore.buildings.map((Building building) {
+                              return new DropdownMenuItem(
+                                value: building,
+                                child: new Text(building.name),
+                              );
+                            }).toList(),
+                            onChanged: (value) => buildingSelectAction(value),
+                            validator: (value) =>
+                              value == null? "Please choose a Floor" : null,
+                          ),
+                        ),
+                      ),
+                      Card(
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 16.0, right: 8.0),
+                          child: DropdownButtonFormField(
+                            decoration: InputDecoration.collapsed(
+                                hintText: "Floor"),
+                            autovalidate: _autoValidate,
+                            value: _creationStore.selectedFloor,
+                            items: _creationStore.floors.map((Floor floor) {
+                              return new DropdownMenuItem(
+                                value: floor,
+                                child: new Text(floor.floorName),
+                              );
+                            }).toList(),
+                            onChanged: (value) => floorSelectAction(value),
+                            validator: (value) =>
+                              value == null? "Please choose a Floor" : null,
+                          ),
+                        ),
+                      ),
+                      Card(
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 16.0, right: 8.0),
+                          child: DropdownButtonFormField(
+                            decoration: InputDecoration.collapsed(
+                                hintText: "Room"),
+                            autovalidate: _autoValidate,
+                            value: _creationStore.selectedRoom,
+                            items: _creationStore.roomsInBuilding
+                                .map((Room room) {
+                              return new DropdownMenuItem(
+                                value: room,
+                                child: new Text(room.code),
+                              );
+                            }).toList(),
+                            onChanged: (value) => roomSelectAction(value),
+                            validator: (value) =>
+                              value == null? "Please choose a Room" : null
+                          ),
+                        ),
+                      ),
+                      const Padding(padding: EdgeInsets.only(bottom: 8.0)),
+                      //
+                      // Websites
+                      Row(
+                        children: <Widget>[
+                          const Padding(padding: EdgeInsets.only(left: 8.0)),
+                          Expanded(
+                            child: Row(
+                              children: <Widget>[
+                                Text("Website Links (Optional)",
+                                    style: Theme.of(context).textTheme.subtitle1),
+                                const Padding(padding: EdgeInsets.only(left: 8.0)),
+                                Text("${_creationStore.websites.length}/10",
+                                    style: Theme.of(context).textTheme
+                                        .subtitle1.copyWith(
+                                        fontWeight: FontWeight.w300
+                                    )),
+                              ],
+                            )
+                          ),
+                          IconButton(
+                              icon: Icon(Icons.add),
+                              onPressed: (){
+                                if(!Validators.validateWebsiteQuantity(
+                                    _creationStore.websites)){
+                                  showDialog(
+                                      context: context,
+                                      barrierDismissible: false,
+                                      builder: (_) => WebsiteAlertDialog()
+                                  );
+                                }
+                                else {
+                                  showWebsiteWarning();
+                                }
+                              },
+                          ),
+                        ],
+                      ),
+                      Card(
+                        child: ListView.separated(
+                            physics: const NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: _creationStore.websites.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              Website website = _creationStore.websites[index];
+                              return InkWell(
+                                onTap: (){},
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: 8.0,
+                                      bottom: 8.0, left: 16.0, right: 16.0),
+                                  child: Row(
+                                    children: <Widget>[
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                            Text (
+                                              website.description,
+                                              style: Theme.of(context).textTheme.subtitle2,
+                                            ),
+                                            Text (
+                                              website.URL,
+                                              style: Theme.of(context).textTheme.bodyText2,
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                      IconButton(
+                                        onPressed: () =>
+                                            modifyWebsiteAction(MapEntry(false,website)),
+                                        icon: Icon(Icons.delete),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                            separatorBuilder: (BuildContext context, int index)
+                              => Divider()
+                        ),
+                      ),
+                      //
+                      const Padding(padding: EdgeInsets.only(bottom: 24.0)),
+                      //
+                      //Tags
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          const Padding(padding: EdgeInsets.only(left: 8.0)),
+                          Text(
+                            "Select 3 to 10 Tags:",
+                            style:Theme.of(context).textTheme.subtitle1,
+                          ),
+                        ],
+                      ),
+                      TagSelectionWidget(),
+                      //
+                    ]
+                ),
+              )
+          ),
+        )
+      ),
     );
   }
 
@@ -385,8 +393,18 @@ class _EventCreationViewState extends State<EventCreationView>
         && Validators.validateSelectedTags(_creationStore.selectedTags)){
       showSubmitConfirmation().then((value) {
         if(value){
-          submitEventAction();
-          Navigator.of(context).pop();
+          showLoading();
+          submitEventAction().then((value) {
+            _creationStore.creationResult.then((value) {
+              if(value){
+                Navigator.of(context).pop();
+                showSuccess();
+              }
+            }).catchError((e){
+              Navigator.of(context).pop();
+              showError(e);
+            });
+          });
         }
       });
     }
@@ -399,6 +417,69 @@ class _EventCreationViewState extends State<EventCreationView>
         _autoValidate = true;
       });
     }
+  }
+
+  void showError(dynamic e){
+    showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          title: Text("Error"),
+          content: Text(e.toString()),
+          actions: <Widget>[
+            FlatButton(
+              textColor: Theme.of(context).primaryColor,
+              child: Text(
+                  "OK"
+              ),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        );
+      }
+    );
+  }
+
+  void showSuccess(){
+    showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            title: Text("Success"),
+            content: Text("The Event has been created."),
+            actions: <Widget>[
+              FlatButton(
+                textColor: Theme.of(context).primaryColor,
+                child: Text(
+                    "OK"
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                  discardEventAction();
+                },
+              ),
+            ],
+          );
+        }
+    );
+  }
+
+  void showLoading(){
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) {
+          return AlertDialog(
+            title: Text("Error"),
+            content: Container(
+              height: 100,
+              width: 100,
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+    );
   }
 
   Future<bool> showSubmitConfirmation(){

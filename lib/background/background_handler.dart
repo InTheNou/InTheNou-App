@@ -46,10 +46,11 @@ class BackgroundHandler {
     }).catchError((e) {
       print('[BackgroundFetch] configure ERROR: $e');
     });
+    _prefs = await SharedPreferences.getInstance();
 
     BackgroundFetch.scheduleTask(TaskConfig(
         taskId: "com.inthenou.app.reccomendation",
-        delay: RECOMMENDATION_INTERVAL_MINUTES*60000,
+        delay: _prefs.getInt(RECOMMENDATION_INTERVAL_KEY)*60000,
         periodic: true,
         forceAlarmManager: true,
         stopOnTerminate: false,
@@ -59,7 +60,7 @@ class BackgroundHandler {
     });
     BackgroundFetch.scheduleTask(TaskConfig(
         taskId: "com.inthenou.app.cancellation",
-        delay: 30*60000,
+        delay: _prefs.getInt(CANCELLATION_INTERVAL_KEY)*60000,
         periodic: true,
         forceAlarmManager: true,
         stopOnTerminate: false,
@@ -167,7 +168,6 @@ class BackgroundHandler {
     _prefs = await SharedPreferences.getInstance();
 
     String lastDate = _prefs.getString(LAST_CANCELLATION_DATE_KEY);
-    print(lastDate);
     List<Event> cancelledEvents = await _eventRepo.getDeletedEvents(lastDate);
     if(cancelledEvents.length > 0){
       List<Event> followedEvents = await _userRepo.getFollowedEvents(0,100000);
@@ -206,10 +206,11 @@ class BackgroundHandler {
     List<Event> recommendedEvents = new List();
 
     List<Tag> commonTags;
+    String rec = "";
     // Remove all events that have been ran through the recommendation
     newEvents.removeWhere((event) => event.recommended != null);
     newEvents.forEach((event) {
-      commonTags = _checkTagsSimilarity(event.tags, userTags);
+      commonTags = checkTagsSimilarity(event.tags, userTags);
 
       double weight = 0;
       if(commonTags.length >= 2){
@@ -224,7 +225,17 @@ class BackgroundHandler {
       } else{
         event.recommended = "N";
       }
+      rec = rec + "eid= ${event.UID}, weight= $weight rec?= ${event.recommended}\n";
     });
+    if(rec.isNotEmpty && _prefs.getBool(RECOMMENDATION_DEBUG_KEY)){
+      NotificationHandler.showAlertNotification(NotificationObject(
+          id: LOCATION_ALERT_NOTIFICATION_ID,
+          payload: "",
+          time: DateTime.now(),
+          type: NotificationType.Alert
+      ), "Trying Recommendation", "Reccomendation results.",
+          rec);
+    }
 
     print("recommend");
     print(newEvents);
@@ -245,7 +256,7 @@ class BackgroundHandler {
         Utils.formatTimeStamp(DateTime.now()));
   }
 
-  static List<Tag> _checkTagsSimilarity(List<Tag> eventTags, List<Tag> userTags){
+  static List<Tag> checkTagsSimilarity(List<Tag> eventTags, List<Tag> userTags){
     List<Tag> commonTags = new List();
     userTags.forEach((tag) {
       if(eventTags.any((element) => element.name == tag.name)){
@@ -276,6 +287,15 @@ class BackgroundHandler {
         print('[BackgroundFetch] stop success: $status');
       });
     }
+  }
+
+  static void restart() {
+    BackgroundFetch.stop().then((int status) {
+      print('[BackgroundFetch] stop success: $status');
+      initBackgroundTasks();
+    }).catchError((e) {
+      print('[BackgroundFetch] start FAILURE: $e');
+    });
   }
 
 }
