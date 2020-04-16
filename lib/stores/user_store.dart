@@ -83,9 +83,8 @@ class UserStore extends flux.Store{
         return true;
       });
     });
-    triggerOnConditionalAction(fetchSession, (_) {
+     triggerOnAction(fetchSession, (_) {
       session = getSession();
-      return true;
     });
     triggerOnAction(resetStartUpError, (_) {
       session = null;
@@ -153,10 +152,8 @@ class UserStore extends flux.Store{
   ///
   /// Method gets the Session saved locally, if there is one.
   /// If there is none or the Session found is invalid, then Null is returned
-  Future<Cookie> getSession() async{
-    return _userRepo.getSession().then((value) {
-      return value;
-    });
+  Future<Cookie> getSession(){
+    return _userRepo.getSession();
   }
 
   User get user => _user;

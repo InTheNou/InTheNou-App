@@ -141,11 +141,11 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
   /// show the appropriate dialog.
   void handlePermissionResult(PermissionStatus result) {
     if (result == PermissionStatus.granted) {
+      prefs.setBool(SMART_NOTIFICATION_KEY, true);
       showGranted();
-      toggleSmartAction(true);
     } else {
+      prefs.setBool(SMART_NOTIFICATION_KEY, false);
       showDenied();
-      toggleSmartAction(false);
     }
   }
 

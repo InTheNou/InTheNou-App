@@ -1,7 +1,10 @@
 import 'package:InTheNou/stores/user_store.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_auth_buttons/flutter_auth_buttons.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
+import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginView extends StatefulWidget {
 
@@ -43,12 +46,22 @@ class _LoginViewState extends State<LoginView>
           }
           _userStore.loginUser = null;
         }).catchError((e){
+          String error;
+          if (e.runtimeType == PlatformException) {
+            if (e.code == GoogleSignIn.kNetworkError) {
+              error = "Unable to sign in, Network error.";
+            } else {
+              error = "Internal app error while Signing in";
+            }
+          } else if (e is DioError){
+            error = e.toString();
+          }
           Navigator.of(context).pop();
           showDialog<String>(
             context: context,
             builder: (BuildContext context) => AlertDialog(
               title: const Text('Error'),
-              content: Text(e.toString()),
+              content: Text(error?? e.toString()),
               actions: <Widget>[
                 FlatButton(
                     child: const Text('OK'),
