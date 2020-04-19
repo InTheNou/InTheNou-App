@@ -42,4 +42,15 @@ class Website {
   String toString() {
     return 'Website{_URL: $_URL, _description: $_description}';
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is Website &&
+              runtimeType == other.runtimeType &&
+              _URL == other._URL;
+
+  @override
+  int get hashCode => _URL.hashCode;
+
 }

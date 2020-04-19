@@ -6,6 +6,8 @@ import 'package:InTheNou/models/coordinate.dart';
 import 'package:InTheNou/models/floor.dart';
 import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Utils {
@@ -151,7 +153,7 @@ class Utils {
     String suffix = ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)];
     if (11 <= (n % 100) && (n % 100) <= 13)
       suffix = 'th';
-    return new Floor(n.toString() + suffix, n);
+    return new Floor(n.toString() + suffix + " Floor", n);
   }
 
   ///
@@ -350,6 +352,15 @@ class Utils {
         break;
     }
 
+  }
+
+  static void clearCache() async{
+    final Directory tempDir = await getTemporaryDirectory();
+
+    final Directory libCacheDir = new Directory(path.join(tempDir.path,'libCachedImageData'));
+    if(await libCacheDir.exists()){
+      await libCacheDir.delete(recursive: true);
+    }
   }
 
 }

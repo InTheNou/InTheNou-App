@@ -1,4 +1,5 @@
 import 'package:InTheNou/assets/values.dart';
+import 'package:InTheNou/dialog_manager.dart';
 import 'package:InTheNou/home_page.dart';
 import 'package:InTheNou/views/Account/account_creation_view.dart';
 import 'package:InTheNou/views/Account/login_view.dart';
@@ -25,27 +26,35 @@ class RouteGenerator{
       case "/home":
         return MaterialPageRoute(
             settings: settings,
-            builder: (_) => HomePage());
+            builder: (_) => DialogManager(
+                child: HomePage())
+        );
       case "/login":
         return MaterialPageRoute(
             settings: settings,
-            builder: (_) => LoginView());
+            builder: (_) => DialogManager(
+                child: LoginView())
+        );
       case "/accountcreation":
         return MaterialPageRoute(
             settings: settings,
-            builder: (_) => AccountCreationView());
+            builder: (_) => AccountCreationView()
+        );
       case "/eventdetail":
         if (args is int) {
           return MaterialPageRoute(
             settings: settings,
-            builder: (_) =>
-                EventDetailView(args));
+            builder: (_) => DialogManager(
+                  child: EventDetailView(args)),
+          );
         }
         return _errorRoute();
       case '/create_event':
         return MaterialPageRoute(
             settings: settings,
-            builder: (_) => EventCreationView());
+            builder: (_) => DialogManager(
+                child: EventCreationView())
+        );
       case '/infobase/search':
         if (args is InfoBaseSearchType) {
           return MaterialPageRoute(
@@ -78,11 +87,13 @@ class RouteGenerator{
       case '/profile/followed_events':
         return MaterialPageRoute(
             settings: settings,
-            builder: (_) => FollowedEventsView());
+            builder: (_) => DialogManager(
+                child: FollowedEventsView()));
       case '/profile/event_history':
         return MaterialPageRoute(
             settings: settings,
-            builder: (_) => HistoryEventsView());
+            builder: (_) => DialogManager(
+                child: HistoryEventsView()));
       case '/profile/my_tags':
         return MaterialPageRoute(
             settings: settings,
@@ -90,7 +101,8 @@ class RouteGenerator{
       case '/profile/created_events':
         return MaterialPageRoute(
             settings: settings,
-            builder: (_) => CreatedEventsView());
+            builder: (_) => DialogManager(
+                child: CreatedEventsView()));
       default:
         return _errorRoute();
     }

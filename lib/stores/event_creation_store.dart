@@ -1,6 +1,8 @@
 import 'dart:math';
 
-import 'package:InTheNou/assets/utils.dart';
+import 'package:InTheNou/assets/values.dart';
+import 'package:InTheNou/dialog_manager.dart';
+import 'package:InTheNou/dialog_service.dart';
 import 'package:InTheNou/models/building.dart';
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/models/floor.dart';
@@ -23,7 +25,9 @@ class EventCreationStore extends flux.Store {
 
   Random rand = Random();
 
-  Future<bool> creationResult = Future.value(null);
+  Future<bool> creationResult = Future.value(false);
+
+  DialogService _dialogService = DialogService();
 
   Event _newEvent;
   String _title;
@@ -46,17 +50,39 @@ class EventCreationStore extends flux.Store {
   List<Tag> _selectedTags = new List();
 
   EventCreationStore() {
-    triggerOnAction(submitEventAction, (_){
-      _newEvent = new Event(rand.nextInt(100)+30,_title, _description,
-          "jonathan.santiago27@upr.edu", _image, _startDateTime,
-          _endDateTime,DateTime.now(), _selectedRoom, _websites,
-        _selectedTags, false, null, "active");
-      return _eventsRepo.createEvent(_newEvent).then((value) {
-        creationResult = Future.value(value);
-        return true;
+    triggerOnAction(submitEventAction, (_) async{
+      _dialogService.showLoadingDialog(
+          title: "Creating Event");
+
+      _newEvent = new Event(0,_title, _description, "",
+          _image == null ? null : _image.isEmpty ? null : _image,
+          _startDateTime, _endDateTime, DateTime.now(), _selectedRoom,
+          _websites, _selectedTags, false, null, "active");
+
+      _eventsRepo.createEvent(_newEvent).then((result) async{
+        _dialogService.dialogComplete(DialogResponse(result: true));
+        if(result){
+          await _dialogService.showDialog(
+              type: DialogType.Alert,
+              title: "Creation Success",
+              description: "The Event has been Created.",
+              dismissible: false
+          );
+          creationResult = Future.value(result);
+          trigger();
+          reset();
+        } else {
+          _dialogService.showDialog(
+              type: DialogType.Alert,
+              title: "Creation Failed",
+              description: "The Event was not able to be Created please try "
+                  "again.");
+        }
       }).catchError((e){
-        creationResult = Future.error(e);
-        return true;
+        _dialogService.showDialog(
+            type: DialogType.Alert,
+            title: "Error",
+            description: e.toString());
       });
     });
     triggerOnAction(discardEventAction, (_){
@@ -146,14 +172,10 @@ class EventCreationStore extends flux.Store {
     });
   }
 
-  void createFloors(Building building){
-    _floors = new List.generate(building.numFloors,
-            (index) => Utils.ordinalNumber(index+1));
-  }
-
   void reset(){
     _title = null;
     _description = null;
+    _image = null;
     _startDateTime = null;
     _endDateTime = null;
     _buildings = new List();
@@ -165,6 +187,26 @@ class EventCreationStore extends flux.Store {
     _websites = new List();
     _searchTags = new Map();
     _selectedTags = new List();
+  }
+
+  bool hasNoChanges(){
+    print(_title);
+    print(_description);
+    print(_image);
+    print(_startDateTime);
+    print(_endDateTime);
+    print(_selectedBuilding);
+    print(_selectedFloor);
+    print(_selectedRoom);
+    print(_websites);
+    print(_selectedTags);
+
+
+    return _title == null && _description == null &&
+        (_image == null || _image.isEmpty) && _startDateTime == null &&
+        _endDateTime == null && _selectedBuilding == null &&
+        _selectedFloor == null && _selectedRoom == null &&
+        _websites.length==0 && _selectedTags.length==0;
   }
 
 

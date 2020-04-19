@@ -55,6 +55,12 @@ enum RecommendationType{
   N
 }
 
+enum DialogType{
+  Loading,
+  Alert,
+  Error
+}
+
 //Constants
 const EVENTS_TO_FETCH = 100000;
 const DEFAULT_NOTIFICATION_TIME = 5;
@@ -79,7 +85,7 @@ const List<int> defaultNotificationTimes = [
   1, 5, 10, 15, 20, 30, 60, 120
 ];
 
-const API_URL = "https://inthenou.uprm.edu";
+const API_URL = "https://inthenou.uprm.edu/API";
 
 //Shared Preferences Keys
 const DEFAULT_NOTIFICATION_KEY = "defaultNotificationTime";

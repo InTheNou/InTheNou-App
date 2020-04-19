@@ -1,8 +1,11 @@
 import 'package:InTheNou/RouteGenerator.dart';
 import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/colors.dart';
+import 'package:InTheNou/dialog_service.dart';
 import 'package:InTheNou/start_up_view.dart';
 import 'package:flutter/material.dart';
+
+DialogService service = DialogService();
 
 Future<void> main() async {
 //  enableFlutterDriverExtension(handler: TestHandler.dataHandler);
@@ -18,15 +21,15 @@ class InTheNouApp extends StatelessWidget {
     return MaterialApp(
       title: 'IntheNou',
       theme: ThemeData(
-          primarySwatch: primaryColor,
-          accentColor: secondaryColor,
-          cardTheme: CardTheme(color: ThemeData.fallback().cardColor,
-              clipBehavior: Clip.antiAlias,
-              elevation: 1.0,
-              margin: const EdgeInsets.all(4.0),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0))
-          )
+        primarySwatch: primaryColor,
+        accentColor: secondaryColor,
+        cardTheme: CardTheme(color: ThemeData.fallback().cardColor,
+            clipBehavior: Clip.antiAlias,
+            elevation: 1.0,
+            margin: const EdgeInsets.all(4.0),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0))
+        ),
       ),
       onGenerateRoute: RouteGenerator.generateRoute,
       home: StartUpView(),

@@ -31,7 +31,7 @@ class _FloorViewState extends State<FloorView>
     if(_infoBaseStore.roomsInBuilding == null) {
       return Scaffold(
         appBar: AppBar(
-          title: Text(_infoBaseStore.selectedFloor.floorName + " Floor"),
+          title: Text(_infoBaseStore.selectedFloor.floorName),
         ),
         body: Center(
           child: Container(
@@ -42,7 +42,7 @@ class _FloorViewState extends State<FloorView>
     }
     return Scaffold(
       appBar: AppBar(
-        title: Text(_infoBaseStore.selectedFloor.floorName + " Floor"),
+        title: Text(_infoBaseStore.selectedFloor.floorName),
       ),
       body: Column(
         children: <Widget>[

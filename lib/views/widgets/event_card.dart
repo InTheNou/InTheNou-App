@@ -63,9 +63,10 @@ class EventCard extends StatelessWidget {
                                 textColor: Theme.of(context).accentColor,
                                 highlightedBorderColor: Theme.of(context).accentColor,
                                 onPressed: () {
-                                  _event.followed ?
-                                  _showDismissUnableDialog(context) :
-                                  _dismissEvent(_event, context);
+                                  if(!_event.followed){
+                                    _showUndoSnackbar(_event, context);
+                                  }
+                                  dismissEventAction(_event);
                                 },
                               ),
                               Padding(padding: EdgeInsets.only(left: 30.0)),
@@ -104,11 +105,10 @@ class EventCard extends StatelessWidget {
 
   /// Creates a Snackbar to undo the Dismissal of [event].
   ///
-  /// Calls [dismissEventAction] with the [Event._UID] of [event] to modify
-  /// the list of events in th feed locally. Also shows the [SnackBar]
-  /// [_undoSnackbar] that calls the backend to do the proper dismissal of
+  /// Shows the [SnackBar] instance in [_undoSnackbar] that calls the
+  /// backend to do the proper dismissal of
   /// th event if the snackbar action is not used.
-  void _dismissEvent(Event event, BuildContext context){
+  void _showUndoSnackbar(Event event, BuildContext context){
     Scaffold.of(context).showSnackBar(_undoSnackbar).closed
         .then((SnackBarClosedReason reason) {
       if (reason == SnackBarClosedReason.dismiss ||
@@ -118,8 +118,6 @@ class EventCard extends StatelessWidget {
         confirmDismissAction(_feedType);
       }
     });
-
-    dismissEventAction(event.UID);
   }
 
   /// Creates a [SnackBar] that undoes Dismissing an event.
@@ -136,32 +134,4 @@ class EventCard extends StatelessWidget {
       },
     ),
   );
-
-  /// Creates an [AlertDialog] to prevent the uer from dismissing a followed
-  /// event.
-  ///
-  ///
-  void _showDismissUnableDialog(BuildContext context){
-    showDialog<void>(
-        context: context,
-        barrierDismissible: true,
-        builder: (context) {
-          return AlertDialog(
-            title: Text("Unable to Dismiss"),
-            content: Text(
-                "Please unfollow the Event before dismissing it.",
-                style: Theme.of(context).textTheme.subtitle1
-            ),
-            actions: <Widget>[
-              FlatButton(
-                  child: Text("OK"),
-                  textColor: Theme.of(context).primaryColor,
-                  onPressed: () => Navigator.of(context).pop()
-              )
-            ],
-          );
-        }
-    );
-  }
-
 }

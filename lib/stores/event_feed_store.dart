@@ -1,5 +1,7 @@
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/background/notification_handler.dart';
+import 'package:InTheNou/dialog_manager.dart';
+import 'package:InTheNou/dialog_service.dart';
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/repos/events_repo.dart';
 import 'package:InTheNou/stores/user_store.dart';
@@ -22,44 +24,42 @@ class EventFeedStore extends flux.Store{
   String _generalSearchKeyword;
   bool _isGenSearching = false;
 
-  Event _eventDetail;
+  Future<Event> _eventDetail;
+  Future<bool> _detailNeedsToClose = Future.value(false);
 
   Event eventDismissed;
   int perDismissEventIndex;
   int genDismissEventIndex;
 
   List<double> _scrollPosition = [0.0,0.0,0.0];
-  List<bool> _isLoading = [false, false, false];
-  List<String> _errors = List(3);
 
-  bool _detailNeedsToClose=false;
+  DialogService _dialogService = DialogService();
 
   EventFeedStore() {
     SharedPreferences.getInstance().then((value) => _prefs = value);
     _getAllEvents(FeedType.PersonalFeed);
     _getAllEvents(FeedType.GeneralFeed);
-    triggerOnConditionalAction(searchFeedAction, (MapEntry<FeedType, String> search){
+    triggerOnAction(searchFeedAction, (MapEntry<FeedType, String> search){
       if (search.key == FeedType.PersonalFeed) {
         _personalSearch = Future.value(null);
-        trigger();
         _personalSearchKeyword = search.value;
-        return _eventsRepo.searchPerEvents(search.value,0, EVENTS_TO_FETCH)
-            .then((events) {
-          _personalSearch = Future.value(events);
-          return true;
-        }).catchError((e){
+        trigger();
+        try{
+          _personalSearch = _eventsRepo.searchPerEvents(search.value,0,
+              EVENTS_TO_FETCH);
+        } catch(e){
           _personalSearch = Future.error(e);
-        });
+        }
       } else {
         _generalSearch = Future.value(null);
+        _generalSearchKeyword = search.value;
         trigger();
-        return _eventsRepo.searchGenEvents(search.value,0, EVENTS_TO_FETCH)
-            .then((events) {
-          _generalSearch = Future.value(events);
-          return true;
-        }).catchError((e){
+        try{
+          _generalSearch = _eventsRepo.searchGenEvents(search.value,0,
+              EVENTS_TO_FETCH);
+        } catch(e){
           _generalSearch = Future.error(e);
-        });
+        }
       }
     });
     triggerOnAction(setFeedSearching, (MapEntry<FeedType, bool> search){
@@ -69,22 +69,20 @@ class EventFeedStore extends flux.Store{
         _isGenSearching = search.value;
       }
     });
-    triggerOnConditionalAction(getAllEventsAction, (FeedType feed) {
+    triggerOnAction(getAllEventsAction, (FeedType feed) {
       return _getAllEvents(feed);
     });
-    triggerOnConditionalAction(openEventDetail, (int eventID){
-      if(_eventDetail !=null && _eventDetail.UID == eventID){
-        return true;
+    triggerOnConditionalAction(openEventDetail, (int eventID) async {
+      var currentEvent = await _eventDetail;
+      if (currentEvent == null || currentEvent.UID != eventID) {
+        _eventDetail = Future.value(null);
+        trigger();
+        return _eventsRepo.getEvent(eventID).then((event) {
+          _eventDetail =  Future.value(event);
+          return true;
+        });
       }
-      _eventDetail = null;
-      trigger();
-      return _eventsRepo.getEvent(eventID).then((Event value) {
-        _eventDetail = value;
-        return true;
-      }).catchError((error){
-        _setError(FeedType.Detail, error.toString());
-        return true;
-      });
+      return false;
     });
     triggerOnAction(clearSearchKeywordAction, (FeedType feed){
       if (feed == FeedType.PersonalFeed) {
@@ -93,66 +91,88 @@ class EventFeedStore extends flux.Store{
         _generalSearchKeyword = "";
       }
     });
-    triggerOnConditionalAction(followEventAction, (MapEntry<FeedType, Event> event){
+    triggerOnAction(followEventAction, (MapEntry<FeedType, Event> event){
       // Follow locally first just to show the change tot he user
       _modifyFollowStatus(event.value, true);
       trigger();
+      if(event.value.startDateTime.isBefore(DateTime.now())){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Following an event that has started",
+            description: "You have Followed an event that has already"
+                " started. Your disinterest in the event will be recorded.",
+            primaryButtonTitle: "OK");
+      }
 
-      // If the server was able to follow don't send another change trigger,
+      // If the server was able to follow, don't send another change trigger,
       // but run the scheduling of Default notifications and check in case
       // the Smart Notification needs to be scheduled.
-      return _eventsRepo.requestFollowEvent(event.value.UID).then((bool followed) {
+      _eventsRepo.requestFollowEvent(event.value.UID).then((bool followed) {
         if (followed){
-          if(event.value.startDateTime.isBefore(DateTime.now())){
-            _setError(event.key, "You have Followed an event that has already"
-                " started. Your interest in the event will be recorded but "
-                "you will not recive notifications for it.");
-          }
           NotificationHandler.checkNotifications(event.value);
         } else {
-          // Revert all changes
+          // If the server was able to follow, revert local follow
           _modifyFollowStatus(event.value, false);
-          _setError(event.key, "Error Following Event please try again later.");
+          _dialogService.showDialog(
+              type: DialogType.Error,
+              title: "Unable to Follow",
+              description: "Error Following Event please try again later.");
         }
-        return true;
       }).catchError((error){
         _modifyFollowStatus(event.value, false);
-        _setError(event.key, error.toString());
-        return true;
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Unable to Follow",
+            description: error.toString());
       });
     });
-    triggerOnConditionalAction(unFollowEventAction, (MapEntry<FeedType, Event> event){
+    triggerOnAction(unFollowEventAction, (MapEntry<FeedType, Event> event){
       // Unfollow locally first just to show the change tot he user
       _modifyFollowStatus(event.value, false);
       trigger();
+      if(event.value.startDateTime.isBefore(DateTime.now())){
+        _dialogService.showDialog(
+            type: DialogType.Alert,
+            title: "Unfollowing an event that has started",
+            description: "You have Unfollowed an event that has already"
+                " started. Your disinterest in the event will be recorded.",
+            primaryButtonTitle: "OK");
+      }
 
       // If the server was able to unfollow, cancel notifications
-      return _eventsRepo.requestUnFollowEvent(event.value.UID).then((bool
-      unfollowed) {
+      _eventsRepo.requestUnFollowEvent(event.value.UID).then((bool unfollowed) {
         if (unfollowed){
-          if(event.value.startDateTime.isBefore(DateTime.now())){
-            _setError(event.key, "You have UnFollowed an event that has already"
-                " started. Your disinterest in the event will be recorded.");
-          }
           NotificationHandler.cancelNotification(event.value);
         } else{
           // Revert all changes
           _modifyFollowStatus(event.value, true);
-          _setError(event.key, "Error UnFollowing Event please try again later.");
+          _dialogService.showDialog(
+              type: DialogType.Error,
+              title: "Unable to Unfollow",
+              description: "Error Unfollowing Event please try again later.",
+              primaryButtonTitle: "OK");
         }
-        return true;
       }).catchError((error){
         _modifyFollowStatus(event.value, true);
-        _setError(event.key, error.toString());
-        return true;
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Unable to Unfollow",
+            description: error.toString(),
+            primaryButtonTitle: "OK");
       });
     });
-    triggerOnAction(dismissEventAction, (int eventUID) async{
+    triggerOnAction(dismissEventAction, (Event event) async{
+      // Check if the event is followed currently and show an Alert to the
+      // user to prevent them from dismissing a followed event.
+      if(event.followed){
+        _showDismissUnableDialog();
+        return;
+      }
       // Remove the event from the list of events for the Personal Feed
       // And save the event in case the user hits Undo
       var pEvents = await _personalSearch;
-      perDismissEventIndex = pEvents.indexWhere((event) =>
-        event.UID == eventUID);
+      perDismissEventIndex = pEvents.indexWhere((feedEvent) =>
+        feedEvent.UID == event.UID);
       if (perDismissEventIndex != -1){
         eventDismissed = pEvents[perDismissEventIndex];
         pEvents.removeAt(perDismissEventIndex);
@@ -162,8 +182,8 @@ class EventFeedStore extends flux.Store{
 //      // Remove it also from the General Feed
 //      // Saved here again just in case it's not in the Personal Feed
       var gEvents = await _generalSearch;
-      genDismissEventIndex = gEvents.indexWhere((event) =>
-        event.UID == eventUID);
+      genDismissEventIndex = gEvents.indexWhere((feedEvent) =>
+        feedEvent.UID == event.UID);
       if (genDismissEventIndex != -1){
         eventDismissed = gEvents[genDismissEventIndex];
         gEvents.removeAt(genDismissEventIndex);
@@ -171,96 +191,74 @@ class EventFeedStore extends flux.Store{
       }
     });
     triggerOnAction(undoDismissAction, (_) async{
-      // Use clicked Undo, bring back the Event to the Feeds
-      if (perDismissEventIndex != -1){
-        var pEvents = await _personalSearch;
-        pEvents.insert(perDismissEventIndex, eventDismissed);
-        _personalSearch = Future.value(pEvents);
-        perDismissEventIndex = -1;
-      }
-      if (genDismissEventIndex != -1){
-        var gEvents = await _generalSearch;
-        gEvents.insert(genDismissEventIndex, eventDismissed);
-        _generalSearch = Future.value(gEvents);
-        genDismissEventIndex = -1;
-      }
+      // User clicked Undo, bring back the Event to the Feeds
+      _reInsertDismissed();
     });
-    triggerOnConditionalAction(confirmDismissAction, (FeedType type){
+    triggerOnAction(confirmDismissAction, (FeedType type){
       if(type == FeedType.Detail){
-        _isLoading[2] = true;
-        trigger();
+        _dialogService.showLoadingDialog(
+            title: "Dismissing the Event"
+        );
+      } else {
+        if(eventDismissed.startDateTime.isBefore(DateTime.now())){
+          _dialogService.showDialog(
+              type: DialogType.Alert,
+              title: "Dismissing an event that has started",
+              description: "You have Dismissed an event that has already"
+                  " started. Your disinterest in the event will be recorded.",
+              primaryButtonTitle: "OK"
+          );
+        }
       }
-      return _eventsRepo.requestDismissEvent(eventDismissed.UID).then((value){
+      _eventsRepo.requestDismissEvent(eventDismissed.UID).then((value){
+        // Dismiss the loading dialog
+        if(type == FeedType.Detail){
+          _dialogService.dialogComplete(DialogResponse(result: true));
+        }
         if(value){
           if(type == FeedType.Detail){
-            _isLoading[2] = false;
-            _detailNeedsToClose = true;
+            _detailNeedsToClose = Future.value(true);
             trigger();
           }
           perDismissEventIndex = -1;
           genDismissEventIndex = -1;
-          if(eventDismissed.startDateTime.isBefore(DateTime.now())){
-            _setError(type, "You have UnFollowed an event that has already"
-                " started. Your interest in the event will be recorded.");
-          }
           eventDismissed = null;
-          return true;
         } else {
+          _showDismissErrorDialog("Error Dimsissing Event please try again "
+              "later.");
           _reInsertDismissed();
-          _setError(type, "Error Dimsissing Event please try again later.");
-          return true;
         }
       }).catchError((error){
-        if(type == FeedType.Detail){
-          _isLoading[2] = false;
-        }
+        _showDismissErrorDialog(error.toString());
         _reInsertDismissed();
-        _setError(type, error.toString());
-        return true;
       });
     });
      triggerOnAction(cancelEventAction, (_){
        _getAllEvents(FeedType.PersonalFeed);
        _getAllEvents(FeedType.GeneralFeed);
      });
-    triggerOnAction(clearErrorAction, (FeedType type){
-      switch (type){
-        case FeedType.PersonalFeed:
-          _errors[0] = null;
-          break;
-        case FeedType.GeneralFeed:
-          _errors[1] = null;
-          break;
-        case FeedType.Detail:
-          _errors[2] = null;
-          break;
-      }
-    });
   }
 
-  Future<bool> _getAllEvents(FeedType feed) async{
+  Future _getAllEvents(FeedType feed) async{
     if (feed == FeedType.PersonalFeed) {
       _personalSearch = Future.value(null);
       trigger();
-      return _eventsRepo.getPerEvents(0, EVENTS_TO_FETCH).then((value) {
+      _eventsRepo.getPerEvents(0, EVENTS_TO_FETCH).then((value) {
         _personalSearch = Future.value(value);
         trigger();
-        return true;
       }).catchError((e){
         _personalSearch = Future.error(e);
       });
     } else {
       _generalSearch = Future.value(null);
       trigger();
-      return _eventsRepo.getGenEvents(0, EVENTS_TO_FETCH).then((value) {
+      _eventsRepo.getGenEvents(0, EVENTS_TO_FETCH).then((value) {
         _generalSearch = Future.value(value);
         trigger();
-        return true;
       }).catchError((e){
         _generalSearch = Future.error(e);
       });
     }
-    return true;
   }
 
   void _modifyFollowStatus(Event event, bool status) async{
@@ -277,8 +275,11 @@ class EventFeedStore extends flux.Store{
       _generalSearch = Future.value(gEvents);
     }
     // Also change the detailed in case it is showing
-    if (_eventDetail != null && _eventDetail.UID == event.UID){
-      _eventDetail.followed = status;
+    var dEvent = await _eventDetail;
+
+    if (dEvent != null && dEvent.UID == event.UID){
+      dEvent.followed = status;
+      _eventDetail = Future.value(dEvent);
     }
   }
 
@@ -287,17 +288,34 @@ class EventFeedStore extends flux.Store{
       var pEvents = await _personalSearch;
       pEvents.insert(perDismissEventIndex, eventDismissed);
       _personalSearch = Future.value(pEvents);
-      perDismissEventIndex = -1;
     }
     if (genDismissEventIndex != -1){
       var gEvents = await _generalSearch;
       gEvents.insert(genDismissEventIndex, eventDismissed);
       _generalSearch = Future.value(gEvents);
-      genDismissEventIndex = -1;
     }
     perDismissEventIndex = -1;
     genDismissEventIndex = -1;
     eventDismissed = null;
+    trigger();
+  }
+
+  void _showDismissUnableDialog(){
+    _dialogService.showDialog(
+        type: DialogType.Alert,
+        title: "Unable to Dismiss",
+        description: "Please unfollow the Event before dismissing it.",
+        primaryButtonTitle: "OK"
+    );
+  }
+
+  void _showDismissErrorDialog(String message){
+    _dialogService.showDialog(
+        type: DialogType.Error,
+        title: "Unable to Dismiss",
+        description: message,
+        primaryButtonTitle: "OK"
+    );
   }
 
   bool isSearching(FeedType feed){
@@ -313,54 +331,6 @@ class EventFeedStore extends flux.Store{
       return _personalSearchKeyword;
     } else {
       return _generalSearchKeyword;
-    }
-  }
-
-  bool isFeedLoading(FeedType type){
-    switch (type){
-      case FeedType.PersonalFeed:
-        return _isLoading[0];
-        break;
-      case FeedType.GeneralFeed:
-        return _isLoading[1];
-        break;
-      case FeedType.Detail:
-        return _isLoading[2];
-        break;
-      default:
-        return false;
-        break;
-    }
-  }
-
-  String getError(FeedType type){
-    switch (type){
-      case FeedType.PersonalFeed:
-        return _errors[0];
-        break;
-      case FeedType.GeneralFeed:
-        return _errors[1];
-        break;
-      case FeedType.Detail:
-        return _errors[2];
-        break;
-      default:
-        return null;
-        break;
-    }
-  }
-
-  void _setError(FeedType type, String error){
-    switch (type){
-      case FeedType.PersonalFeed:
-        _errors[0] = error;
-        break;
-      case FeedType.GeneralFeed:
-        _errors[1] = error;
-        break;
-      case FeedType.Detail:
-        _errors[2] = error;
-        break;
     }
   }
 
@@ -400,16 +370,15 @@ class EventFeedStore extends flux.Store{
   }
 
 
-  bool get detailNeedsToClose => _detailNeedsToClose;
+  Future<bool> get detailNeedsToClose => _detailNeedsToClose;
 
-  set detailNeedsToClose(bool value) {
+  set detailNeedsToClose(Future<bool> value) {
     _detailNeedsToClose = value;
   }
 
-
   Future<List<Event>> get personalSearch => _personalSearch;
   Future<List<Event>> get generalSearch => _generalSearch;
-  Event get eventDetail => _eventDetail;
+  Future<Event> get eventDetail => _eventDetail;
 
 }
 
@@ -423,9 +392,8 @@ final flux.Action<FeedType> getAllEventsAction = new flux.Action<FeedType>();
 final flux.Action<int> openEventDetail = new flux.Action();
 final flux.Action<MapEntry<FeedType, Event>> followEventAction = new flux.Action();
 final flux.Action<MapEntry<FeedType, Event>> unFollowEventAction = new flux.Action();
-final flux.Action<int> dismissEventAction = new flux
+final flux.Action<Event> dismissEventAction = new flux
     .Action();
 final flux.Action undoDismissAction = new flux.Action();
 final flux.Action<FeedType> confirmDismissAction = new flux.Action();
 
-final flux.Action<FeedType> clearErrorAction = new flux.Action();

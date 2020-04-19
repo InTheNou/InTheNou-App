@@ -310,7 +310,6 @@ class EventsRepo {
   Future<bool> requestDismissEvent(int eventUID) async{
     SharedPreferences prefs = await _prefs;
     User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
-
     try{
       Response response = await dio.post("/App/Events/eid=$eventUID/"
           "uid=${user.UID}/Dismiss");
@@ -367,7 +366,7 @@ class EventsRepo {
   Future<bool> createEvent(Event event) async{
     SharedPreferences prefs = await _prefs;
     User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
-
+    return true;
     try{
       Map<String, dynamic> eventJson = event.toJson();
       eventJson["ecreator"] = user.UID;
@@ -381,6 +380,7 @@ class EventsRepo {
     } catch(error,stacktrace){
       if (error is DioError) {
         debugPrint("Exception: $error");
+        print(error.response.data.toString());
         return Future.error(Utils.handleDioError(error, "Create Event"));
       } else {
         debugPrint("Exception: $error stackTrace: $stacktrace");

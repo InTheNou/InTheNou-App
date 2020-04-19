@@ -2,6 +2,7 @@ import 'package:InTheNou/assets/colors.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/floor.dart';
 import 'package:InTheNou/stores/infobase_store.dart';
+import 'package:InTheNou/views/widgets/loading_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
@@ -65,18 +66,18 @@ class _BuildingViewState extends State<BuildingView>
                       gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
-                          stops: [0.1,0.3,0.5],
+                          stops: [0.1,0.35,0.4],
                           colors: <Color>[
-                            primaryColor.shade900, primaryColor.shade300,
+                            Color.fromARGB(124, 0, 0, 0),
+                            Color.fromARGB(77, 0, 0, 0),
                             Colors.transparent
                           ]
                       ),
                     ),
-                    child: FadeInImage.assetNetwork(
-                      fit: BoxFit.cover,
-                      placeholder: "lib/assets/placeholder.png",
-                      height: 120.0,
-                      image: _infoBaseStore.detailBuilding.image ?? "",
+                    child: LoadingImage(
+                      imageURL: _infoBaseStore.detailBuilding.image,
+                      width: null,
+                      height: null,
                     ),
                   )
               ),
@@ -198,7 +199,7 @@ class _BuildingViewState extends State<BuildingView>
                               )
                             },
                             child: ListTile(
-                              title: Text("${_floor.floorName} Floor",
+                              title: Text(_floor.floorName,
                                   style: Theme.of(context).textTheme.subtitle1),
                               trailing: Icon(Icons.navigate_next),
                               dense: true,

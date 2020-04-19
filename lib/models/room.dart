@@ -71,6 +71,12 @@ class Room {
   String get custodian => _custodian;
   Coordinate get coordinates => _coordinates;
 
+
+  @override
+  String toString() {
+    return 'Room{_UID: $_UID, _code: $_code, _building: $_building, _floor: $_floor, _description: $_description, _occupancy: $_occupancy, _custodian: $_custodian, _coordinates: $_coordinates, services: $services}';
+  }
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

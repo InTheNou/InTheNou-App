@@ -6,10 +6,10 @@ import 'package:InTheNou/models/service.dart';
 import 'package:InTheNou/stores/infobase_store.dart';
 import 'package:InTheNou/views/InformoationBase/room_card.dart';
 import 'package:InTheNou/views/InformoationBase/services_card.dart';
+import 'package:InTheNou/views/widgets/loading_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
-import 'package:validators/validators.dart';
 
 class InfoBaseSearchView extends StatefulWidget {
 
@@ -114,13 +114,10 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  FadeInImage.assetNetwork(
-                    fit: BoxFit.cover,
-                    placeholder: "lib/assets/placeholder.png",
-                    height: 120.0,
-                    width: 150.0,
-                    image: (building.image !=null && isURL(building.image)) ?
-                      building.image : "",
+                  LoadingImage(
+                      imageURL: building.image,
+                      height: 120.0,
+                      width: 150.0
                   ),
                   const Padding(padding: EdgeInsets.only(left: 16.0)),
                   Expanded(

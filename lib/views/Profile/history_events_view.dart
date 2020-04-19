@@ -20,7 +20,7 @@ class _HistoryEventsViewState extends State<HistoryEventsView>
   void initState() {
     super.initState();
     _userStore = listenToStore(UserStore.userStoreToken);
-    refreshFollowedAction();
+    refreshHistoryAction();
   }
 
   @override
@@ -31,12 +31,12 @@ class _HistoryEventsViewState extends State<HistoryEventsView>
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => refreshFollowedAction(),
+            onPressed: () => refreshHistoryAction(),
           ),
         ],
       ),
       body:  FutureBuilder(
-        future: _userStore.followedEvents,
+        future: _userStore.historyEvents,
         builder: (BuildContext context,
             AsyncSnapshot<List<Event>> followedEvents) {
 

@@ -58,7 +58,7 @@ class GeneralFeedState extends State<FeedView>
             title: _buildTitle(),
             actions: _buildActions()
         ),
-        body: buildBody(),
+        body: _buildBody(),
         floatingActionButton: new Visibility(
           key: ValueKey("EventCreationFAB"),
           visible: widget.type == FeedType.PersonalFeed &&
@@ -69,98 +69,11 @@ class GeneralFeedState extends State<FeedView>
               Navigator.of(context).pushNamed('/create_event');
             },
             tooltip: 'Open Event Creation',
+            backgroundColor: Theme.of(context).primaryColor,
             child: new Icon(Icons.add),
           ),
         ),
     );
-  }
-
-  Widget buildBody(){
-    return GestureDetector(
-      onTap: () {
-        FocusScopeNode currentFocus = FocusScope.of(context);
-        if (!currentFocus.hasPrimaryFocus) {
-          currentFocus.unfocus();
-        }
-      },
-      child: FutureBuilder(
-        future: widget.type == FeedType.PersonalFeed ? _eventFeedStore
-            .personalSearch : _eventFeedStore.generalSearch,
-        builder: (BuildContext context, AsyncSnapshot<List<Event>> events) {
-          if(_eventFeedStore.getError(widget.type) !=null){
-            showErrorDialog(_eventFeedStore.getError(widget.type));
-          }
-
-          if(events.hasData){
-            if(events.data.length == 0 && _eventFeedStore.isSearching(widget.type)){
-              return Center(
-                child: Text("No resulsts Found",
-                    style: Theme.of(context).textTheme.headline5.copyWith(
-                        fontWeight: FontWeight.w200
-                    )),
-              );
-            } else if(events.data.length == 0){
-              return Center(
-                child: Text("No Events at this time",
-                    style: Theme.of(context).textTheme.headline5.copyWith(
-                        fontWeight: FontWeight.w200
-                    )),
-              );
-            } else {
-              return  ListView.builder(
-                  key: ValueKey(widget.type),
-                  controller: _scrollController,
-                  itemCount: events.data.length,
-                  itemBuilder: (context, index) {
-                    return EventCard(events.data[index], widget.type);
-                  }
-              );
-            }
-          } else if(events.hasError){
-            return _buildErrorWidget(events.error.toString());
-          }
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildErrorWidget(String error) {
-    return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(error,
-                  style: Theme.of(context).textTheme.headline5
-              ),
-            ),
-          ],
-        ));
-  }
-
-  Future showErrorDialog(String errorText) async {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await showDialog<String>(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-              title: const Text('Error'),
-              content: Text(errorText),
-              actions: <Widget>[
-                FlatButton(
-                  child: const Text('OK'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    clearErrorAction(widget.type);
-                  },
-                ),
-              ],
-            ),
-      );
-    });
   }
 
   /// Builds the Title child of the AppBar
@@ -217,7 +130,7 @@ class GeneralFeedState extends State<FeedView>
       IconButton(
         icon: const Icon(Icons.refresh),
         tooltip: "Refresh Feed",
-        onPressed: _refresh,
+        onPressed: () => _refresh(),
       ),
       IconButton(
         icon: const Icon(Icons.search),
@@ -228,6 +141,78 @@ class GeneralFeedState extends State<FeedView>
         },
       ),
     ];
+  }
+
+  Widget _buildBody(){
+    return GestureDetector(
+      onTap: () {
+        FocusScopeNode currentFocus = FocusScope.of(context);
+        if (!currentFocus.hasPrimaryFocus) {
+          currentFocus.unfocus();
+        }
+      },
+      child: FutureBuilder(
+        future: widget.type == FeedType.PersonalFeed ?
+          _eventFeedStore.personalSearch : _eventFeedStore.generalSearch,
+        builder: (BuildContext context, AsyncSnapshot<List<Event>> events) {
+
+          if(events.hasData){
+            if(events.data.length == 0 && _eventFeedStore.isSearching(widget.type)){
+              return Center(
+                child: Text("No resulsts Found",
+                    style: Theme.of(context).textTheme.headline5.copyWith(
+                        fontWeight: FontWeight.w200
+                    )),
+              );
+            } else if(events.data.length == 0){
+              return Center(
+                child: Text("No Events at this time",
+                    style: Theme.of(context).textTheme.headline5.copyWith(
+                        fontWeight: FontWeight.w200
+                    )),
+              );
+            } else {
+              return  ListView.builder(
+                  key: ValueKey(widget.type),
+                  controller: _scrollController,
+                  itemCount: events.data.length,
+                  itemBuilder: (context, index) {
+                    return EventCard(events.data[index], widget.type);
+                  }
+              );
+            }
+          } else if(events.hasError){
+            return _buildErrorWidget(events.error.toString());
+          }
+          return _buildLoadingWidget();
+        },
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget(String error) {
+    return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(error,
+                  style: Theme.of(context).textTheme.headline5
+              ),
+            ),
+          ],
+        ));
+  }
+
+  Widget _buildLoadingWidget(){
+    return Center(
+      child: Container(
+        height: 100,
+        width: 100,
+        child: CircularProgressIndicator(),
+      ),
+    );
   }
 
   /// Gets all the events from the database calling [getAllEventsAction] and

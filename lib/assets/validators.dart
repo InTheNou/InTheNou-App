@@ -27,11 +27,12 @@ class Validators {
     return null;
   }
 
-  static String  validateImage(String image){
+  static String validateImage(String image) {
     if(image.isNotEmpty){
       if(image.trim().length < 3){
         return "Image link is too short";
-      } else if(!Uri.parse(image).isAbsolute || !isURL(image)){
+      } else if(!Uri.parse(image).isAbsolute || !isURL(image,
+          protocols: ['http', 'https'])){
         return "Invalid Image link";
       } else if(image.length > 400){
         return "Image link is too long";
@@ -44,6 +45,8 @@ class Validators {
       DateTime endDate){
     if(date == null){
       return "Insert Date";
+    } else if(date.isBefore(DateTime.now())){
+      return "Event Start in the past";
     }
     if(endDate != null){
       if (startDate.isAfter(endDate)){
@@ -82,7 +85,12 @@ class Validators {
   }
 
   static bool validateWebsiteQuantity(List<Website> website){
-    return website.length < 11;
+    return website.length < 10;
+  }
+
+  static bool validateDuplicateWebsite(List<Website> websites,
+      Website newWebsite){
+    return websites.contains(newWebsite);
   }
 
   static bool validateSelectedTags(List<Tag> tags){

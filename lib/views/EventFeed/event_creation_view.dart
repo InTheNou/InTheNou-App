@@ -1,4 +1,8 @@
+import 'package:InTheNou/assets/colors.dart';
 import 'package:InTheNou/assets/validators.dart';
+import 'package:InTheNou/assets/values.dart';
+import 'package:InTheNou/dialog_manager.dart';
+import 'package:InTheNou/dialog_service.dart';
 import 'package:InTheNou/models/building.dart';
 import 'package:InTheNou/models/floor.dart';
 import 'package:InTheNou/models/room.dart';
@@ -6,6 +10,7 @@ import 'package:InTheNou/models/website.dart';
 import 'package:InTheNou/stores/event_creation_store.dart';
 import 'package:InTheNou/views/EventFeed/tag_selection_widget.dart';
 import 'package:InTheNou/views/EventFeed/website_alert_dialog.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
@@ -24,9 +29,13 @@ class _EventCreationViewState extends State<EventCreationView>
   with flux.StoreWatcherMixin<EventCreationView>{
 
   final _formKey = GlobalKey<FormState>();
-  final format = DateFormat("EEE d: hh:mm aaa");
+  final _format = DateFormat("EE, MMMM d, yyyy 'at' h:mma");
   final DateTime _initialDaeTime = DateTime(DateTime.now().year,
       DateTime.now().month, DateTime.now().day);
+
+  Dio _dio = Dio();
+  DialogService _dialogService = DialogService();
+  ScrollController _scrollController;
 
   EventCreationStore _creationStore;
   bool _autoValidate = false;
@@ -41,11 +50,22 @@ class _EventCreationViewState extends State<EventCreationView>
     // In case the user had decided to save the draft and they had entered at
     // least the Start Date, this would enable the End Date picker
     _endDateEnable = _creationStore.startDateTime != null;
+    _scrollController = ScrollController();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    _creationStore.creationResult.then((value){
+      if(value){
+        WidgetsBinding.instance.addPostFrameCallback((_) async{
+          _creationStore.creationResult = Future.value(false);
+          // Remove the Loading AlertDialog if it's showing
+          Navigator.of(context).popUntil(ModalRoute.withName('/home'));
+        });
+      }
+    });
+
     return GestureDetector(
       onTap: () {
         FocusScopeNode currentFocus = FocusScope.of(context);
@@ -62,29 +82,45 @@ class _EventCreationViewState extends State<EventCreationView>
               child: Text(
                 "SUBMIT"
               ),
-              onPressed: () => validateEventSubmit()
+              onPressed: () => _validateEventSubmit()
             )
           ],
           leading: IconButton(
             icon: Icon(Icons.clear),
-            onPressed: () => showExitWarning(),
+            onPressed: () => _showExitWarning(),
           ),
         ),
         body: SingleChildScrollView(
+          controller: _scrollController,
           child: Form(
               key: _formKey,
-              onWillPop: () => showExitWarning(),
+              onWillPop: () => _showExitWarning(),
               child: Padding(
                 padding: const EdgeInsets.only(top: 16.0, bottom: 8.0,
                     left: 8.0, right: 8.0),
                 child: Column(
                     children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          const Padding(padding: EdgeInsets.only(left: 8.0)),
+                          Expanded(
+                            child: Text("Event Information",
+                                style: Theme.of(context).textTheme.subtitle1),
+                          ),
+                        ],
+                      ),
+                      const Padding(padding: EdgeInsets.only(bottom: 8.0)),
                       //
                       //Title
                       TextFormField(
                         decoration: InputDecoration(
-                            labelText: "Event Title",
-                            border: OutlineInputBorder()),
+                          enabledBorder: const OutlineInputBorder(
+                            borderSide: const BorderSide(color: primaryColor,
+                                width: 1.0),
+                          ),
+                          border: const OutlineInputBorder(),
+                          labelText: "Event Title *",
+                        ),
                         autovalidate: _autoValidate,
                         maxLines: 1,
                         maxLength: 50,
@@ -99,8 +135,12 @@ class _EventCreationViewState extends State<EventCreationView>
                       // Description
                       TextFormField(
                         decoration: InputDecoration(
-                            labelText: "Description",
-                            border: OutlineInputBorder()),
+                            enabledBorder: const OutlineInputBorder(
+                              borderSide: const BorderSide(color: primaryColor,
+                                  width: 1.0),
+                            ),
+                            border: const OutlineInputBorder(),
+                            labelText: "Description *"),
                         autovalidate: _autoValidate,
                         maxLines: null,
                         maxLength: 400,
@@ -114,10 +154,15 @@ class _EventCreationViewState extends State<EventCreationView>
                       ),
                       const Padding(padding: EdgeInsets.only(bottom: 8.0)),
                       //
+                      // Image
                       TextFormField(
                         decoration: InputDecoration(
-                            labelText: "Event Image (Optional)",
-                            border: OutlineInputBorder()),
+                            enabledBorder: const OutlineInputBorder(
+                              borderSide: const BorderSide(color: primaryColor,
+                                  width: 1.0),
+                            ),
+                            border: const OutlineInputBorder(),
+                            labelText: "Event Image (Optional)"),
                         autovalidate: _autoValidate,
                         maxLines: 1,
                         maxLength: 400,
@@ -131,10 +176,17 @@ class _EventCreationViewState extends State<EventCreationView>
                       //
                       //Dates
                       DateTimeField(
-                        format: format,
+                        format: _format,
                         decoration: InputDecoration(
-                            labelText: "Event Start Date",
-                            border: OutlineInputBorder()),
+                          enabledBorder: const OutlineInputBorder(
+                            borderSide: const BorderSide(color: primaryColor,
+                                width: 1.0),
+                          ),
+                          border: const OutlineInputBorder(),
+                          labelText: "Event Start Date *",
+                          helperText: "Duration must be between 5mins and 7 "
+                              "days",
+                        ),
                         autovalidate: _autoValidateDates,
                         initialValue: _creationStore.startDateTime,
                         autofocus: false,
@@ -154,17 +206,18 @@ class _EventCreationViewState extends State<EventCreationView>
                                     TimeOfDay.fromDateTime(_creationStore
                                     .startDateTime ?? DateTime.now()),
                                 );
-                                inputEventDateAction(MapEntry(true,
-                                    DateTimeField.combine(date, time)));
                                 return DateTimeField.combine(date, time);
                               } else {
                             return currentValue;
                           }
                         },
-                        validator: (date) => Validators.validateDate(date,
-                            _creationStore.startDateTime,
-                            _creationStore.endDateTime),
+                        validator: (date) =>
+                            Validators.validateDate(date,
+                                _creationStore.startDateTime,
+                                _creationStore.endDateTime),
                         onChanged: (value) {
+                          inputEventDateAction(MapEntry(true,
+                              value));
                           _formKey.currentState.setState(() {
                             _autoValidateDates = true;
                             _endDateEnable = value != null;
@@ -173,13 +226,20 @@ class _EventCreationViewState extends State<EventCreationView>
                       ),
                       const Padding(padding: EdgeInsets.only(bottom: 8.0)),
                       DateTimeField(
-                        format: format,
+                        format: _format,
                         enabled: _endDateEnable,
                         autofocus: false,
                         focusNode: FocusNode(canRequestFocus: false),
                         decoration: InputDecoration(
-                            labelText: "Event End Date",
-                            border: OutlineInputBorder()),
+                          enabledBorder: const OutlineInputBorder(
+                            borderSide: const BorderSide(color: primaryColor,
+                                width: 1.0),
+                          ),
+                          border: const OutlineInputBorder(),
+                          labelText: "Event End Date *",
+                          helperText: "Duration must be between 5mins and 7 "
+                                "days",
+                        ),
                         autovalidate: _autoValidateDates,
                         initialValue: _creationStore.endDateTime,
                         onShowPicker: (context, currentValue) async {
@@ -197,16 +257,19 @@ class _EventCreationViewState extends State<EventCreationView>
                               TimeOfDay.fromDateTime(_creationStore.endDateTime
                               ?? DateTime.now()),
                             );
-                            inputEventDateAction(MapEntry(false,
-                                DateTimeField.combine(date, time)));
                             return DateTimeField.combine(date, time);
                           } else {
                             return currentValue;
                           }
                         },
-                        validator: (date) => Validators.validateDate(date,
+                        validator: (date) => Validators.validateDate(
+                            date,
                             _creationStore.startDateTime,
                             _creationStore.endDateTime),
+                        onChanged: (value){
+                          inputEventDateAction(MapEntry(false,
+                              value));
+                        },
                       ),
                       const Padding(padding: EdgeInsets.only(bottom: 16.0)),
                       //
@@ -215,7 +278,7 @@ class _EventCreationViewState extends State<EventCreationView>
                         children: <Widget>[
                           const Padding(padding: EdgeInsets.only(left: 8.0)),
                           Expanded(
-                            child: Text("Location",
+                            child: Text("Location *",
                                 style: Theme.of(context).textTheme.subtitle1),
                           ),
                           const Padding(padding: EdgeInsets.only(left: 8.0)),
@@ -225,9 +288,14 @@ class _EventCreationViewState extends State<EventCreationView>
                         child: Padding(
                           padding: EdgeInsets.only(left: 16.0, right: 8.0),
                           child: DropdownButtonFormField(
-                            decoration: InputDecoration.collapsed(
-                                hintText: "Building"),
+                            decoration: InputDecoration(
+                                enabledBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: Colors.white))),
                             autovalidate: _autoValidate,
+                            hint: Text("Building *"),
+                            disabledHint: Text("Building *",
+                                style: Theme.of(context).textTheme.subtitle1
+                                    .copyWith(fontWeight: FontWeight.w200)),
                             value: _creationStore.selectedBuilding,
                             items: _creationStore.buildings.map((Building building) {
                               return new DropdownMenuItem(
@@ -245,9 +313,14 @@ class _EventCreationViewState extends State<EventCreationView>
                         child: Padding(
                           padding: EdgeInsets.only(left: 16.0, right: 8.0),
                           child: DropdownButtonFormField(
-                            decoration: InputDecoration.collapsed(
-                                hintText: "Floor"),
+                            decoration: InputDecoration(
+                                enabledBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: Colors.white))),
                             autovalidate: _autoValidate,
+                            hint: Text("Floor *"),
+                            disabledHint: Text("Floor *",
+                                style: Theme.of(context).textTheme.subtitle1
+                                    .copyWith(fontWeight: FontWeight.w200)),
                             value: _creationStore.selectedFloor,
                             items: _creationStore.floors.map((Floor floor) {
                               return new DropdownMenuItem(
@@ -264,20 +337,25 @@ class _EventCreationViewState extends State<EventCreationView>
                       Card(
                         child: Padding(
                           padding: EdgeInsets.only(left: 16.0, right: 8.0),
-                          child: DropdownButtonFormField(
-                            decoration: InputDecoration.collapsed(
-                                hintText: "Room"),
-                            autovalidate: _autoValidate,
-                            value: _creationStore.selectedRoom,
-                            items: _creationStore.roomsInBuilding
-                                .map((Room room) {
-                              return new DropdownMenuItem(
-                                value: room,
-                                child: new Text(room.code),
-                              );
-                            }).toList(),
-                            onChanged: (value) => roomSelectAction(value),
-                            validator: (value) =>
+                          child:DropdownButtonFormField(
+                              decoration: InputDecoration(
+                                  enabledBorder: UnderlineInputBorder(
+                                      borderSide: BorderSide(color: Colors.white))),
+                              autovalidate: _autoValidate,
+                              hint: Text("Room *"),
+                              disabledHint: Text("Room *",
+                                  style: Theme.of(context).textTheme.subtitle1
+                                      .copyWith(fontWeight: FontWeight.w200)),
+                              value: _creationStore.selectedRoom,
+                              items: _creationStore.roomsInBuilding
+                                  .map((Room room) {
+                                return new DropdownMenuItem(
+                                  value: room,
+                                  child: new Text(room.code),
+                                );
+                              }).toList(),
+                              onChanged: (value) => roomSelectAction(value),
+                              validator: (value) =>
                               value == null? "Please choose a Room" : null
                           ),
                         ),
@@ -305,12 +383,13 @@ class _EventCreationViewState extends State<EventCreationView>
                           IconButton(
                               icon: Icon(Icons.add),
                               onPressed: (){
-                                if(!Validators.validateWebsiteQuantity(
+                                if(Validators.validateWebsiteQuantity(
                                     _creationStore.websites)){
                                   showDialog(
                                       context: context,
                                       barrierDismissible: false,
-                                      builder: (_) => WebsiteAlertDialog()
+                                      builder: (_) =>
+                                          WebsiteAlertDialog(_creationStore.websites)
                                   );
                                 }
                                 else {
@@ -372,13 +451,12 @@ class _EventCreationViewState extends State<EventCreationView>
                         children: <Widget>[
                           const Padding(padding: EdgeInsets.only(left: 8.0)),
                           Text(
-                            "Select 3 to 10 Tags:",
+                            "Select from 3 to 10 Tags:",
                             style:Theme.of(context).textTheme.subtitle1,
                           ),
                         ],
                       ),
                       TagSelectionWidget(),
-                      //
                     ]
                 ),
               )
@@ -388,30 +466,53 @@ class _EventCreationViewState extends State<EventCreationView>
     );
   }
 
-  void validateEventSubmit(){
+  void _validateEventSubmit() async {
     if(_formKey.currentState.validate()
         && Validators.validateSelectedTags(_creationStore.selectedTags)){
-      showSubmitConfirmation().then((value) {
-        if(value){
-          showLoading();
-          submitEventAction().then((value) {
-            _creationStore.creationResult.then((value) {
-              if(value){
-                Navigator.of(context).pop();
-                showSuccess();
-              }
-            }).catchError((e){
-              Navigator.of(context).pop();
-              showError(e);
-            });
-          });
+      Response response;
+      bool result = true;
+      if(_creationStore.image != null && _creationStore.image.isNotEmpty){
+        _dialogService.showLoadingDialog(
+            title: "Verifying Image");
+        try{
+          response = await _dio.get(_creationStore.image);
+          result = response.headers["Content-Type"].toString().contains("image");
+        } catch(e){
+          result = false;
         }
+        _dialogService.dialogComplete(DialogResponse(result: true));
+      }
+      if (!result){
+        _dialogService.showDialog(
+            type: DialogType.Alert,
+            title: "Invalid Image",
+            description: "No image was found in the provided link, please "
+                "verify it and retry.");
+      } else {
+        DialogResponse confirmation = await _dialogService.showDialog(
+            type: DialogType.Alert,
+            title: "Confirm Event",
+            description: "Are you sure you want to submit this event? \nNo further "
+                "changes can be made to the event, except for canceling.",
+            primaryButtonTitle: "CONFIRM",
+            secondaryButtonTitle: "CANCEL",
+            dismissible: false);
+        if(confirmation.result){
+          submitEventAction();
+        }
+      }
+    } else if(!_formKey.currentState.validate()){
+      _formKey.currentState.save();
+      setState(() {
+        _autoValidate = true;
       });
+      _scrollController.animateTo(0.0,
+          curve: Curves.ease, duration: Duration(seconds: 1));
     }
     else{
-      if (!Validators.validateSelectedTags(_creationStore.selectedTags)){
-        showTagWarning();
-      }
+      _scrollController.animateTo(10.0,
+          curve: Curves.ease, duration: Duration(seconds: 1));
+      showTagWarning();
       _formKey.currentState.save();
       setState(() {
         _autoValidate = true;
@@ -419,157 +520,33 @@ class _EventCreationViewState extends State<EventCreationView>
     }
   }
 
-  void showError(dynamic e){
-    showDialog(
-      context: context,
-      builder: (_) {
-        return AlertDialog(
-          title: Text("Error"),
-          content: Text(e.toString()),
-          actions: <Widget>[
-            FlatButton(
-              textColor: Theme.of(context).primaryColor,
-              child: Text(
-                  "OK"
-              ),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ],
-        );
-      }
-    );
-  }
-
-  void showSuccess(){
-    showDialog(
-        context: context,
-        builder: (_) {
-          return AlertDialog(
-            title: Text("Success"),
-            content: Text("The Event has been created."),
-            actions: <Widget>[
-              FlatButton(
-                textColor: Theme.of(context).primaryColor,
-                child: Text(
-                    "OK"
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
-                  discardEventAction();
-                },
-              ),
-            ],
-          );
-        }
-    );
-  }
-
-  void showLoading(){
-    showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) {
-          return AlertDialog(
-            title: Text("Error"),
-            content: Container(
-              height: 100,
-              width: 100,
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
-    );
-  }
-
-  Future<bool> showSubmitConfirmation(){
-    return showDialog<bool>(context: context,
-        barrierDismissible: false,
-        builder: (_) {
-          return AlertDialog(
-            title: Text("Confirm Event"),
-            content: Text(
-                "Are you sure you want to sumbit this event? \nNo further "
-                    "changes can be made to the event, eexcept for cancelling."
-            ),
-            actions: <Widget>[
-              FlatButton(
-                textColor: Theme.of(context).primaryColor,
-                child: Text(
-                    "CANCEL"
-                ),
-                onPressed: () => Navigator.of(context).pop(false),
-              ),
-              Padding(padding: EdgeInsets.only(left: 16.0),),
-              RaisedButton(
-                textColor: Theme.of(context).canvasColor,
-                color: Theme.of(context).primaryColor,
-                child: Text(
-                    "CONFIRM"
-                ),
-                onPressed: () => Navigator.of(context).pop(true),
-              ),
-              Padding(padding: EdgeInsets.only(left: 8.0),)
-            ],
-          );
-        }
-    );
-  }
-
-  showExitWarning(){
-    showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('You have made some changes'),
-          content: Text('Would you like to save your progress in the '
-              'Event Creation temporerally?. \nIt will be discarted '
-              'upon restart of the application.'),
-          actions: [
-            FlatButton(
-              child: Text('Discard'),
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.pop(context);
-                discardEventAction();
-              },
-            ),
-            Padding(padding: EdgeInsets.only(left: 16.0),),
-            RaisedButton(
-                textColor: Theme.of(context).canvasColor,
-                color: Theme.of(context).primaryColor,
-                child: Text('Save'),
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.pop(context);
-                }
-            ),
-            Padding(padding: EdgeInsets.only(left: 8.0),),
-          ],
-        )
-    );
+  Future<bool> _showExitWarning() async{
+    if(_creationStore.hasNoChanges()){
+      Navigator.pop(context);
+      return false;
+    }
+    DialogResponse response = await _dialogService.showDialog(
+        type: DialogType.Alert,
+        title: "You have made some changes",
+        description: 'Would you like to save your progress in the '
+            'Event Creation temporerally?. \nIt will be discarted '
+            'upon restart of the application.',
+        primaryButtonTitle: "SAVE",
+        secondaryButtonTitle: "DISCARD",
+        dismissible: false);
+    if(!response.result){
+      discardEventAction();
+    }
+    Navigator.pop(context);
+    return false;
   }
 
   void showWebsiteWarning(){
-    showDialog(context: context,
-        builder: (_) {
-          return AlertDialog(
-            title: Text("Links limit"),
-            content: Text(
-                "You have reached the limit of 10 links associated with an "
-                    "Event."
-            ),
-            actions: <Widget>[
-              FlatButton(
-                textColor: Theme.of(context).primaryColor,
-                child: Text(
-                    "CONFIRM"
-                ),
-                onPressed: () => Navigator.of(context).pop(),
-              )
-            ],
-          );
-        }
-    );
+    _dialogService.showDialog(
+        type: DialogType.Alert,
+        title: "Links limit",
+        description: 'You have reached the limit of 10 links associated with an'
+            ' Event.');
   }
 
   void showTagWarning(){

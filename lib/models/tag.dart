@@ -48,4 +48,14 @@ class Tag {
     return 'Tag{_name: $_name, _weight: $_weight}';
   }
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is Tag &&
+              runtimeType == other.runtimeType &&
+              _UID == other._UID;
+
+  @override
+  int get hashCode => _UID.hashCode;
+
 }

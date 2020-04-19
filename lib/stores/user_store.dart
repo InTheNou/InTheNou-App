@@ -158,6 +158,7 @@ class UserStore extends flux.Store{
 
   User get user => _user;
   Future<List<Event>> get followedEvents => _followedEvents;
+  Future<List<Event>> get historyEvents => _historyEvents;
   Future<List<Event>> get createdEvents => _createdEvents;
   Future<bool> get cancelEventResult => _cancelEventResult;
   Future<List<Tag>> get userTags => _userTags;

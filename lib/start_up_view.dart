@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:InTheNou/stores/user_store.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
