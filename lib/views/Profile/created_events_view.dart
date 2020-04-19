@@ -183,7 +183,6 @@ class _CreatedEventsViewState extends State<CreatedEventsView>
                   Navigator.of(context).pop();
                   await cancelEventAction(_event);
                   _userStore.cancelEventResult.then((value) {
-                    print(value);
                     if(value != null){
                       if(!value){
                         _showCancelError();

@@ -366,7 +366,6 @@ class EventsRepo {
   Future<bool> createEvent(Event event) async{
     SharedPreferences prefs = await _prefs;
     User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
-    return true;
     try{
       Map<String, dynamic> eventJson = event.toJson();
       eventJson["ecreator"] = user.UID;

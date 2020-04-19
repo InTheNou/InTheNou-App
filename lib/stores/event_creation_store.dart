@@ -190,18 +190,6 @@ class EventCreationStore extends flux.Store {
   }
 
   bool hasNoChanges(){
-    print(_title);
-    print(_description);
-    print(_image);
-    print(_startDateTime);
-    print(_endDateTime);
-    print(_selectedBuilding);
-    print(_selectedFloor);
-    print(_selectedRoom);
-    print(_websites);
-    print(_selectedTags);
-
-
     return _title == null && _description == null &&
         (_image == null || _image.isEmpty) && _startDateTime == null &&
         _endDateTime == null && _selectedBuilding == null &&
