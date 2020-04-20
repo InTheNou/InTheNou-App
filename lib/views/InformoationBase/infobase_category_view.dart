@@ -39,7 +39,7 @@ class InformationBaseState extends State<InfoBaseCategoryView> with flux.StoreWa
                     color: Theme.of(context).canvasColor
                 )),
             onPressed: () => Navigator.of(context).pushNamed(
-                '/infobase/search', arguments: InfoBaseSearchType.Building),
+                '/infobase/search', arguments: InfoBaseType.Building),
           ),
           RaisedButton(
             color: Theme.of(context).primaryColor,
@@ -50,7 +50,7 @@ class InformationBaseState extends State<InfoBaseCategoryView> with flux.StoreWa
                 )),
             padding: EdgeInsets.all(16.0),
             onPressed: () => Navigator.of(context).pushNamed
-              ("/infobase/search", arguments: InfoBaseSearchType.Room),
+              ("/infobase/search", arguments: InfoBaseType.Room),
           ),
           RaisedButton(
             color: Theme.of(context).primaryColor,
@@ -61,7 +61,7 @@ class InformationBaseState extends State<InfoBaseCategoryView> with flux.StoreWa
                 )),
             padding: EdgeInsets.all(16.0),
             onPressed: () => Navigator.of(context).pushNamed
-              ("/infobase/search", arguments: InfoBaseSearchType.Service),
+              ("/infobase/search", arguments: InfoBaseType.Service),
           ),
         ],
       )

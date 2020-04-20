@@ -15,10 +15,9 @@ class Utils {
   static String feedTypeString(FeedType feedType) =>
       feedType == FeedType.PersonalFeed ? "PersonalFeed" : "GeneralFeed";
 
-  static String infoBaseSearchString(InfoBaseSearchType type) =>
-      type == InfoBaseSearchType.Building ? "Buildings Search" :
-      type == InfoBaseSearchType.Room ? "Rooms Search" :
-      type == InfoBaseSearchType.Service ? "Services Search" : "Floors";
+  static String infoBaseSearchString(InfoBaseType type) =>
+      type == InfoBaseType.Building ? "Buildings Search" :
+      type == InfoBaseType.Room ? "Rooms Search" : "Services Search";
 
   static String telephoneTypeString(PhoneType telephoneType) =>
       telephoneType == PhoneType.E ? "E" :
@@ -112,7 +111,6 @@ class Utils {
 
   static void clearNotificationsPrefs() async{
     SharedPreferences _prefs = await SharedPreferences.getInstance();
-    _prefs = await SharedPreferences.getInstance();
     _prefs.setStringList(SMART_NOTIFICATION_LIST, null);
     _prefs.setStringList(DEFAULT_NOTIFICATION_LIST, null);
     _prefs.setString(LAST_RECOMMENDATION_DATE_KEY,

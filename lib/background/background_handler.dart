@@ -150,9 +150,10 @@ class BackgroundHandler {
     Map notificationMap;
     jsonNotifications.forEach((notification) {
       notificationMap = jsonDecode(notification);
-      // The id of the notification is the same as the eventUID for a given
+      // The payload of the notification is the same as the eventUID for a given
       // Smart Notification
-      _events.removeWhere((event) => event.UID == notificationMap["id"]);
+      _events.removeWhere((event) => event.UID.toString() ==
+          notificationMap["payload"]);
     });
 
     jsonNotifications = await NotificationHandler.doSmartNotification(

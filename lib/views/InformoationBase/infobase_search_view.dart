@@ -13,7 +13,7 @@ import 'package:flutter_flux/flutter_flux.dart' as flux;
 
 class InfoBaseSearchView extends StatefulWidget {
 
-  final InfoBaseSearchType searchType;
+  final InfoBaseType searchType;
 
   InfoBaseSearchView(this.searchType);
 
@@ -67,7 +67,7 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             Expanded(
-              child: showCorrectList(),
+              child: _buildBody(),
             )
           ],
         ),
@@ -75,33 +75,50 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
     );
   }
 
-  Widget showCorrectList(){
-    if(_infoBaseStore.getError(widget.searchType) !=null){
-      showErrorDialog(_infoBaseStore.getError(widget.searchType));
-    }
-    if(widget.searchType == InfoBaseSearchType.Building){
-      return showBuildingsResults();
-    } else if (widget.searchType == InfoBaseSearchType.Service){
-      return showRoomsResults();
+  Widget _buildBody(){
+    Future dataToShow;
+    if(widget.searchType == InfoBaseType.Building){
+      dataToShow = _infoBaseStore.buildingsResults;
+    } else if (widget.searchType == InfoBaseType.Room){
+      dataToShow = _infoBaseStore.roomsResults;
     } else {
-      return showServicesResults();
+      dataToShow = _infoBaseStore.servicesResults;
     }
+    return FutureBuilder(
+      future: dataToShow,
+      builder: (BuildContext context, AsyncSnapshot<dynamic> results) {
+        if(results.hasData){
+          if(results.data.length == 0){
+            return _buildNoResultsNotice();
+          } else if(widget.searchType == InfoBaseType.Building){
+            return showBuildingsResults(results.data);
+          } else if (widget.searchType == InfoBaseType.Room){
+            return showRoomsResults(results.data);
+          } else {
+            return showServicesResults(results.data);
+          }
+        }
+        else if(results.hasError){
+          return _buildErrorWidget(results.error.toString());
+        }
+        if(widget.searchType == InfoBaseType.Building){
+          return _buildLoadingWidget();
+        } else if (widget.searchType == InfoBaseType.Room){
+          return _buildSearchNotice();
+        } else {
+          return _buildSearchNotice();
+        }
+      },
+    );
   }
 
-  Widget showBuildingsResults(){
-    if(_infoBaseStore.buildingsResults == null) {
-      return Center(
-        child: Container(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
+  Widget showBuildingsResults(List<Building> buildingsResults){
     return ListView.builder(
-        itemCount: _infoBaseStore.buildingsResults.length,
+        itemCount: buildingsResults.length,
         controller: _scrollController,
         padding:const EdgeInsets.only(top: 8.0),
         itemBuilder: (context, index){
-          Building building = _infoBaseStore.buildingsResults[index];
+          Building building = buildingsResults[index];
           return Card(
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.0)),
@@ -147,40 +164,69 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
         });
   }
 
-  Widget showRoomsResults(){
-    if(_infoBaseStore.roomsResults == null) {
-      return Center(
-        child: Container(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
+  Widget showRoomsResults(List<Room> roomsResults){
     return ListView.builder(
-        itemCount: _infoBaseStore.roomsResults.length,
+        itemCount: roomsResults.length,
         controller: _scrollController,
         itemBuilder: (context, index){
-          Room room = _infoBaseStore.roomsResults[index];
+          Room room = roomsResults[index];
           return RoomCard(room);
         });
   }
 
-  Widget showServicesResults(){
-    if(_infoBaseStore.servicesResults == null) {
-      return Center(
-        child: Container(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
+  Widget showServicesResults(List<Service> servicesResults){
     return ListView.builder(
-        itemCount: _infoBaseStore.servicesResults.length,
+        itemCount: servicesResults.length,
         controller: _scrollController,
         itemBuilder: (context, index){
-          Service service = _infoBaseStore.servicesResults[index];
+          Service service = servicesResults[index];
           return ServicesCard(service);
         });
   }
 
+  Widget _buildErrorWidget(String error){
+    return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(error,
+                  style: Theme.of(context).textTheme.headline5
+              ),
+            ),
+          ],
+        )
+    );
+  }
+
+  Widget _buildLoadingWidget(){
+    return Center(
+      child: Container(
+        height: 100,
+        width: 100,
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+
+  Widget _buildSearchNotice(){
+    return Center(
+      child: Text("Initiate a Search",
+          style: Theme.of(context).textTheme.headline5.copyWith(
+              fontWeight: FontWeight.w200
+          )),
+    );
+  }
+
+  Widget _buildNoResultsNotice(){
+    return Center(
+      child: Text("No Results",
+          style: Theme.of(context).textTheme.headline5.copyWith(
+              fontWeight: FontWeight.w200
+          )),
+    );
+  }
 
   List<Widget> _buildActions() {
     if (_infoBaseStore.getIsSearching(widget.searchType)) {
@@ -229,10 +275,10 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
     );
   }
 
-  String _buildHint(InfoBaseSearchType type){
-    if(type == InfoBaseSearchType.Building){
+  String _buildHint(InfoBaseType type){
+    if(type == InfoBaseType.Building){
       return "Search: Stefani";
-    } else if (type == InfoBaseSearchType.Service){
+    } else if (type == InfoBaseType.Service){
       return "Search: S-100, Salon";
     } else {
       return "Search: Oficina";
@@ -253,7 +299,7 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
     }
 //    _clearSearchKeyword();
     setSearchingAction(new MapEntry(widget.searchType, false));
-    if(widget.searchType == InfoBaseSearchType.Building) {
+    if(widget.searchType == InfoBaseType.Building) {
       getAllBuildingsAction();
     }
   }
@@ -263,24 +309,4 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
     clearInfoBaseKeywordAction(widget.searchType);
   }
 
-  Future showErrorDialog(String errorText) async {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await showDialog<String>(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-          title: const Text('Error'),
-          content: Text(errorText),
-          actions: <Widget>[
-            FlatButton(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                clearInfoBaseErrorAction(widget.searchType);
-              },
-            ),
-          ],
-        ),
-      );
-    });
-  }
 }

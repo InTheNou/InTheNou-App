@@ -150,6 +150,7 @@ class NotificationHandler {
   /// scheduled using[NotificationHandler._scheduleSmartNotification]
   static Future<List<String>> doSmartNotification(List<Event> events,
       List<String> jsonNotifications) async{
+    _prefs = await SharedPreferences.getInstance();
 
     Coordinate userCoords;
     _geolocator.forceAndroidLocationManager = true;

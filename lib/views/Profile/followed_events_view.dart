@@ -65,7 +65,8 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
               ),
             ),
           ],
-        ));
+        )
+    );
   }
 
   Widget _buildLoadingWidget() {
@@ -78,7 +79,8 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
                 height: 100,
                 child: CircularProgressIndicator()),
           ],
-        ));
+        )
+    );
   }
 
   Widget _buildResultsWidget(List<Event> followedEvents) {

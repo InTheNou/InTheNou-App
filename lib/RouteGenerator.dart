@@ -56,53 +56,68 @@ class RouteGenerator{
                 child: EventCreationView())
         );
       case '/infobase/search':
-        if (args is InfoBaseSearchType) {
+        if (args is InfoBaseType) {
           return MaterialPageRoute(
             settings: settings,
-            builder: (_) =>
-                InfoBaseSearchView(args),
+            builder: (_) => DialogManager(
+                child: InfoBaseSearchView(args)),
           );
         }
         return _errorRoute();
       case '/infobase/building':
         return MaterialPageRoute(
             settings: settings,
-            builder: (_) => BuildingView());
+            builder: (_) => DialogManager(
+                child: BuildingView())
+        );
       case '/infobase/floor':
         return MaterialPageRoute(
             settings: settings,
-            builder: (_) => FloorView());
+            builder: (_) => DialogManager(
+                child: FloorView())
+        );
       case '/infobase/room':
         return MaterialPageRoute(
             settings: settings,
-            builder: (_) => RoomView());
+            builder: (_) => DialogManager(
+                child: RoomView())
+        );
       case '/infobase/service':
         return MaterialPageRoute(
             settings: settings,
-            builder: (_) => ServiceView());
+            builder: (_) => DialogManager(
+                child: ServiceView())
+        );
       case '/profile/settings':
         return MaterialPageRoute(
             settings: settings,
-            builder: (_) => SettingsView());
+            builder: (_) => DialogManager(
+                child: SettingsView())
+        );
       case '/profile/followed_events':
         return MaterialPageRoute(
             settings: settings,
             builder: (_) => DialogManager(
-                child: FollowedEventsView()));
+                child: FollowedEventsView())
+        );
       case '/profile/event_history':
         return MaterialPageRoute(
             settings: settings,
             builder: (_) => DialogManager(
-                child: HistoryEventsView()));
+                child: HistoryEventsView())
+        );
       case '/profile/my_tags':
         return MaterialPageRoute(
             settings: settings,
-            builder: (_) => MyTagsView());
+            builder: (_) => DialogManager(
+                child: MyTagsView())
+        );
       case '/profile/created_events':
         return MaterialPageRoute(
             settings: settings,
             builder: (_) => DialogManager(
-                child: CreatedEventsView()));
+                child: CreatedEventsView())
+        );
       default:
         return _errorRoute();
     }

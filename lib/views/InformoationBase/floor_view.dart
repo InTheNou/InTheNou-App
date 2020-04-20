@@ -25,58 +25,65 @@ class _FloorViewState extends State<FloorView>
   }
   @override
   Widget build(BuildContext context) {
-    if(_infoBaseStore.getError(InfoBaseSearchType.Floor) !=null){
-      showErrorDialog(_infoBaseStore.getError(InfoBaseSearchType.Floor));
-    }
-    if(_infoBaseStore.roomsInBuilding == null) {
-      return Scaffold(
+    return Scaffold(
         appBar: AppBar(
           title: Text(_infoBaseStore.selectedFloor.floorName),
         ),
-        body: Center(
-          child: Container(
-            child: CircularProgressIndicator(),
-          ),
-        ),
-      );
-    }
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_infoBaseStore.selectedFloor.floorName),
-      ),
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            child: ListView.builder(
-                itemCount: _infoBaseStore.roomsInBuilding.length,
-                itemBuilder: (context, index){
-                  Room _room = _infoBaseStore.roomsInBuilding[index];
-                  return RoomCard(_room);
-                }),
-          )
-        ],
-      )
+        body: FutureBuilder(
+          future: _infoBaseStore.roomsInBuilding,
+          builder: (BuildContext context, AsyncSnapshot<dynamic> roomsInBuilding) {
+            if(roomsInBuilding.hasData){
+              return _buildBody(roomsInBuilding.data);
+            }
+            else if(roomsInBuilding.hasError){
+              return _buildErrorWidget(roomsInBuilding.error.toString());
+            }
+            return _buildLoadingWidget();
+          },
+        )
+    );
+
+  }
+
+  Widget _buildBody(List<Room> roomsInBuilding){
+    return Column(
+      children: <Widget>[
+        Expanded(
+          child: ListView.builder(
+              itemCount: roomsInBuilding.length,
+              itemBuilder: (context, index){
+                Room _room = roomsInBuilding[index];
+                return RoomCard(_room);
+              }),
+        )
+      ],
     );
   }
 
-  Future showErrorDialog(String errorText) async {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await showDialog<String>(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-          title: const Text('Error'),
-          content: Text(errorText),
-          actions: <Widget>[
-            FlatButton(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                clearInfoBaseErrorAction(InfoBaseSearchType.Floor);
-              },
+  Widget _buildErrorWidget(String error) {
+    return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(error,
+                  style: Theme.of(context).textTheme.headline5
+              ),
             ),
           ],
-        ),
-      );
-    });
+        )
+    );
   }
+
+  Widget _buildLoadingWidget(){
+    return Center(
+      child: Container(
+        height: 100,
+        width: 100,
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+
 }

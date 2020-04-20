@@ -281,12 +281,9 @@ class UserRepo {
       var eventResults = new List<Event>();
       if(response.data["events"] != null){
         response.data["events"].forEach((element) {
-          eventResults.add(Event.resultFromJson(element,
-              isFollowed: true));
+          eventResults.add(Event.resultFromJson(element, isFollowed: true));
         });
       }
-      print(response.data["events"]);
-      print(eventResults);
       return eventResults;
     } catch(error, stacktrace){
       if (error is DioError) {

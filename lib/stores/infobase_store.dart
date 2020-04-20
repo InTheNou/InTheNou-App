@@ -10,16 +10,19 @@ class InfoBaseStore extends flux.Store{
 
   static final flux.StoreToken infoBaseToken = new flux.StoreToken(new
   InfoBaseStore());
-  List<Building> _buildingsResults = new List();
-  List<Room> _roomsInBuilding;
-  List<Room> _roomsResults = new List();
-  List<Service> _servicesInRoom = new List();
-  List<Service> _servicesResults = new List();
+  Future<List<Building>> _buildingsResults;
+  Future<List<Room>> _roomsInBuilding;
+  Future<List<Room>> _roomsResults;
+  Future<List<Service>> _servicesResults;
 
-  Building _detailBuilding;
-  Room _detailRoom;
+  Building _selectedBuilding;
   Floor _selectedFloor;
-  Service _detailService;
+  Room _selectedRoom;
+  Service _selectedService;
+
+  Future<Building> _detailBuilding;
+  Future<Room> _detailRoom;
+  Future<Service> _detailService;
 
   bool _isBuildingSearching = false;
   bool _isRoomSearching = false;
@@ -29,276 +32,167 @@ class InfoBaseStore extends flux.Store{
   String _roomSearchKeyword;
   String _serviceSearchKeyword;
 
-  List<String> _errors = List(4);
-
   InfoBaseRepo _infoBaseRepo = new InfoBaseRepo();
 
   InfoBaseStore() {
-    triggerOnConditionalAction(searchInfoBaseAction,
-        (MapEntry<InfoBaseSearchType, String> search) {
-      switch(search.key){
-        case InfoBaseSearchType.Building:
+    triggerOnAction(searchInfoBaseAction, (MapEntry<InfoBaseType, String> search) {
+      switch (search.key) {
+        case InfoBaseType.Building:
           _buildingSearchKeyword = search.value;
-          return _infoBaseRepo.searchBuildings(search.value).then((value) {
-            _buildingsResults = value;
-            return true;
-          }).catchError((error){
-            _setError(InfoBaseSearchType.Building, error.toString());
-            return true;
-          });
+          _buildingsResults = _infoBaseRepo.searchBuildings(search.value);
           break;
-        case InfoBaseSearchType.Room:
+        case InfoBaseType.Room:
           _roomSearchKeyword = search.value;
-          return _searchRooms(search.value)
-              .catchError((error){
-                _setError(InfoBaseSearchType.Room, error.toString());
-                return true;
-              });
+          _searchRooms(search.value);
           break;
-        case InfoBaseSearchType.Service:
+        case InfoBaseType.Service:
           _serviceSearchKeyword = search.value;
-          return _searchServicesByKeyword(search.value)
-              .catchError((error){
-                _setError(InfoBaseSearchType.Service, error.toString());
-                return true;
-              });
-          break;
-        default:
-            return true;
+          _servicesResults = _infoBaseRepo.searchServices(search.value);
           break;
       }
     });
-    triggerOnAction(setSearchingAction,
-            (MapEntry<InfoBaseSearchType, bool> searching) {
-      switch (searching.key){
-        case InfoBaseSearchType.Building:
+    triggerOnAction(setSearchingAction, (MapEntry<InfoBaseType, bool> searching) {
+      switch (searching.key) {
+        case InfoBaseType.Building:
           _isBuildingSearching = searching.value;
           break;
-        case InfoBaseSearchType.Room:
+        case InfoBaseType.Room:
           _isRoomSearching = searching.value;
           break;
-        case InfoBaseSearchType.Service:
+        case InfoBaseType.Service:
           _isServiceSearching = searching.value;
           break;
-        case InfoBaseSearchType.Floor:
+      }
+    });
+    triggerOnAction(clearInfoBaseKeywordAction, (InfoBaseType searching) {
+      switch (searching) {
+        case InfoBaseType.Building:
+          _buildingSearchKeyword = "";
+          break;
+        case InfoBaseType.Room:
+          _roomSearchKeyword = "";
+          break;
+        case InfoBaseType.Service:
+          _serviceSearchKeyword = "";
           break;
       }
-
     });
-    triggerOnAction(clearInfoBaseKeywordAction, (InfoBaseSearchType searching) {
-              switch(searching){
-                case InfoBaseSearchType.Building:
-                  _buildingSearchKeyword = "";
-                  break;
-                case InfoBaseSearchType.Room:
-                  _roomSearchKeyword = "";
-                  break;
-                case InfoBaseSearchType.Service:
-                  _serviceSearchKeyword = "";
-                  break;
-                case InfoBaseSearchType.Floor:
-                  break;
-              }
-    });
-    triggerOnConditionalAction(getAllBuildingsAction, (_) {
-      return _infoBaseRepo.getAllBuildings().then((buildings){
-        _buildingsResults = buildings;
-        return true;
-      }).catchError((error){
-        _setError(InfoBaseSearchType.Building, error.toString());
-        return true;
-      });
+    triggerOnAction(getAllBuildingsAction, (_) {
+      _buildingsResults = _infoBaseRepo.getAllBuildings();
     });
 
-    triggerOnConditionalAction(selectBuildingAction, (Building building) {
-      if(_detailBuilding == building){
-        return false;
+    triggerOnAction(selectBuildingAction, (Building building) async {
+      var dBuilding;
+      try{
+        dBuilding = await _detailBuilding;
+      }catch(e){}
+      if (dBuilding != null && building == dBuilding ) {
+        return;
       }
       _detailRoom = null;
+      _selectedBuilding = building;
       trigger();
-      return _infoBaseRepo.getBuilding(building.UID).then((value) {
-        _detailBuilding = value;
-        return true;
-      }).catchError((error){
-        _setError(InfoBaseSearchType.Building, error.toString());
-        return true;
-      });
+      _detailBuilding = _infoBaseRepo.getBuilding(building.UID);
     });
-    triggerOnConditionalAction(selectFloorAction,
-            (MapEntry<Building,Floor> floor) {
-      if(selectedFloor ==  floor.value){
-        return false;
+    triggerOnAction(selectFloorAction, (MapEntry<Building, Floor> floor) async {
+      var dRooms;
+      try{
+        dRooms = await _roomsInBuilding;
+      }catch(e){}
+      if (dRooms != null && _selectedFloor == floor.value) {
+        return;
       }
-      _selectedFloor = floor.value;
       _roomsInBuilding = null;
+      _selectedFloor = floor.value;
       trigger();
-      return _infoBaseRepo.getRoomsOfFloor(floor.key.UID, floor.value
-          .floorNumber).then((value){
-        _roomsInBuilding = value;
-        return true;
-      }).catchError((error){
-        _setError(InfoBaseSearchType.Floor, error.toString());
-        return true;
-      });
+      _roomsInBuilding = _infoBaseRepo.getRoomsOfFloor(floor.key.UID,
+          floor.value.floorNumber);
     });
-    triggerOnConditionalAction(selectRoomAction, (Room room){
-      if(_detailRoom == room){
-        return false;
+    triggerOnAction(selectRoomAction, (Room room) async {
+      var dRoom;
+      try{
+        dRoom = await _detailRoom;
+      }catch(e){}
+      if (dRoom != null && room == dRoom ) {
+        return;
       }
       _detailRoom = null;
+      _selectedRoom = room;
       trigger();
-      return _infoBaseRepo.getRoom(room.UID).then((value) {
-        _detailRoom = value;
-        _servicesInRoom = _detailRoom.services;
-        return true;
-      }).catchError((error){
-        _setError(InfoBaseSearchType.Room, error.toString());
-        return true;
-      });
+      _detailRoom = _infoBaseRepo.getRoom(room.UID);
     });
-    triggerOnAction(selectServiceAction, (Service service){
-      if(_detailService == service){
-        return false;
+    triggerOnAction(selectServiceAction, (Service service) async {
+      var dService;
+      try{
+        dService = await _detailService;
+      }catch(e){}
+      if (dService != null && service == dService ) {
+        return;
       }
       _detailService = null;
+      _selectedService = service;
       trigger();
-      return _infoBaseRepo.getService(service.UID).then((value) {
-        _detailService = value;
-        return true;
-      }).catchError((error){
-        _setError(InfoBaseSearchType.Service, error.toString());
-        return true;
-      });
-    });
-    triggerOnAction(clearInfoBaseErrorAction, (InfoBaseSearchType type){
-      switch (type){
-        case InfoBaseSearchType.Building:
-          _errors[0] = null;
-          break;
-        case InfoBaseSearchType.Room:
-          _errors[1] = null;
-          break;
-        case InfoBaseSearchType.Service:
-          _errors[2] = null;
-          break;
-        case InfoBaseSearchType.Floor:
-          _errors[3] = null;
-          break;
-      }
+      _detailService = _infoBaseRepo.getService(service.UID);
     });
   }
 
-  Future<bool> _searchRooms(String code){
+  void _searchRooms(String code){
     if(code.contains(RegExp(r"^\b[a-zA-Z]{1,2}-\d{1,3}[a-zA-Z]?$"))){
       var codeQuery = RegExp(
           r"(?<abrev>\b[a-zA-Z]{1,2})(?<dash>-)(?<code>\d{1,3}[a-zA-Z]?)")
           .firstMatch(code);
       String abrev = codeQuery.namedGroup("abrev");
       String rCode = codeQuery.namedGroup("code");
-      return _infoBaseRepo.searchRoomsByCode(abrev, rCode).then((value){
-        _roomsResults = value;
-        return true;
-      });
+      _roomsResults = _infoBaseRepo.searchRoomsByCode(abrev, rCode);
     }
     else{
-      return _infoBaseRepo.searchRoomsByKeyword(code).then((value){
-        _roomsResults = value;
-        return true;
-      });
+      _roomsResults = _infoBaseRepo.searchRoomsByKeyword(code);
     }
   }
 
-  Future<bool> _searchServicesByKeyword(String code){
-    return _infoBaseRepo.searchServices(code).then((value){
-      _servicesResults = value;
-      return true;
-    });
-  }
-
-  List<Building> get buildingsResults => _buildingsResults;
-  List<Room> get roomsInBuilding => _roomsInBuilding;
-  List<Room> get roomsResults => _roomsResults;
-  List<Service> get servicesInRoom => _servicesInRoom;
-  List<Service> get servicesResults => _servicesResults;
-  Building get detailBuilding => _detailBuilding;
+  Future<List<Building>> get buildingsResults => _buildingsResults;
+  Future<List<Room>> get roomsInBuilding => _roomsInBuilding;
+  Future<List<Room>> get roomsResults => _roomsResults;
+  Future<List<Service>> get servicesResults => _servicesResults;
+  Building get selectedBuilding => _selectedBuilding;
   Floor get selectedFloor => _selectedFloor;
-  Room get detailRoom => _detailRoom;
-  Service get detailService => _detailService;
+  Room get selectedRoom => _selectedRoom;
+  Service get selectedService => _selectedService;
+  Future<Building> get detailBuilding => _detailBuilding;
+  Future<Room> get detailRoom => _detailRoom;
+  Future<Service> get detailService => _detailService;
 
-  bool getIsSearching(InfoBaseSearchType type){
+  bool getIsSearching(InfoBaseType type){
     switch(type){
-      case InfoBaseSearchType.Building:
+      case InfoBaseType.Building:
         return _isBuildingSearching;
-      case InfoBaseSearchType.Room:
+      case InfoBaseType.Room:
         return _isRoomSearching;
-      case InfoBaseSearchType.Service:
+      case InfoBaseType.Service:
         return _isServiceSearching;
-      case InfoBaseSearchType.Floor:
-        break;
     }
     return false;
   }
-  String getSearchKeyword(InfoBaseSearchType type){
+  String getSearchKeyword(InfoBaseType type){
     switch(type){
-      case InfoBaseSearchType.Building:
+      case InfoBaseType.Building:
         return _buildingSearchKeyword;
-      case InfoBaseSearchType.Room:
+      case InfoBaseType.Room:
         return _roomSearchKeyword;
-      case InfoBaseSearchType.Service:
+      case InfoBaseType.Service:
         return _serviceSearchKeyword;
-      case InfoBaseSearchType.Floor:
-        break;
     }
     return null;
   }
 
-  String getError(InfoBaseSearchType type){
-    switch (type){
-      case InfoBaseSearchType.Building:
-        return _errors[0];
-        break;
-      case InfoBaseSearchType.Room:
-        return _errors[1];
-        break;
-      case InfoBaseSearchType.Service:
-        return _errors[2];
-        break;
-      case InfoBaseSearchType.Floor:
-        return _errors[3];
-        break;
-      default:
-        return null;
-        break;
-    }
-  }
-
-  void _setError(InfoBaseSearchType type, String error){
-    switch (type){
-      case InfoBaseSearchType.Building:
-        _errors[0] = error;
-        break;
-      case InfoBaseSearchType.Room:
-        _errors[1] = error;
-        break;
-      case InfoBaseSearchType.Service:
-        _errors[2] = error;
-        break;
-      case InfoBaseSearchType.Floor:
-        _errors[3] = error;
-        break;
-    }
-  }
-
 }
 
-final flux.Action<MapEntry<InfoBaseSearchType, String>> searchInfoBaseAction = new
+final flux.Action<MapEntry<InfoBaseType, String>> searchInfoBaseAction = new
   flux.Action();
-final flux.Action<MapEntry<InfoBaseSearchType, bool>> setSearchingAction = new
+final flux.Action<MapEntry<InfoBaseType, bool>> setSearchingAction = new
   flux.Action();
-final flux.Action<InfoBaseSearchType> clearInfoBaseKeywordAction = new
+final flux.Action<InfoBaseType> clearInfoBaseKeywordAction = new
   flux.Action();
-final flux.Action<InfoBaseSearchType> clearInfoBaseErrorAction = new
-flux.Action();
 final flux.Action getAllBuildingsAction = new flux.Action();
 final flux.Action<Building> selectBuildingAction = new flux.Action();
 final flux.Action<MapEntry<Building,Floor>> selectFloorAction = new flux

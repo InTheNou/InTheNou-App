@@ -66,13 +66,14 @@ class Event {
         Website.jsonToList(json["websites"]),
         Tag.fromJsonToList(json["tags"]),
         json['itype'] == Utils.interactionTypeToString(InteractionType.Following),
-        null,
+        json["recommendstatus"],
         json["estatus"] ?? "active"
     );
   }
 
   factory Event.resultFromJson(Map<String, dynamic> json,
       {bool isFollowed = false}) {
+    Building b = Building.resultFromJson(json['room']['building']);
     return Event.result(
         UID: json['eid'],
         title: json['etitle'],
@@ -81,7 +82,7 @@ class Event {
         startDateTime: df.parseUTC(json['estart']).toLocal(),
         endDateTime: df.parseUTC(json['eend']).toLocal(),
         timestamp: df.parseUTC(json['ecreation']).toLocal(),
-        room: Room.forEventFromJson(json['room']),
+        room: Room.fromJson(json['room'], b),
         followed: isFollowed ? true :
           json['itype'] == Utils.interactionTypeToString(InteractionType
               .Following),

@@ -4,6 +4,7 @@ import 'package:InTheNou/assets/colors.dart';
 import 'package:InTheNou/dialog_service.dart';
 import 'package:InTheNou/start_up_view.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_phoenix/flutter_phoenix.dart';
 
 DialogService service = DialogService();
 
@@ -11,7 +12,11 @@ Future<void> main() async {
 //  enableFlutterDriverExtension(handler: TestHandler.dataHandler);
   WidgetsFlutterBinding.ensureInitialized();
   Utils.checkSharedPrefs();
-  runApp(InTheNouApp());
+  runApp(
+    Phoenix(
+      child: InTheNouApp(),
+    ),
+  );
 }
 
 class InTheNouApp extends StatelessWidget {
@@ -44,19 +49,24 @@ class InTheNouApp extends StatelessWidget {
 
   Widget buildError(BuildContext context, FlutterErrorDetails error) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text("Error"),
-        ),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              "Oops, an error happend. \nPlease restart the application "
-                  "or contact the Development Team.",
-              style: Theme.of(context).textTheme.headline5,
-            ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: <Widget>[
+              Text(
+                "Oops, an error happend. \nPlease restart the application "
+                    "or contact the Development Team.",
+                style: Theme.of(context).textTheme.headline5,
+              ),
+              RaisedButton(
+                child: Text("Restart"),
+                onPressed: () => Phoenix.rebirth(context),
+              )
+            ],
           ),
-        )
+        ),
+      ),
     );
   }
 

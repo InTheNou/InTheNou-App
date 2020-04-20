@@ -8,11 +8,10 @@ enum FeedType{
   Detail
 }
 
-enum InfoBaseSearchType{
+enum InfoBaseType{
   Building,
   Room,
-  Service,
-  Floor
+  Service
 }
 
 enum PhoneType{

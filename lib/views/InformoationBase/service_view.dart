@@ -1,5 +1,6 @@
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/phone_number.dart';
+import 'package:InTheNou/models/service.dart';
 import 'package:InTheNou/models/website.dart';
 import 'package:InTheNou/stores/infobase_store.dart';
 import 'package:InTheNou/views/widgets/link_with_icon_widget.dart';
@@ -27,24 +28,24 @@ class _ServiceViewState extends State<ServiceView>
 
   @override
   Widget build(BuildContext context) {
-    if(_infoBaseStore.getError(InfoBaseSearchType.Service) !=null){
-      showErrorDialog(_infoBaseStore.getError(InfoBaseSearchType.Service));
-    }
-    if(_infoBaseStore.detailService == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text("Loading"),
-        ),
-        body: Center(
-          child: Container(
-            child: CircularProgressIndicator(),
-          ),
-        ),
-      );
-    }
+    return FutureBuilder(
+      future: _infoBaseStore.detailService,
+      builder: (BuildContext context, AsyncSnapshot<dynamic> detailService) {
+        if(detailService.hasData){
+          return _buildBody(detailService.data);
+        }
+        else if(detailService.hasError){
+          return _buildErrorWidget(detailService.error.toString());
+        }
+        return _buildLoadingWidget();
+      },
+    );
+  }
+
+  Widget _buildBody(Service detailService){
     return Scaffold(
       appBar: AppBar(
-        title: Text(_infoBaseStore.detailService.name),
+        title: Text(detailService.name),
       ),
       body: SingleChildScrollView(
         child: Row(
@@ -65,7 +66,7 @@ class _ServiceViewState extends State<ServiceView>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Text(
-                                  _infoBaseStore.detailService.name,
+                                  detailService.name,
                                   style: Theme.of(context).textTheme.headline5,
                                   softWrap: true,
                                 ),
@@ -75,8 +76,7 @@ class _ServiceViewState extends State<ServiceView>
                                   padding: const EdgeInsets.fromLTRB(8.0, 4.0,
                                       8.0, 4.0),
                                   child: Text(
-                                    _infoBaseStore.detailService
-                                        .description,
+                                    detailService.description,
                                     style: Theme.of(context).textTheme.subtitle1,
                                     softWrap: true,
                                   ),
@@ -92,7 +92,7 @@ class _ServiceViewState extends State<ServiceView>
                                               text: "Room: "
                                           ),
                                           TextSpan(
-                                              text: _infoBaseStore.detailService.roomCode,
+                                              text: detailService.roomCode,
                                               style: Theme.of(context).textTheme
                                                   .subtitle1.copyWith(fontWeight:
                                               FontWeight.bold)
@@ -111,7 +111,7 @@ class _ServiceViewState extends State<ServiceView>
                   //
                   // Contact info
                   Visibility(
-                    visible: _infoBaseStore.detailService.websites.length>0,
+                    visible: detailService.websites.length>0,
                     child: Card(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,10 +135,10 @@ class _ServiceViewState extends State<ServiceView>
                                   child: ListView.builder(
                                       physics: const NeverScrollableScrollPhysics(),
                                       shrinkWrap: true,
-                                      itemCount: _infoBaseStore.detailService.websites.length,
+                                      itemCount: detailService.websites.length,
                                       itemBuilder: (context, index){
-                                        Website _website = _infoBaseStore
-                                            .detailService.websites[index];
+                                        Website _website =
+                                            detailService.websites[index];
                                         return LinkWithIconWidget(
                                             _website.description ?? _website.URL,
                                             _website.URL,
@@ -155,11 +155,10 @@ class _ServiceViewState extends State<ServiceView>
                               child: ListView.builder(
                                   physics: const NeverScrollableScrollPhysics(),
                                   shrinkWrap: true,
-                                  itemCount: _infoBaseStore
-                                      .detailService.numbers.length,
+                                  itemCount: detailService.numbers.length,
                                   itemBuilder: (context, index){
-                                    PhoneNumber _phone = _infoBaseStore
-                                        .detailService.numbers[index];
+                                    PhoneNumber _phone =
+                                        detailService.numbers[index];
                                     return createPhoneEntry(_phone);
                                   })
                           )
@@ -184,7 +183,7 @@ class _ServiceViewState extends State<ServiceView>
                             )
                         ),
                         ListTile(
-                          title: Text(_infoBaseStore.detailService.schedule,
+                          title: Text(detailService.schedule,
                               style: Theme.of(context).textTheme.subtitle1),
                           leading: Icon(Icons.access_time),
                           dense: true,
@@ -196,6 +195,36 @@ class _ServiceViewState extends State<ServiceView>
               ),
             )
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget(String error) {
+    return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(error,
+                  style: Theme.of(context).textTheme.headline5
+              ),
+            ),
+          ],
+        ));
+  }
+
+  Widget _buildLoadingWidget(){
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Loading"),
+      ),
+      body: Center(
+        child: Container(
+          height: 100,
+          width: 100,
+          child: CircularProgressIndicator(),
         ),
       ),
     );
@@ -242,24 +271,4 @@ class _ServiceViewState extends State<ServiceView>
     }
   }
 
-  Future showErrorDialog(String errorText) async {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await showDialog<String>(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-          title: const Text('Error'),
-          content: Text(errorText),
-          actions: <Widget>[
-            FlatButton(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                clearInfoBaseErrorAction(InfoBaseSearchType.Service);
-              },
-            ),
-          ],
-        ),
-      );
-    });
-  }
 }
