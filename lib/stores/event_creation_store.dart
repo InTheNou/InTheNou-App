@@ -51,6 +51,18 @@ class EventCreationStore extends flux.Store {
 
   EventCreationStore() {
     triggerOnAction(submitEventAction, (_) async{
+      DialogResponse confirmation = await _dialogService.showDialog(
+          type: DialogType.ImportantAlert,
+          title: "Confirm Event",
+          description: "Are you sure you want to submit this event? \nNo further "
+              "changes can be made to the event, except for canceling.",
+          primaryButtonTitle: "CONFIRM",
+          secondaryButtonTitle: "CANCEL",
+          dismissible: false);
+      if(!confirmation.result){
+        return;
+      }
+
       _dialogService.showLoadingDialog(
           title: "Creating Event");
 
@@ -85,8 +97,19 @@ class EventCreationStore extends flux.Store {
             description: e.toString());
       });
     });
-    triggerOnAction(discardEventAction, (_){
-      reset();
+    triggerOnAction(discardEventAction, (_) async{
+      DialogResponse response = await _dialogService.showDialog(
+          type: DialogType.Alert,
+          title: "You have made some changes",
+          description: 'Would you like to save your progress in the '
+              'Event Creation temporerally?. \nIt will be discarted '
+              'upon restart of the application.',
+          primaryButtonTitle: "SAVE",
+          secondaryButtonTitle: "DISCARD",
+          dismissible: false);
+      if(!response.result){
+        reset();
+      }
     });
     triggerOnConditionalAction(getBuildingsAction, (_) async{
       return _infoBaseRepo.getAllBuildings().then((buildings){

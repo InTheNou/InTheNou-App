@@ -141,7 +141,7 @@ class _CreatedEventsViewState extends State<CreatedEventsView>
                                             child: _event.status == "active"
                                                 ? Text("CANCEL") :
                                                   Text("CANCELLED"),
-                                            color: Theme.of(context).accentColor,
+                                            color: Theme.of(context).errorColor,
                                             textColor: Theme.of(context).canvasColor,
                                             disabledColor: Colors.grey[200],
                                             onPressed:
@@ -178,7 +178,7 @@ class _CreatedEventsViewState extends State<CreatedEventsView>
             actions: <Widget>[
               FlatButton(
                 child: Text("CONFIRM"),
-                textColor: Theme.of(context).accentColor,
+                textColor: Theme.of(context).errorColor,
                 onPressed: () async{
                   Navigator.of(context).pop();
                   await cancelEventAction(_event);

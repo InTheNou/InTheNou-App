@@ -38,7 +38,8 @@ class RouteGenerator{
       case "/accountcreation":
         return MaterialPageRoute(
             settings: settings,
-            builder: (_) => AccountCreationView()
+            builder: (_) => DialogManager(
+                child: AccountCreationView())
         );
       case "/eventdetail":
         if (args is int) {

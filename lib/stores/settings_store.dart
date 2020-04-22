@@ -94,7 +94,7 @@ class SettingsStore extends flux.Store {
   }
   Future<bool> get recommendationDebug async{
     return _recommendationDebug ??
-        _settingsRepo.getSmartNotificationToggle();
+        _settingsRepo.getRecommendationDebug();
   }
 }
 

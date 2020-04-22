@@ -23,7 +23,7 @@ class RoomCard extends StatelessWidget {
                   Text(
                     _room.building,
                     style: Theme.of(context).textTheme.bodyText2.copyWith(
-                      color: Theme.of(context).accentColor
+                      color: Theme.of(context).primaryColor
                     ),
                   ),
                   const Padding(padding: EdgeInsets.only(top: 4.0)),

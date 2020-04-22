@@ -48,9 +48,9 @@ class ApiConnection {
           persistSession: true);
       _cookies = _persistentCookies.loadForRequest(
           Uri.parse(API_URL));
-      session = cookies.firstWhere((c) => c.name == 'session', orElse: () => null);
+      session = _cookies.firstWhere((c) => c.name == 'session', orElse: () => null);
       if(session != null ){
-        debugPrint("SEssion Loaded");
+        debugPrint("Session Loaded");
       }
       _dio.interceptors.add(
           CookieManager(_persistentCookies)
@@ -87,5 +87,18 @@ class ApiConnection {
 
   deleteSession(){
     _persistentCookies.deleteAll();
+  }
+
+  Future<Cookie> getSession() async{
+    while(_cookies == null){
+      await Future.delayed(Duration(milliseconds: 100));
+    }
+    if(session == null){
+      session = cookies.firstWhere((c) => c.name == 'session', orElse: () => null);
+      if(session != null ){
+        debugPrint("Session Loaded");
+      }
+    }
+    return session;
   }
 }

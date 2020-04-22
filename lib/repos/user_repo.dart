@@ -22,7 +22,6 @@ class UserRepo {
       scopes: [
         'https://www.googleapis.com/auth/userinfo.profile',
         'https://www.googleapis.com/auth/userinfo.email',
-        'https://www.googleapis.com/auth/contacts.readonly',
         "openid",
       ]
   );
@@ -60,13 +59,13 @@ class UserRepo {
   /// is thrown again.
   Future<Cookie> getSession() async{
     try{
-      _userAccount = await _googleSignIn.signInSilently(suppressErrors: false);
-
-      Cookie session = apiConnection.session;
+      Cookie session = await apiConnection.getSession();
       if (session == null) {
         return Future.error(PlatformException(
             code: GoogleSignIn.kSignInRequiredError));
       }
+      _userAccount = await _googleSignIn.signInSilently(suppressErrors: false);
+
       return checkSession(session).then((value) {
         return value ? session : Future.error(PlatformException(
             code: GoogleSignIn.kSignInRequiredError));
@@ -75,19 +74,13 @@ class UserRepo {
         debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error(error);
     }
-//    await _googleSignIn.signInSilently().then((GoogleSignInAccount acc) {
-//      _userAccount = acc;
-//    });
-//    if(_userAccount == null){
-//      return null;
-//    }
-//    Cookie session = apiConnection.session;
-//    if(session == null){
-//      return null;
-//    }
-//    return checkSession(session).then((value) {
-//      return value ? session : null;
-//    });
+  }
+
+  Future<GoogleSignInAccount> getGoogleAccount() async{
+    if(_userAccount == null){
+      _userAccount = await _googleSignIn.signInSilently(suppressErrors: true);
+    }
+    return _userAccount;
   }
 
   /// Verify the validity of the Session with the backend
@@ -103,6 +96,12 @@ class UserRepo {
     });
   }
 
+  Future<GoogleSignInAccount> googleSignOut() async{
+    await _googleSignIn.signOut();
+    _userAccount = null;
+    return _userAccount;
+  }
+
   /// Shows the Google sign in screen and contacts the backend to check the
   /// account
   ///
@@ -116,6 +115,9 @@ class UserRepo {
   /// backend and the user can proceed to the app.
   Future<int> logIn() async {
     _userAccount = await _googleSignIn.signIn();
+    if(_userAccount == null){
+      return -1;
+    }
     var auth = await _userAccount.authentication;
     var values = {
       "access_token": auth.accessToken,
@@ -274,10 +276,8 @@ class UserRepo {
   /// provided for pagination.
   Future<List<Event>> getFollowedEvents(int skipEvents, int numEvents) async{
     try{
-      int uid = await getUserID();
       Response response = await dio.get(
-          "/App/Events/Following//uid=$uid/offset=$skipEvents/limit"
-              "=$numEvents");
+          "/App/Events/Following/offset=$skipEvents/limit=$numEvents");
       var eventResults = new List<Event>();
       if(response.data["events"] != null){
         response.data["events"].forEach((element) {
@@ -298,10 +298,8 @@ class UserRepo {
 
   Future<List<Event>> getFEventsHistory(int skipEvents, int numEvents) async{
     try{
-      int uid = await getUserID();
       Response response = await dio.get(
-          "/App/Events/History//uid=$uid/offset=$skipEvents/limit"
-              "=$numEvents");
+          "/App/Events/History/offset=$skipEvents/limit=$numEvents");
       var eventResults = new List<Event>();
 
       if(response.data["events"] != null){
@@ -329,9 +327,8 @@ class UserRepo {
   /// provided for pagination.
   Future<List<Event>> getCreatedEvents(int skipEvents, int numEvents) async{
     try{
-      int uid = await getUserID();
       Response response = await dio.get(
-          "/App/Events/Created//uid=$uid/offset=$skipEvents/limit=$numEvents");
+          "/App/Events/Created//offset=$skipEvents/limit=$numEvents");
       var eventResults = new List<Event>();
       if(response.data["events"] != null){
         response.data["events"].forEach((element) {

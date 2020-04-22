@@ -69,7 +69,7 @@ class GeneralFeedState extends State<FeedView>
               Navigator.of(context).pushNamed('/create_event');
             },
             tooltip: 'Open Event Creation',
-            backgroundColor: Theme.of(context).primaryColor,
+            backgroundColor: Theme.of(context).accentColor,
             child: new Icon(Icons.add),
           ),
         ),

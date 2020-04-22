@@ -28,6 +28,7 @@ class InTheNouApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: primaryColor,
         accentColor: secondaryColor,
+        errorColor: errorColor,
         cardTheme: CardTheme(color: ThemeData.fallback().cardColor,
             clipBehavior: Clip.antiAlias,
             elevation: 1.0,

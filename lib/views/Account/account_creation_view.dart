@@ -1,4 +1,6 @@
 import 'package:InTheNou/assets/validators.dart';
+import 'package:InTheNou/assets/values.dart';
+import 'package:InTheNou/dialog_service.dart';
 import 'package:InTheNou/models/tag.dart';
 import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +19,7 @@ class _AccountCreationViewState extends State<AccountCreationView>
   final _formKey = GlobalKey<FormState>();
   var _autoValidate = false;
   UserStore _userStore;
+  DialogService _dialogService = DialogService();
 
   @override
   void initState() {
@@ -30,19 +33,14 @@ class _AccountCreationViewState extends State<AccountCreationView>
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if(_userStore.loginUser != null){
         _userStore.loginUser.then((user){
-          if(user==null){
-            // Show a progress bar while the backend creates the Account
-            showCreatingAccountLoading();
-          }
-          else{
+          print(user);
+          if(user!=null){
             // The backend brought back user info
             Navigator.of(context).pushNamedAndRemoveUntil(
               "/home", (Route<dynamic> route) => false,
             );
             _userStore.loginUser = null;
           }
-        }).catchError((e){
-          showErrorDialog(e);
         });
       }
     });
@@ -105,7 +103,8 @@ class _AccountCreationViewState extends State<AccountCreationView>
                   const Padding(padding: EdgeInsets.only(top:16),),
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0),
-                    child: Text("Select 5 tags of interest:",
+                    child: Text("Select 5 tags of interest: "
+                        "${_userStore.selectedTags.length}/5",
                         style: Theme.of(context).textTheme.subtitle1.copyWith(
                             color: Theme.of(context).canvasColor
                         )),
@@ -161,9 +160,7 @@ class _AccountCreationViewState extends State<AccountCreationView>
                         color: Theme.of(context).accentColor,
                         child: Text(
                           "Create Your Account",
-                          style: Theme.of(context).textTheme.headline6.copyWith(
-                              color: Theme.of(context).canvasColor
-                          ),
+                          style: Theme.of(context).accentTextTheme.headline6
                         ),
                         onPressed: () => validate()
                       )
@@ -178,42 +175,16 @@ class _AccountCreationViewState extends State<AccountCreationView>
     );
   }
 
-  /// Shows the user any account creation errors.
-  void showErrorDialog(Exception e){
-    Navigator.of(context).pop();
-    showDialog<String>(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: const Text('Error'),
-        content: Text(e.toString()),
-        actions: <Widget>[
-          FlatButton(
-              child: const Text('OK'),
-              onPressed: (){
-                Navigator.of(context).pop();
-                resetLoginError();
-              }
-          ),
-        ],
-      ),
-    );
-  }
-
   /// Validates the information provided by the user.
   ///
   /// If the user hasn't selected the appropriate number of tags then the
   /// user is shown a notice using [showTagWarning] otherwise
-  /// they are asked to confirm their input using [showSubmitConfirmation].
-  /// If they choose to confirm then their account is created by calling
-  /// [createUserAction].
+  /// they are asked to confirm their input inside the [createUserAction] call.
+  /// If they choose to confirm then their account is created.
   void validate(){
     if(_formKey.currentState.validate() &&
         Validators.validateCreationTags(_userStore.selectedTags)){
-      showSubmitConfirmation().then((value) {
-        if(value != null && value){
-          createUserAction();
-        }
-      });
+      createUserAction();
     }
     else{
       if(_userStore.selectedTags.length != 5){
@@ -223,91 +194,13 @@ class _AccountCreationViewState extends State<AccountCreationView>
     }
   }
 
-  /// Shows the user a confirmation [AlertDialog] before creating their account
-  ///
-  /// If the user dismissed the AlertDialog then this returns null and the
-  /// account creation does not proceed. Otherwise the user clicks Confirm
-  /// which returns true and the account creation continues.
-  Future<bool> showSubmitConfirmation(){
-    return showDialog<bool>(context: context,
-        builder: (_) {
-          return AlertDialog(
-            title: Text("Confirm"),
-            content: Text(
-                "Your account will be created now with these interests."
-            ),
-            actions: <Widget>[
-              RaisedButton(
-                textColor: Theme.of(context).canvasColor,
-                color: Theme.of(context).primaryColor,
-                child: Text(
-                    "CONFIRM"
-                ),
-                onPressed: () => Navigator.of(context).pop(true),
-              ),
-              Padding(padding: EdgeInsets.only(left: 8.0),)
-            ],
-          );
-        }
-    );
-  }
-
-  /// Shows a loading screen to the user while the account is created in the
-  /// backend.
-  void showCreatingAccountLoading(){
-    showDialog(context: context,
-        builder: (_) {
-          return Scaffold(
-            backgroundColor: Colors.transparent,
-            body: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Container(
-                        height: 100,
-                        width: 100,
-                        child: CircularProgressIndicator(
-                          value: null,
-                          valueColor: AlwaysStoppedAnimation<Color>(Theme.of
-                            (context).accentColor),
-                          strokeWidth: 8.0,
-                        )
-                    ),
-                    const Padding(padding: EdgeInsets.all(16.0)),
-                    Text("We are getting your account ready!",
-                    style: Theme.of(context).textTheme.headline5.copyWith(
-                        color: Theme.of(context).canvasColor)
-                    )
-                  ],
-                )
-            ),
-          );
-        }
-    );
-  }
-
   /// Shows an [AlertDialog] informing the user hasn't selected the correct
   /// number of [Tag]s.
   void showTagWarning(){
-    showDialog(context: context,
-        builder: (_) {
-          return AlertDialog(
-            title: Text("Incorrect number of Tags"),
-            content: Text(
-                "Please 5 Tags that best your interests"
-            ),
-            actions: <Widget>[
-              FlatButton(
-                textColor: Theme.of(context).primaryColor,
-                child: Text(
-                    "CONFIRM"
-                ),
-                onPressed: () => Navigator.of(context).pop(),
-              )
-            ],
-          );
-        }
-    );
+    _dialogService.showDialog(
+        type: DialogType.Alert,
+        title: "Incorrect number of Tags",
+        description: "Please 5 Tags that best describe your interests");
   }
 
 }

@@ -155,8 +155,8 @@ class _EventDetailViewState extends State<EventDetailView>
                                               minWidth: 120.0,
                                               child: OutlineButton(
                                                 child: const Text('DISMISS'),
-                                                textColor: Theme.of(context).accentColor,
-                                                highlightedBorderColor: Theme.of(context).accentColor,
+                                                textColor: Theme.of(context).errorColor,
+                                                highlightedBorderColor: Theme.of(context).errorColor,
                                                 onPressed: () {
                                                   if(!eventDetail.followed){
                                                     _showDismissDialog

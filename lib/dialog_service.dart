@@ -55,6 +55,18 @@ class DialogService {
     ));
     return _dialogCompleter.future;
   }
+  Future showFullscreenLoadingDialog({
+    @required String description
+  }) {
+    _dialogCompleter = Completer<DialogResponse>();
+    _showDialogListener(DialogRequest(
+      type: DialogType.FullScreenLoading,
+      title: null,
+      description: description,
+      primaryButtonTitle: null,
+    ));
+    return _dialogCompleter.future;
+  }
 
   void dialogComplete(DialogResponse response) {
     _dialogCompleter.complete(response);

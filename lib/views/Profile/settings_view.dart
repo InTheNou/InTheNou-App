@@ -101,6 +101,7 @@ class _SettingsViewState extends State<SettingsView>
                                   right: 8.0),
                               child: new Switch(
                                   value: toggle.data,
+                                  activeColor: Theme.of(context).primaryColor,
                                   onChanged: (value)  async =>
                                       checkPermissionAndUpdate(value)
                               ),
@@ -119,7 +120,7 @@ class _SettingsViewState extends State<SettingsView>
                                     left: 8.0),
                                 child: Text("Log Out",
                                     style: Theme.of(context).textTheme.subtitle1.copyWith(
-                                        color: Theme.of(context).accentColor
+                                        color: Theme.of(context).errorColor
                                     )
                                 ),
                               ),
@@ -175,7 +176,7 @@ class _SettingsViewState extends State<SettingsView>
                               child: Padding(
                                   padding: const EdgeInsets.only(top:16.0, bottom: 16.0,
                                       left: 8.0),
-                                  child: Text("Clear Chache Data")
+                                  child: Text("Clear Cache Data")
                               ),
                               onTap: () {
                                 Utils.clearCache();
@@ -325,7 +326,7 @@ class _SettingsViewState extends State<SettingsView>
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Text(
-                              "Smart Notification",
+                              "Reccomendation debug notification",
                               style: Theme.of(context).textTheme.subtitle1
                           ),
                         ),
@@ -340,6 +341,7 @@ class _SettingsViewState extends State<SettingsView>
                                   right: 8.0),
                               child: new Switch(
                                   value: toggle.data,
+                                  activeColor: Theme.of(context).primaryColor,
                                   onChanged: (value)  async =>
                                       changeRecommendationDebugAction(value)
                               ),
@@ -359,7 +361,7 @@ class _SettingsViewState extends State<SettingsView>
                                     left: 8.0),
                                 child: Text("Re-init Background tasks",
                                     style: Theme.of(context).textTheme.subtitle1.copyWith(
-                                        color: Theme.of(context).accentColor
+                                        color: Theme.of(context).errorColor
                                     )
                                 ),
                               ),

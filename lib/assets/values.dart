@@ -56,7 +56,9 @@ enum RecommendationType{
 
 enum DialogType{
   Loading,
+  FullScreenLoading,
   Alert,
+  ImportantAlert,
   Error
 }
 

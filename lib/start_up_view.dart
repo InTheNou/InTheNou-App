@@ -117,7 +117,6 @@ class _StartUpViewState extends State<StartUpView>
                     child: const Text('OK'),
                     onPressed: () {
                       Navigator.of(context).pop();
-                      resetLoginError();
                     }
                 ),
               ],

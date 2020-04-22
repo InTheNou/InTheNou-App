@@ -60,8 +60,8 @@ class EventCard extends StatelessWidget {
                             children: <Widget>[
                               OutlineButton(
                                 child: Text('DISMISS'),
-                                textColor: Theme.of(context).accentColor,
-                                highlightedBorderColor: Theme.of(context).accentColor,
+                                textColor: Theme.of(context).errorColor,
+                                highlightedBorderColor: Theme.of(context).errorColor,
                                 onPressed: () {
                                   if(!_event.followed){
                                     _showUndoSnackbar(_event, context);

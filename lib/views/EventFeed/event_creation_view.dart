@@ -393,7 +393,7 @@ class _EventCreationViewState extends State<EventCreationView>
                                   );
                                 }
                                 else {
-                                  showWebsiteWarning();
+                                  _showWebsiteWarning();
                                 }
                               },
                           ),
@@ -489,17 +489,7 @@ class _EventCreationViewState extends State<EventCreationView>
             description: "No image was found in the provided link, please "
                 "verify it and retry.");
       } else {
-        DialogResponse confirmation = await _dialogService.showDialog(
-            type: DialogType.Alert,
-            title: "Confirm Event",
-            description: "Are you sure you want to submit this event? \nNo further "
-                "changes can be made to the event, except for canceling.",
-            primaryButtonTitle: "CONFIRM",
-            secondaryButtonTitle: "CANCEL",
-            dismissible: false);
-        if(confirmation.result){
-          submitEventAction();
-        }
+        submitEventAction();
       }
     } else if(!_formKey.currentState.validate()){
       _formKey.currentState.save();
@@ -512,7 +502,11 @@ class _EventCreationViewState extends State<EventCreationView>
     else{
       _scrollController.animateTo(10.0,
           curve: Curves.ease, duration: Duration(seconds: 1));
-      showTagWarning();
+      _dialogService.showDialog(
+          type: DialogType.Alert,
+          title: "Incorrect number of Tags",
+          description: "Please choose between 3 to 10 Tags that best describe the Event "
+              "before Submitting.");
       _formKey.currentState.save();
       setState(() {
         _autoValidate = true;
@@ -525,51 +519,17 @@ class _EventCreationViewState extends State<EventCreationView>
       Navigator.pop(context);
       return false;
     }
-    DialogResponse response = await _dialogService.showDialog(
-        type: DialogType.Alert,
-        title: "You have made some changes",
-        description: 'Would you like to save your progress in the '
-            'Event Creation temporerally?. \nIt will be discarted '
-            'upon restart of the application.',
-        primaryButtonTitle: "SAVE",
-        secondaryButtonTitle: "DISCARD",
-        dismissible: false);
-    if(!response.result){
-      discardEventAction();
-    }
+    await discardEventAction();
     Navigator.pop(context);
     return false;
   }
 
-  void showWebsiteWarning(){
+  void _showWebsiteWarning(){
     _dialogService.showDialog(
         type: DialogType.Alert,
         title: "Links limit",
         description: 'You have reached the limit of 10 links associated with an'
             ' Event.');
-  }
-
-  void showTagWarning(){
-      showDialog(context: context,
-      builder: (_) {
-        return AlertDialog(
-          title: Text("Incorrect number of Tags"),
-          content: Text(
-            "Please choose between 3 to 10 Tags that best describe the Event "
-                "before Sumbitting."
-          ),
-          actions: <Widget>[
-            FlatButton(
-              textColor: Theme.of(context).primaryColor,
-              child: Text(
-                "CONFIRM"
-              ),
-              onPressed: () => Navigator.of(context).pop(),
-            )
-          ],
-        );
-      }
-    );
   }
 
 }

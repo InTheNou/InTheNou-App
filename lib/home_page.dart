@@ -130,6 +130,8 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
                 ],
               );
             });
+      } else{
+        prefs.setBool(SMART_NOTIFICATION_KEY, true);
       }
     });
   }

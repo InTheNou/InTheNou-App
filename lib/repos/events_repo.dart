@@ -34,12 +34,9 @@ class EventsRepo {
   /// permits performing pagination and only showing a few Events at a time.
   /// To get all the Events at once just supply a very bit number to [numEvents]
   Future<List<Event>> getGenEvents (int skipEvents, int numEvents) async{
-    SharedPreferences prefs = await _prefs;
-    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
-
     try{
       Response response = await dio.get(
-          "/App/Events/General/uid=${user.UID}/offset=$skipEvents"
+          "/App/Events/General/offset=$skipEvents"
               "/limit=$numEvents");
       List<Event> eventResults = new List();
 
@@ -71,12 +68,10 @@ class EventsRepo {
   /// To get all the Events at once just supply a very bit number to
   /// [numEvents].
   Future<List<Event>> getPerEvents(int skipEvents, int numEvents) async{
-    SharedPreferences prefs = await _prefs;
-    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
 
     try{
       Response response = await dio.get(
-          "/App/Events/Recommended/uid=${user.UID}/offset=$skipEvents/"
+          "/App/Events/Recommended/offset=$skipEvents/"
               "limit=$numEvents");
       List<Event> eventResults = new List();
 
@@ -104,13 +99,10 @@ class EventsRepo {
   /// This method is used in the Recommendation Feature.
   Future<List<Event>> getNewEvents(String lastDate) async{
     DateTime date = DateTime.parse(lastDate);
-    SharedPreferences prefs = await _prefs;
-    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
 
     try{
       Response response = await dio.get(
-          "/App/Events/CAT/timestamp=${Utils.formatTimeStamp(date)}/"
-              "uid=${user.UID}");
+          "/App/Events/CAT/timestamp=${Utils.formatTimeStamp(date)}");
       List<Event> eventResults = new List();
 
       if(response.data["events"] != null){
@@ -168,13 +160,10 @@ class EventsRepo {
   /// To get all the Events at once just supply a very bit number to [numEvents]
   Future<List<Event>> searchGenEvents(String keyword, int skipEvents,
       int numEvents) async{
-    SharedPreferences prefs = await _prefs;
-    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
 
     try{
       Response response = await dio.get(
-          "/App/Events/General/search=$keyword/offset=$skipEvents/limit=$numEvents"
-              "/uid=${user.UID}");
+          "/App/Events/General/search=$keyword/offset=$skipEvents/limit=$numEvents");
       List<Event> eventResults = new List();
       List jsonResponse = response.data["events"];
       if(jsonResponse != null){
@@ -206,13 +195,11 @@ class EventsRepo {
   /// To get all the Events at once just supply a very bit number to [numEvents]
   Future<List<Event>> searchPerEvents(String keyword, int skipEvents,
       int numEvents) async{
-    SharedPreferences prefs = await _prefs;
-    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
 
     try{
       Response response = await dio.get(
           "/App/Events/Recommended/search=$keyword/offset=$skipEvents/limit"
-              "=$numEvents/uid=${user.UID}");
+              "=$numEvents");
       List<Event> eventResults = new List();
       List jsonResponse = response.data["events"];
       if(jsonResponse != null){
@@ -238,12 +225,9 @@ class EventsRepo {
   /// Given the [Event._UID] through the [eventUID] parameter, the back-end
   /// will return detailed information about the [Event] that matches the UID.
   Future<Event> getEvent(int eventUID) async{
-    SharedPreferences prefs = await _prefs;
-    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
 
     try{
-      Response response = await dio.get("/App/Events/eid=$eventUID/"
-          "uid=${user.UID}");
+      Response response = await dio.get("/App/Events/eid=$eventUID/Interaction");
       return Event.fromJson(response.data);
     } catch(error,stacktrace){
       if (error is DioError) {
@@ -261,12 +245,9 @@ class EventsRepo {
   /// Given the [Event._UID] through the [eventUID] parameter, the back-end
   /// marks it as being Followed by this user by setting [Event.followed]
   Future<bool> requestFollowEvent(int eventUID) async{
-    SharedPreferences prefs = await _prefs;
-    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
-
     try{
       Response response = await dio.post("/App/Events/eid=$eventUID/"
-          "uid=${user.UID}/Follow");
+          "/Follow");
       return response.data["event"]["eid"] == eventUID;
     } catch(error,stacktrace){
       if (error is DioError) {
@@ -284,12 +265,10 @@ class EventsRepo {
   /// Given the [Event._UID] through the [eventUID] parameter, the back-end
   /// marks it as being UnFollowed by this user by setting [Event.followed]
   Future<bool> requestUnFollowEvent(int eventUID) async{
-    SharedPreferences prefs = await _prefs;
-    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
 
     try{
       Response response = await dio.post("/App/Events/eid=$eventUID/"
-          "uid=${user.UID}/Unfollow");
+          "Unfollow");
       return response.data["event"]["eid"] == eventUID;
     } catch(error,stacktrace){
       if (error is DioError) {
@@ -308,11 +287,9 @@ class EventsRepo {
   /// marks it as being Dismissed by this user. Events marked with being
   /// Dismissed will not be returned by other queries.
   Future<bool> requestDismissEvent(int eventUID) async{
-    SharedPreferences prefs = await _prefs;
-    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
     try{
       Response response = await dio.post("/App/Events/eid=$eventUID/"
-          "uid=${user.UID}/Dismiss");
+          "Dismiss");
       return response.data["event"]["eid"] == eventUID;
     } catch(error,stacktrace){
       if (error is DioError) {
@@ -332,14 +309,11 @@ class EventsRepo {
   /// [Event.recommended]. Events marked as such will show up in the Personal
   /// Feed.
   Future<List<bool>> requestRecommendation(List<Event> events) async{
-    SharedPreferences prefs = await _prefs;
-    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
-
     Future<List<bool>> result;
     result = Future.wait<bool>(events.map((event) async{
       try{
         Response response = await dio.post(
-            "/App/Events/eid=${event.UID}/uid=${user.UID}/"
+            "/App/Events/eid=${event.UID}/"
                 "recommendstatus=${event.recommended}");
         return response.data["eid"] == event.UID;
       } catch(error,stacktrace){
@@ -389,12 +363,9 @@ class EventsRepo {
   }
 
   Future<bool> cancelEvent(Event event) async{
-    SharedPreferences prefs = await _prefs;
-    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
-
     try{
       Response response = await dio.post("/App/Events/eid=${event.UID}"
-          "/uid=${user.UID}/estatus=deleted");
+          "/estatus=deleted");
       return response.data["eid"] == event.UID;
     } catch(error,stacktrace){
       if (error is DioError) {
