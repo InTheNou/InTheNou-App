@@ -70,7 +70,7 @@ class EventFeedStore extends flux.Store{
       }
     });
     triggerOnAction(getAllEventsAction, (FeedType feed) {
-      return _getAllEvents(feed);
+      _getAllEvents(feed);
     });
     triggerOnConditionalAction(openEventDetail, (int eventID) async {
       var currentEvent = await _eventDetail;
@@ -97,7 +97,7 @@ class EventFeedStore extends flux.Store{
       trigger();
       if(event.value.startDateTime.isBefore(DateTime.now())){
         _dialogService.showDialog(
-            type: DialogType.Error,
+            type: DialogType.Alert,
             title: "Following an event that has started",
             description: "You have Followed an event that has already"
                 " started. Your disinterest in the event will be recorded.",
@@ -248,6 +248,7 @@ class EventFeedStore extends flux.Store{
         trigger();
       }).catchError((e){
         _personalSearch = Future.error(e);
+        trigger();
       });
     } else {
       _generalSearch = Future.value(null);
@@ -257,6 +258,7 @@ class EventFeedStore extends flux.Store{
         trigger();
       }).catchError((e){
         _generalSearch = Future.error(e);
+        trigger();
       });
     }
   }

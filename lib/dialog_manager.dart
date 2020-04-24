@@ -79,7 +79,7 @@ class _DialogManagerState extends State<DialogManager> {
         return WillPopScope(
           onWillPop: () async => request.dismissible,
           child: AlertDialog(
-            title: Text(request.title),
+            title: Text("Error: "+request.title),
             content: Text(request.description),
             actions: <Widget>[
               FlatButton(

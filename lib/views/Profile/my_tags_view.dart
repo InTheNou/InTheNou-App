@@ -112,6 +112,10 @@ class _MyTagsViewState extends State<MyTagsView>
                           style: Theme.of(context).textTheme.bodyText1,
                           textAlign: TextAlign.start,
                       ),
+                      IconButton(
+                        icon: Icon(Icons.delete),
+                        onPressed: () => removeTagAction(),
+                      )
                     ],
                   ),
                 ),

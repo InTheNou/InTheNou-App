@@ -49,89 +49,89 @@ class _LoginViewState extends State<LoginView>
     });
 
     return FutureBuilder(
-      future: _userStore.account, builder:
-        (BuildContext context, AsyncSnapshot<GoogleSignInAccount> account) {
-          return Scaffold(
-            backgroundColor: Theme.of(context).primaryColor,
-            body: Center(
-              child: Column(
-                children: <Widget>[
-                  Expanded(
-                    flex: 6,
-                    child: Container(
-                      height: 450,
-                      width: 350,
-                      child: Image.asset(
-                        "lib/assets/InTheNou_logo.png",
-                        fit: BoxFit.fitWidth,
-                        semanticLabel: "InTheNou App Logo",
-                      ),
+      future: _userStore.account,
+      builder: (BuildContext context, AsyncSnapshot<GoogleSignInAccount> account) {
+        return Scaffold(
+          backgroundColor: Theme.of(context).primaryColor,
+          body: Center(
+            child: Column(
+              children: <Widget>[
+                Expanded(
+                  flex: 6,
+                  child: Container(
+                    height: 450,
+                    width: 350,
+                    child: Image.asset(
+                      "lib/assets/InTheNou_logo.png",
+                      fit: BoxFit.fitWidth,
+                      semanticLabel: "InTheNou App Logo",
                     ),
                   ),
-                  Expanded(
-                    flex: 3,
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                    ),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
                   ),
-                  GoogleSignInButton(
-                    key: ValueKey("LogInButton"),
-                    text: account.hasData ? "COntinue with Google":
-                       "Sign in with Google",
-                    onPressed: () {
-                      // Call the Auth service and wait for the user to be
-                      // redirected back
-                      callAuthAction();
-                    },
-                    darkMode: true,
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Visibility(
-                      visible: account.hasData,
-                      child:Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: <Widget>[
-                            Expanded(
-                              child: Container(
-                                alignment: Alignment.bottomCenter,
-                                margin: EdgeInsets.all(8),
-                                child: RichText(
-                                    text: TextSpan(
-                                        style: Theme.of(context).accentTextTheme.subtitle1.copyWith(
-                                            color: Theme.of(context).canvasColor
+                ),
+                GoogleSignInButton(
+                  key: ValueKey("LogInButton"),
+                  text: account.hasData ? "COntinue with Google":
+                  "Sign in with Google",
+                  onPressed: () {
+                    // Call the Auth service and wait for the user to be
+                    // redirected back
+                    callAuthAction();
+                  },
+                  darkMode: true,
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Visibility(
+                    visible: account.hasData,
+                    child:Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: <Widget>[
+                          Expanded(
+                            child: Container(
+                              alignment: Alignment.bottomCenter,
+                              margin: EdgeInsets.all(8),
+                              child: RichText(
+                                  text: TextSpan(
+                                      style: Theme.of(context).accentTextTheme.subtitle1.copyWith(
+                                          color: Theme.of(context).canvasColor
+                                      ),
+                                      children: <TextSpan>[
+                                        TextSpan(
+                                            text: "Currently Signed in as:\n"
                                         ),
-                                        children: <TextSpan>[
-                                          TextSpan(
-                                              text: "Currently Signed in as:\n"
-                                          ),
-                                          TextSpan(
-                                              text: "${_userEmail(account
-                                                  .data)}",
-                                            style: Theme.of(context).accentTextTheme.subtitle1.copyWith(
-                                                color: Theme.of(context)
-                                                    .canvasColor,
+                                        TextSpan(
+                                          text: "${_userEmail(account
+                                              .data)}",
+                                          style: Theme.of(context).accentTextTheme.subtitle1.copyWith(
+                                              color: Theme.of(context)
+                                                  .canvasColor,
                                               fontWeight: FontWeight.bold
-                                            ),
-                                          )
-                                        ]
-                                    )
-                                ),
+                                          ),
+                                        )
+                                      ]
+                                  )
                               ),
                             ),
-                            FlatButton(
-                              child: Text("Sign Out"),
-                              textColor: Theme.of(context).errorColor,
-                              onPressed: () => googleSignOut(),
-                            )
-                          ]
-                      ),
+                          ),
+                          FlatButton(
+                            child: Text("Sign Out"),
+                            textColor: Theme.of(context).errorColor,
+                            onPressed: () => googleSignOut(),
+                          )
+                        ]
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          );
+          ),
+        );
         },
     );
   }

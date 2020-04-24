@@ -31,15 +31,14 @@ class _AccountCreationViewState extends State<AccountCreationView>
   Widget build(BuildContext context) {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if(_userStore.loginUser != null){
-        _userStore.loginUser.then((user){
-          print(user);
-          if(user!=null){
+      if(_userStore.accountCreationFinished != null){
+        _userStore.accountCreationFinished.then((finish){
+          if(finish){
             // The backend brought back user info
             Navigator.of(context).pushNamedAndRemoveUntil(
               "/home", (Route<dynamic> route) => false,
             );
-            _userStore.loginUser = null;
+            _userStore.accountCreationFinished = Future.value(false);
           }
         });
       }

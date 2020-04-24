@@ -13,7 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class Utils {
 
   static String feedTypeString(FeedType feedType) =>
-      feedType == FeedType.PersonalFeed ? "PersonalFeed" : "GeneralFeed";
+      feedType == FeedType.PersonalFeed ? "Personal Feed" : "General Feed";
 
   static String infoBaseSearchString(InfoBaseType type) =>
       type == InfoBaseType.Building ? "Buildings Search" :
@@ -312,7 +312,7 @@ class Utils {
         return "Connection timeout with server";
         break;
       case DioErrorType.DEFAULT:
-        return "Connection to API server failed due to internet connection";
+        return "Connection to API server failed due to internet unavailability";
         break;
       case DioErrorType.RECEIVE_TIMEOUT:
         return "$feature Recieve timeout with server";

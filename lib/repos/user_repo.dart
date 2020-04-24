@@ -60,10 +60,12 @@ class UserRepo {
   Future<Cookie> getSession() async{
     try{
       Cookie session = await apiConnection.getSession();
+      // In case the session has been lost, send the user to the login screen
       if (session == null) {
         return Future.error(PlatformException(
             code: GoogleSignIn.kSignInRequiredError));
       }
+      // If there is a session on th system try to sign into the google account
       _userAccount = await _googleSignIn.signInSilently(suppressErrors: false);
 
       return checkSession(session).then((value) {
@@ -199,11 +201,8 @@ class UserRepo {
         data: convert.jsonEncode(values));
 
       // Get the complete information of the user given the response UID
+      // and save that user to the local storage
       User newUser = await getUserInfo(response.data["uid"]);
-
-      // Save that user to the local storage
-      SharedPreferences prefs = await _prefs;
-      prefs.setString(USER_KEY, convert.jsonEncode(newUser.toJson()));
 
       return newUser;
     } catch(error, stacktrace){
@@ -218,7 +217,7 @@ class UserRepo {
   }
 
   /// Gathers the user information from local storage backup
-  Future<User> getUserFromPrefrs() async{
+  Future<User> getUserFromPrefs() async{
     SharedPreferences prefs = await _prefs;
     if(prefs.get(USER_KEY) == null)
       return null;

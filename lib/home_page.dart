@@ -73,12 +73,12 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
             title: new Text("Personal Feed"),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.search),
+            icon: Icon(Icons.dashboard),
             title: new Text('General Feed'),
           ),
           BottomNavigationBarItem(
               icon: Icon(Icons.business),
-              title: Text('Profile')
+              title: Text('Information Basee')
           ),
           BottomNavigationBarItem(
               icon: Icon(Icons.person),

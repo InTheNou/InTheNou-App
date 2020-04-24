@@ -61,7 +61,7 @@ class GeneralFeedState extends State<FeedView>
         body: _buildBody(),
         floatingActionButton: new Visibility(
           key: ValueKey("EventCreationFAB"),
-          visible: widget.type == FeedType.PersonalFeed &&
+          visible:
               _userStore.user != null &&
               _userStore.user.userPrivilege != UserPrivilege.User,
           child: new FloatingActionButton(

@@ -44,15 +44,22 @@ class UserStore extends flux.Store{
   String _createdEventError;
 
   Future<User> loginUser;
-  Future<Cookie> session;
-  Future<GoogleSignInAccount> account;
+  Future<Cookie> _session;
+  Future<GoogleSignInAccount> _account;
+
+  Future<bool> accountCreationFinished = Future.value(false);
 
   DialogService _dialogService = DialogService();
 
   UserStore() {
-     _tagRepo.getAllTagsAsMap().then((tags) {
-       _allTags = tags;
-       _searchTags = tags;
+     _tagRepo.getAllTags().then((tags) {
+       _allTags = new Map<Tag,bool>.fromIterable(tags,
+           key: (tag) => tag,
+           value: (tag) => false
+       );
+       if(_searchTags.isEmpty){
+         _searchTags = new Map.from(_allTags);
+       }
      });
 
     triggerOnAction(refreshFollowedAction, (_){
@@ -70,9 +77,22 @@ class UserStore extends flux.Store{
     triggerOnAction(getMyTagsAction, (_) {
       _userTags = _userRepo.getUserTags();
     });
+     triggerOnAction(addTagAction, (Tag tag) {
+
+       _tagRepo.addTag([tag]);
+     });
+     triggerOnAction(removeTagAction, (Tag tag) async {
+       DialogResponse response = await _dialogService.showDialog(
+           type: DialogType.ImportantAlert,
+           title: "Remove Tag Confirmation",
+           description: "");
+       _tagRepo.removeTag([tag]);
+     });
     triggerOnConditionalAction(callAuthAction, (_) async{
 
       return _userRepo.logIn().then((uid) async{
+        // Get the latest userAccount object
+        getAccount();
         if(uid != null){
           if(uid == -1){
             return false;
@@ -90,15 +110,18 @@ class UserStore extends flux.Store{
         loginUser = Future.value(null);
         return true;
       }).catchError((e){
-        _showLoginError("Error Logging in", e);
+        // Get the latest userAccount object, event if the login failed since
+        // the google signIn might have gone through.
+        getAccount();
+        _showLoginError("Logging in", e);
         return true;
       });
     });
      triggerOnAction(fetchSession, (_) {
-      session = getSession();
+      _session = getSession();
     });
     triggerOnAction(googleSignOut, (_) {
-      account = _userRepo.googleSignOut();
+      _account = _userRepo.googleSignOut();
     });
     triggerOnAction(selectRoleAction, (UserRole role) {
       _selectedRole = role;
@@ -110,6 +133,7 @@ class UserStore extends flux.Store{
           _searchTags.putIfAbsent(key, () => value);
         }
       });
+      trigger();
     });
     triggerOnAction(toggleTagAction, (MapEntry<Tag,bool> tag) {
       if (tag.value){
@@ -144,7 +168,6 @@ class UserStore extends flux.Store{
       if(!response.result){
         return false;
       }
-      loginUser = Future.value(null);
       _dialogService.showFullscreenLoadingDialog(
           description: "We are getting your account ready!");
       trigger();
@@ -154,11 +177,12 @@ class UserStore extends flux.Store{
         _selectedRole = null;
         _selectedTags = List();
         _searchTags = _allTags;
-        loginUser = Future.value(value);
+        accountCreationFinished = Future.value(true);
         return true;
       }).catchError((e){
         _dialogService.dialogComplete(DialogResponse(result: true));
-        _showLoginError("Error Creating Account", e);
+        _showLoginError("Creating Account Failed", e);
+        return true;
       });
     });
 
@@ -175,7 +199,7 @@ class UserStore extends flux.Store{
     String error;
     if (e.runtimeType == PlatformException) {
       if (e.code == GoogleSignIn.kNetworkError) {
-        error = "Unable to sign in, Network error.";
+        error = "Unable to sign in, Network unavailable.";
       } else {
         error = "Internal app error while Signing in";
       }
@@ -196,10 +220,17 @@ class UserStore extends flux.Store{
   /// The [Future] can return a Null if the user is new to the system.
   /// Otherwise it return the full User information
   Future<User> getUser() async{
-    return _userRepo.getUserFromPrefrs().then((value) {
+    return _userRepo.getUserFromPrefs().then((value) {
       _user = value;
+      print("getuser");
+      print(_user);
       trigger();
       return _user;
+    }).catchError((e){
+      _dialogService.showDialog(
+          type: DialogType.Error,
+          title: "Local sign in failed",
+          description: "Unable to retrieve local User Info");
     });
   }
 
@@ -207,17 +238,12 @@ class UserStore extends flux.Store{
   /// Method gets the Session saved locally, if there is one.
   /// If there is none or the Session found is invalid, then Null is returned
   Future<Cookie> getSession() async {
-    return _userRepo.getSession().then((value) {
-      account = _userRepo.getGoogleAccount();
-      trigger();
-      return value;
-    });
     return _userRepo.getSession();
   }
 
   Future<GoogleSignInAccount> getAccount() async {
-    account = _userRepo.getGoogleAccount();
-    return account;
+    _account = _userRepo.getGoogleAccount();
+    return _account;
   }
 
   User get user => _user;
@@ -237,6 +263,9 @@ class UserStore extends flux.Store{
   bool get isFollowedLoading => _isFollowedLoading;
   bool get isCreatedLoading => _isCreatedLoading;
 
+  Future<Cookie> get session => _session;
+  Future<GoogleSignInAccount> get account => _account;
+
 }
 //Profile Actions
 final flux.Action refreshFollowedAction = new flux.Action();
@@ -244,6 +273,9 @@ final flux.Action refreshHistoryAction = new flux.Action();
 final flux.Action refreshCreatedAction = new flux.Action();
 final flux.Action<Event> cancelEventAction = new flux.Action();
 final flux.Action getMyTagsAction = new flux.Action();
+
+final flux.Action<Tag> addTagAction = new flux.Action();
+final flux.Action<Tag> removeTagAction = new flux.Action();
 
 //AccountCreation and Auth Actions
 final flux.Action fetchSession = new flux.Action();

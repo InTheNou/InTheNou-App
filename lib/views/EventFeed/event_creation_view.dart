@@ -46,7 +46,6 @@ class _EventCreationViewState extends State<EventCreationView>
   void initState() {
     _creationStore = listenToStore(EventCreationStore.eventCreationStoreToken);
     getBuildingsAction();
-    getAllTagsAction();
     // In case the user had decided to save the draft and they had entered at
     // least the Start Date, this would enable the End Date picker
     _endDateEnable = _creationStore.startDateTime != null;
@@ -367,18 +366,23 @@ class _EventCreationViewState extends State<EventCreationView>
                         children: <Widget>[
                           const Padding(padding: EdgeInsets.only(left: 8.0)),
                           Expanded(
-                            child: Row(
-                              children: <Widget>[
-                                Text("Website Links (Optional)",
-                                    style: Theme.of(context).textTheme.subtitle1),
-                                const Padding(padding: EdgeInsets.only(left: 8.0)),
-                                Text("${_creationStore.websites.length}/10",
+                            child: RichText(
+                              text: TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: "Website Links: ",
+                                    style: Theme.of(context).textTheme.subtitle1
+                                  ),
+                                  TextSpan(
+                                    text: "${_creationStore.websites.length}/10",
                                     style: Theme.of(context).textTheme
-                                        .subtitle1.copyWith(
-                                        fontWeight: FontWeight.w300
-                                    )),
-                              ],
-                            )
+                                            .subtitle1.copyWith(
+                                            fontWeight: FontWeight.w300
+                                        ),
+                                  )
+                                ]
+                              ),
+                            ),
                           ),
                           IconButton(
                               icon: Icon(Icons.add),
@@ -450,9 +454,22 @@ class _EventCreationViewState extends State<EventCreationView>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           const Padding(padding: EdgeInsets.only(left: 8.0)),
-                          Text(
-                            "Select from 3 to 10 Tags:",
-                            style:Theme.of(context).textTheme.subtitle1,
+                          RichText(
+                            text: TextSpan(
+                                children: [
+                                  TextSpan(
+                                      text: "Select from 3 to 10 Tags: ",
+                                      style: Theme.of(context).textTheme.subtitle1
+                                  ),
+                                  TextSpan(
+                                    text: "${_creationStore.selectedTags.length}/10",
+                                    style: Theme.of(context).textTheme
+                                        .subtitle1.copyWith(
+                                        fontWeight: FontWeight.w300
+                                    ),
+                                  )
+                                ]
+                            ),
                           ),
                         ],
                       ),

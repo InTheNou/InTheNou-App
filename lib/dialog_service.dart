@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 class DialogService {
   Function(DialogRequest) _showDialogListener;
   Function() _dismissDialogListener;
-  Completer<DialogResponse> _dialogCompleter;
+  List<Completer<DialogResponse>> _dialogCompleter;
 
   static final DialogService _dialogService = DialogService._internal();
 
@@ -14,7 +14,9 @@ class DialogService {
     return _dialogService;
   }
 
-  DialogService._internal();
+  DialogService._internal(){
+    _dialogCompleter = List();
+  }
 
   void registerDialogListener(Function(DialogRequest) showDialogListener,
       Function dismissDialogListener) {
@@ -30,7 +32,7 @@ class DialogService {
     String secondaryButtonTitle = "",
     bool dismissible = true
   }) {
-    _dialogCompleter = Completer<DialogResponse>();
+    _dialogCompleter.add(Completer<DialogResponse>());
     _showDialogListener(DialogRequest(
         type: type,
         title: title,
@@ -39,13 +41,13 @@ class DialogService {
         secondaryButtonTitle: secondaryButtonTitle,
         dismissible: dismissible
     ));
-    return _dialogCompleter.future;
+    return _dialogCompleter.last.future;
   }
 
   Future showLoadingDialog({
     @required String title
   }) {
-    _dialogCompleter = Completer<DialogResponse>();
+    _dialogCompleter.add(Completer<DialogResponse>());
     _showDialogListener(DialogRequest(
       type: DialogType.Loading,
       title: title,
@@ -53,24 +55,24 @@ class DialogService {
       primaryButtonTitle: null,
       secondaryButtonTitle: null,
     ));
-    return _dialogCompleter.future;
+    return _dialogCompleter.last.future;
   }
   Future showFullscreenLoadingDialog({
     @required String description
   }) {
-    _dialogCompleter = Completer<DialogResponse>();
+    _dialogCompleter.add(Completer<DialogResponse>());
     _showDialogListener(DialogRequest(
       type: DialogType.FullScreenLoading,
       title: null,
       description: description,
       primaryButtonTitle: null,
     ));
-    return _dialogCompleter.future;
+    return _dialogCompleter.last.future;
   }
 
   void dialogComplete(DialogResponse response) {
-    _dialogCompleter.complete(response);
+    _dialogCompleter.last.complete(response);
     _dismissDialogListener();
-    _dialogCompleter = null;
+    _dialogCompleter.removeLast();
   }
 }

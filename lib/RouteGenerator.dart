@@ -11,6 +11,7 @@ import 'package:InTheNou/views/InformoationBase/infobase_search_view.dart';
 import 'package:InTheNou/views/InformoationBase/room_view.dart';
 import 'package:InTheNou/views/InformoationBase/service_view.dart';
 import 'package:InTheNou/views/Profile/created_events_view.dart';
+import 'package:InTheNou/views/Profile/debug_settings_view.dart';
 import 'package:InTheNou/views/Profile/followed_events_view.dart';
 import 'package:InTheNou/views/Profile/history_events_view.dart';
 import 'package:InTheNou/views/Profile/my_tags_view.dart';
@@ -94,6 +95,12 @@ class RouteGenerator{
             settings: settings,
             builder: (_) => DialogManager(
                 child: SettingsView())
+        );
+      case '/profile/settings/debug':
+        return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => DialogManager(
+                child: DebugSettingsView())
         );
       case '/profile/followed_events':
         return MaterialPageRoute(

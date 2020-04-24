@@ -2,7 +2,7 @@ import 'package:InTheNou/assets/values.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
-const String INFORMATION_BASE = "Inforamtion Base";
+const String INFORMATION_BASE = "Information Base";
 
 class InfoBaseCategoryView extends StatefulWidget{
 

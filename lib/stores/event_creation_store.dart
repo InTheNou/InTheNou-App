@@ -44,7 +44,6 @@ class EventCreationStore extends flux.Store {
   Room _selectedRoom;
   List<Website> _websites = new List();
 
-  List<Tag> _allTagsFromRepo = new List();
   Map<Tag,bool> _allTags = new Map();
   Map<Tag,bool> _searchTags = new Map();
   List<Tag> _selectedTags = new List();
@@ -85,15 +84,15 @@ class EventCreationStore extends flux.Store {
           reset();
         } else {
           _dialogService.showDialog(
-              type: DialogType.Alert,
+              type: DialogType.Error,
               title: "Creation Failed",
               description: "The Event was not able to be Created please try "
                   "again.");
         }
       }).catchError((e){
         _dialogService.showDialog(
-            type: DialogType.Alert,
-            title: "Error",
+            type: DialogType.Error,
+            title: "Creation Failed",
             description: e.toString());
       });
     });
@@ -111,22 +110,30 @@ class EventCreationStore extends flux.Store {
         reset();
       }
     });
-    triggerOnConditionalAction(getBuildingsAction, (_) async{
-      return _infoBaseRepo.getAllBuildings().then((buildings){
+    triggerOnAction(getBuildingsAction, (_) async{
+      _infoBaseRepo.getAllBuildings().then((buildings){
         _buildings = buildings;
-        return true;
+      }).catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Unable to get Buildings",
+            description: e.toString());
       });
     });
     triggerOnAction(getAllTagsAction, (_){
-      return _tagRepo.getAllTags().then((tags) {
-        _allTagsFromRepo = tags;
-        _allTags = new Map<Tag,bool>.fromIterable(_allTagsFromRepo,
+      _tagRepo.getAllTags().then((tags) {
+        _allTags = new Map<Tag,bool>.fromIterable(tags,
             key: (tag) => tag,
             value: (tag) => false
         );
         if(_searchTags.isEmpty){
           _searchTags = new Map.from(_allTags);
         }
+      }).catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Unable to get Tags",
+            description: e.toString());
       });
     });
     triggerOnAction(inputEventTitleAction, (String title){
@@ -145,23 +152,31 @@ class EventCreationStore extends flux.Store {
         _endDateTime = dateTime.value;
       }
     });
-    triggerOnConditionalAction(buildingSelectAction, (Building building){
+    triggerOnAction(buildingSelectAction, (Building building){
       _selectedFloor = null;
       _selectedRoom = null;
       _roomsInBuilding = new List();
-      return _infoBaseRepo.getBuilding(building.UID).then((value) {
+      _infoBaseRepo.getBuilding(building.UID).then((value) {
         _selectedBuilding = value;
         _floors = selectedBuilding.floors;
-        return true;
+      }).catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Unable to get Floors of Building",
+            description: e.toString());
       });
     });
-    triggerOnConditionalAction(floorSelectAction, (Floor floor) async{
+    triggerOnAction(floorSelectAction, (Floor floor) async{
       _selectedFloor = floor;
       _selectedRoom = null;
-      return _infoBaseRepo.getRoomsOfFloor(_selectedBuilding.UID,
+      _infoBaseRepo.getRoomsOfFloor(_selectedBuilding.UID,
           floor.floorNumber).then((value){
         _roomsInBuilding = value;
-        return true;
+      }).catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Unable to get Rooms of Floor",
+            description: e.toString());
       });
     });
     triggerOnAction(roomSelectAction, (Room room){
@@ -175,14 +190,23 @@ class EventCreationStore extends flux.Store {
       }
     });
     triggerOnAction(selectedTagAction, (MapEntry<Tag, bool> tag){
+      if (tag.value){
+        if(_selectedTags.length > 9){
+          _dialogService.showDialog(
+              type: DialogType.Alert,
+              title: "Tag Limit Reached",
+              description: "You have reached the limit of 10 Tags for the "
+                  "Event.");
+          return;
+        } else {
+          _selectedTags.add(tag.key);
+        }
+      } else {
+        _selectedTags.remove(tag.key);
+      }
       if(_searchTags.containsKey(tag.key)){
         _searchTags.update(tag.key, (value) => tag.value);
         _allTags.update(tag.key, (value) => tag.value);
-      }
-      if (tag.value){
-        _selectedTags.add(tag.key);
-      } else {
-        _selectedTags.remove(tag.key);
       }
     });
     triggerOnAction(searchedTagAction, (String search){
