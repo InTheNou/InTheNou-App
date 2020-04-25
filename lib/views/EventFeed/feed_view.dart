@@ -69,6 +69,7 @@ class GeneralFeedState extends State<FeedView>
               Navigator.of(context).pushNamed('/create_event');
             },
             tooltip: 'Open Event Creation',
+            foregroundColor: Theme.of(context).canvasColor,
             backgroundColor: Theme.of(context).accentColor,
             child: new Icon(Icons.add),
           ),
@@ -175,6 +176,7 @@ class GeneralFeedState extends State<FeedView>
               return  ListView.builder(
                   key: ValueKey(widget.type),
                   controller: _scrollController,
+                  padding:const EdgeInsets.only(bottom: 100.0),
                   itemCount: events.data.length,
                   itemBuilder: (context, index) {
                     return EventCard(events.data[index], widget.type);

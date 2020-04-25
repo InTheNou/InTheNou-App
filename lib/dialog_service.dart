@@ -29,7 +29,7 @@ class DialogService {
     @required String title,
     @required String description,
     String primaryButtonTitle = 'OK',
-    String secondaryButtonTitle = "",
+    String secondaryButtonTitle,
     bool dismissible = true
   }) {
     _dialogCompleter.add(Completer<DialogResponse>());
@@ -74,5 +74,9 @@ class DialogService {
     _dialogCompleter.last.complete(response);
     _dismissDialogListener();
     _dialogCompleter.removeLast();
+  }
+
+  void goBack() {
+    _dismissDialogListener();
   }
 }

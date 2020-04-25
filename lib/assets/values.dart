@@ -88,6 +88,9 @@ const List<int> defaultNotificationTimes = [
 
 const API_URL = "https://inthenou.uprm.edu/API";
 
+// UI Constants
+const radius = 12.0;
+
 //Shared Preferences Keys
 const DEFAULT_NOTIFICATION_KEY = "defaultNotificationTime";
 const SMART_NOTIFICATION_KEY = "smartNotificationEnabled";

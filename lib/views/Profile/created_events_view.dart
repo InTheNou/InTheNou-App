@@ -84,12 +84,11 @@ class _CreatedEventsViewState extends State<CreatedEventsView>
         itemBuilder: (context, index){
           Event _event = createdEvents[index];
           return Card(
-              key: ValueKey(_event.UID+10),
+              key: ValueKey(_event.UID),
               margin: EdgeInsets.only(top: 8.0),
               child: InkWell(
                 onTap: () {
-                  Navigator.of(context).pushNamed(
-                      '/eventdetail',
+                  Navigator.of(context).pushNamed('/eventdetail',
                       arguments: _event.UID
                   );
                 },
@@ -97,10 +96,8 @@ class _CreatedEventsViewState extends State<CreatedEventsView>
                   padding: const EdgeInsets.only(top: 16.0, bottom: 8.0, left:
                   8.0, right: 8.0),
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Expanded(
-                        flex: 2,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
@@ -127,31 +124,30 @@ class _CreatedEventsViewState extends State<CreatedEventsView>
                                 style: Theme.of(context).textTheme.subtitle2
                             ),
                             const Padding(padding: EdgeInsets.only(bottom: 8.0)),
-                            Visibility(
-                              visible:
-                              (_event.endDateTime.isAfter(DateTime.now())
-                               && _event.status == "active") ||
-                                  _event.status == "deleted",
-                              child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: <Widget>[
-                                    ButtonTheme(
-                                        minWidth: 120.0,
-                                        child: RaisedButton(
-                                            child: _event.status == "active"
-                                                ? Text("CANCEL") :
-                                                  Text("CANCELLED"),
-                                            color: Theme.of(context).errorColor,
+                            Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: <Widget>[
+                                  Visibility(
+                                      visible:
+                                      (_event.endDateTime.isAfter(DateTime.now())
+                                          && _event.status == "active") ||
+                                          _event.status == "deleted",
+                                      child: SizedBox(
+                                        width: 110,
+                                        child: FlatButton(
+                                            child: _event.status == "active" ?
+                                            Text("CANCEL") : Text("CANCELLED"),
                                             textColor: Theme.of(context).canvasColor,
+                                            color: Theme.of(context).errorColor,
                                             disabledColor: Colors.grey[200],
-                                            onPressed:
-                                            _event.status == "deleted"? null :
-                                                () => _showCancelConfirmation(_event)
-                                        )
-                                    )
-                                  ]
-                              ),
+                                            onPressed: _event.status == "deleted" ?
+                                            null : () => cancelEventAction(_event)
+                                        ),
+                                      )
+                                  ),
+                                ]
                             ),
+
                           ],
                         ),
                       ),
@@ -161,62 +157,6 @@ class _CreatedEventsViewState extends State<CreatedEventsView>
               )
           );
         });
-  }
-
-  void _showCancelConfirmation(Event _event){
-    showDialog(context: context,
-        barrierDismissible: true,
-        builder: (_){
-          return AlertDialog(
-            title: Text(
-                "Event Cancellation"
-            ),
-            content: Text(
-                "Are you sure you want to cancel this event? \nThis action "
-                    "can't be undone."
-            ),
-            actions: <Widget>[
-              FlatButton(
-                child: Text("CONFIRM"),
-                textColor: Theme.of(context).errorColor,
-                onPressed: () async{
-                  Navigator.of(context).pop();
-                  await cancelEventAction(_event);
-                  _userStore.cancelEventResult.then((value) {
-                    if(value != null){
-                      if(!value){
-                        _showCancelError();
-                      }
-                    }
-                    refreshCreatedAction();
-                  });
-                },
-              )
-            ],
-          );
-        }
-    );
-  }
-
-  void _showCancelError() {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      showDialog<String>(
-        context: context,
-        builder: (BuildContext context) =>
-            AlertDialog(
-              title: const Text('Error'),
-              content: Text("Unable to Cancel Event Please try again."),
-              actions: <Widget>[
-                FlatButton(
-                    child: const Text('OK'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    }
-                ),
-              ],
-            ),
-      );
-    });
   }
 
 }

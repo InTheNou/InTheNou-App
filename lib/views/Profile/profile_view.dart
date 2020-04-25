@@ -140,6 +140,17 @@ class ProfileState extends State<ProfileView>
                         ),
                         InkWell(
                           onTap: ()  {
+                            refreshFollowedAction();
+                            Navigator.of(context)
+                                .pushNamed("/profile/dismissed_events");
+                          },
+                          child: ListTile(
+                            title: Text("Dismissed Events"),
+                            trailing: Icon(Icons.navigate_next),
+                          ),
+                        ),
+                        InkWell(
+                          onTap: ()  {
                             Navigator.of(context)
                                 .pushNamed("/profile/my_tags");
                           },

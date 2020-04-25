@@ -68,7 +68,7 @@ class EventCreationStore extends flux.Store {
       _newEvent = new Event(0,_title, _description, "",
           _image == null ? null : _image.isEmpty ? null : _image,
           _startDateTime, _endDateTime, DateTime.now(), _selectedRoom,
-          _websites, _selectedTags, false, null, "active");
+          _websites, _selectedTags, false, false, null, "active");
 
       _eventsRepo.createEvent(_newEvent).then((result) async{
         _dialogService.dialogComplete(DialogResponse(result: true));
@@ -129,11 +129,12 @@ class EventCreationStore extends flux.Store {
         if(_searchTags.isEmpty){
           _searchTags = new Map.from(_allTags);
         }
+        trigger();
       }).catchError((e){
         _dialogService.showDialog(
             type: DialogType.Error,
             title: "Unable to get Tags",
-            description: e.toString());
+            description: "Please try again.");
       });
     });
     triggerOnAction(inputEventTitleAction, (String title){

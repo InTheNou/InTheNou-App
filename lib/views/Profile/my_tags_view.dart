@@ -1,4 +1,5 @@
 import 'package:InTheNou/models/tag.dart';
+import 'file:///E:/Users/Jonathan/AndroidStudioProjects/inthenou/lib/views/Profile/add_tag_dialog.dart';
 import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
@@ -19,6 +20,7 @@ class _MyTagsViewState extends State<MyTagsView>
   void initState() {
     super.initState();
     _userStore = listenToStore(UserStore.userStoreToken);
+    resetTagsAction();
     getMyTagsAction();
   }
 
@@ -47,7 +49,12 @@ class _MyTagsViewState extends State<MyTagsView>
               return _buildLoadingWidget();
             }
           },
-        )
+        ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        foregroundColor: Theme.of(context).canvasColor,
+        onPressed: () => _showAddTagDialog(),
+      ),
     );
   }
 
@@ -81,46 +88,55 @@ class _MyTagsViewState extends State<MyTagsView>
 
   Widget _buildResultsWidget(List<Tag> userTags) {
     return ListView.builder(
+        padding:const EdgeInsets.only(bottom: 75.0),
         itemCount: userTags.length,
         itemBuilder: (context, index) {
           Tag _tag = userTags[index];
           return Card(
               key: ValueKey(_tag.UID),
               margin: EdgeInsets.only(top: 8.0),
-              child: InkWell(
-                onTap: () {},
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Expanded(
-                        child: Text(
-                          _tag.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Theme.of(context).primaryColor,
-                            fontSize: Theme.of(context).textTheme.headline6.fontSize,
-                            fontWeight: FontWeight.bold,
-                          ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        _tag.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Theme.of(context).primaryColor,
+                          fontSize: Theme.of(context).textTheme.headline6.fontSize,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const Padding(padding: EdgeInsets.only(left: 4.0)),
-                      Text(
-                          "Weight: ${_tag.weight}",
-                          style: Theme.of(context).textTheme.bodyText1,
-                          textAlign: TextAlign.start,
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.delete),
-                        onPressed: () => removeTagAction(),
-                      )
-                    ],
-                  ),
+                    ),
+                    Text(
+                      "Weight: ${_tag.weight}",
+                      style: Theme.of(context).textTheme.bodyText1,
+                      textAlign: TextAlign.start,
+                    ),
+                    const Padding(padding: EdgeInsets.only(left: 16.0)),
+                    IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () => removeTagAction(_tag),
+                    )
+                  ],
                 ),
               )
           );
         });
+  }
+
+  void _showAddTagDialog(){
+    resetTagsAction();
+    showDialog(
+        context: context,
+        builder: (_){
+          return AddTagDialog();
+        }).then((_) {
+      resetTagsAction();
+    });
   }
 }

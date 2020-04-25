@@ -56,12 +56,11 @@ class _SettingsViewState extends State<SettingsView>
                           builder: (BuildContext context, AsyncSnapshot<int> time) {
                             return Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: new DropdownButton<int>(
+                              child: DropdownButton<int>(
                                   value: time.data,
-                                  style: Theme.of(context).textTheme.subtitle2,
                                   underline: Container(
                                     height: 2,
-                                    color: Theme.of(context).primaryColor,
+                                    color: Theme.of(context).accentColor,
                                   ),
                                   items: _settingsStore.defaultTimes
                                       .map<DropdownMenuItem<int>>((int value) {
@@ -101,7 +100,6 @@ class _SettingsViewState extends State<SettingsView>
                                   right: 8.0),
                               child: new Switch(
                                   value: toggle.data,
-                                  activeColor: Theme.of(context).primaryColor,
                                   onChanged: (value)  async =>
                                       checkPermissionAndUpdate(value)
                               ),

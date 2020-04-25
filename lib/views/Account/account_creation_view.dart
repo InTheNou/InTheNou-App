@@ -25,6 +25,7 @@ class _AccountCreationViewState extends State<AccountCreationView>
   void initState() {
     super.initState();
     _userStore = listenToStore(UserStore.userStoreToken);
+    resetTagsAction();
   }
 
   @override

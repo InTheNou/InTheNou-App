@@ -138,68 +138,74 @@ class _RoomViewState extends State<RoomView>
                 ),
                 //
                 // Contact info
-                Card(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            "Contact Information",
-                            style: Theme.of(context).textTheme.subtitle2
-                                .copyWith(fontWeight: FontWeight.w300),
-                          )
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
-                        // Adding the mailto: makes it a clickable email link
-                        child: LinkWithIconWidget(
-                            detailRoom.custodian,
-                            "mailto:<${detailRoom.custodian}>",
-                            Icon(Icons.mail)
+                Visibility(
+                  visible: detailRoom.custodian != null,
+                  child: Card(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              "Contact Information",
+                              style: Theme.of(context).textTheme.subtitle2
+                                  .copyWith(fontWeight: FontWeight.w300),
+                            )
                         ),
-                      )
-                    ],
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
+                          // Adding the mailto: makes it a clickable email link
+                          child: LinkWithIconWidget(
+                              detailRoom.custodian,
+                              "mailto:<${detailRoom.custodian}>",
+                              Icon(Icons.mail)
+                          ),
+                        )
+                      ],
+                    ),
                   ),
                 ),
                 //
                 //Services
-                Card(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            "Services",
-                            style: Theme.of(context).textTheme.subtitle2
-                                .copyWith(fontWeight: FontWeight.w300),
-                          )
-                      ),
-                      ListView.separated(
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: detailRoom.services.length,
-                          itemBuilder: (context, index) {
-                            Service _service = detailRoom.services[index];
-                            return InkWell(
-                              onTap: () {
-                                selectServiceAction(_service);
-                                Navigator.of(context).pushNamed
-                                  ("/infobase/service");
-                              },
-                              child: ListTile(
-                                title: Text(_service.name,
-                                    style: Theme.of(context).textTheme.subtitle1),
-                                subtitle: Text(_service.description),
-                                trailing: Icon(Icons.navigate_next),
-                                dense: true,
-                              ),
-                            );
-                          },
-                          separatorBuilder: (context, index) => Divider()
-                      )
-                    ],
+                Visibility(
+                  visible: detailRoom.services.length > 0,
+                  child: Card(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              "Services",
+                              style: Theme.of(context).textTheme.subtitle2
+                                  .copyWith(fontWeight: FontWeight.w300),
+                            )
+                        ),
+                        ListView.separated(
+                            physics: const NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: detailRoom.services.length,
+                            itemBuilder: (context, index) {
+                              Service _service = detailRoom.services[index];
+                              return InkWell(
+                                onTap: () {
+                                  selectServiceAction(_service);
+                                  Navigator.of(context).pushNamed
+                                    ("/infobase/service");
+                                },
+                                child: ListTile(
+                                  title: Text(_service.name,
+                                      style: Theme.of(context).textTheme.subtitle1),
+                                  subtitle: Text(_service.description),
+                                  trailing: Icon(Icons.navigate_next),
+                                  dense: true,
+                                ),
+                              );
+                            },
+                            separatorBuilder: (context, index) => Divider()
+                        )
+                      ],
+                    ),
                   ),
                 ),
               ],

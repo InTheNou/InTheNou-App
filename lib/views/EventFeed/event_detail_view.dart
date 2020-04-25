@@ -147,50 +147,68 @@ class _EventDetailViewState extends State<EventDetailView>
                                   ),
                                   const Padding(padding: EdgeInsets.only(bottom: 8.0)),
                                   Visibility(
-                                    visible: eventDetail.status == "active",
+                                    visible: eventDetail.status == "active" &&
+                                        !eventDetail.dismissed,
                                     child: Row(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: <Widget>[
-                                          ButtonTheme(
-                                              minWidth: 120.0,
-                                              child: OutlineButton(
-                                                child: const Text('DISMISS'),
-                                                textColor: Theme.of(context).errorColor,
-                                                highlightedBorderColor: Theme.of(context).errorColor,
-                                                onPressed: () {
-                                                  if(!eventDetail.followed){
-                                                    _showDismissDialog
-                                                      (eventDetail);
-                                                  } else {
-                                                    dismissEventAction
-                                                      (eventDetail);
-                                                  }
+                                          SizedBox(
+                                            width: 110,
+                                            child: FlatButton(
+                                              child: const Text('DISMISS'),
+                                              textColor: Theme.of(context).errorColor,
+                                              onPressed: () {
+                                                if(!eventDetail.followed){
+                                                  _showDismissDialog(eventDetail);
+                                                } else {
+                                                  dismissEventAction(eventDetail);
                                                 }
-                                              )
+                                              },
+                                            ),
                                           ),
                                           Padding(padding: EdgeInsets.only(
                                               left: 80.0)),
-                                          ButtonTheme(
-                                              minWidth: 120.0,
-                                              child: OutlineButton(
-                                                child: Text(eventDetail.followed ?
-                                                "UNFOLLOW":'FOLLOW'
-                                                ),
-                                                textColor: Theme.of(context).primaryColor,
-                                                borderSide: BorderSide(
-                                                    color: Theme.of(context).primaryColor,
-                                                    width: eventDetail.followed ? 1.5 : 0.0
-                                                ),
-                                                onPressed: () {
-                                                  eventDetail.followed ?
-                                                  unFollowEventAction
-                                                    (MapEntry(FeedType.Detail, eventDetail
-                                                  )) :
-                                                  followEventAction
-                                                    (MapEntry(FeedType.Detail, eventDetail
-                                                  ));
-                                                },
-                                              )
+                                          SizedBox(
+                                            width: 110,
+                                            child: FlatButton(
+                                              child: Text(eventDetail.followed ?
+                                              "FOLLOWING":'FOLLOW'
+                                              ),
+                                              textColor: eventDetail.followed ?
+                                              Theme.of(context).cardColor :
+                                              Theme.of(context).primaryColor ,
+                                              color: eventDetail.followed ?
+                                              Theme.of(context).primaryColor :
+                                              Theme.of(context).cardColor,
+                                              onPressed: () {
+                                                eventDetail.followed ?
+                                                unFollowEventAction
+                                                  (MapEntry(FeedType.Detail, eventDetail)):
+                                                followEventAction
+                                                  (MapEntry(FeedType.Detail, eventDetail));
+                                              },
+                                            ),
+                                          )
+                                        ]
+                                    ),
+                                  ),
+                                  Visibility(
+                                    visible: eventDetail.status != "active",
+                                    child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: <Widget>[
+                                          SizedBox(
+                                            width: 110,
+                                          ),
+                                          Padding(padding: EdgeInsets.only(
+                                              left: 80.0)),
+                                          SizedBox(
+                                            width: 110,
+                                            child: FlatButton(
+                                              child: Text("CANCELLED"),
+                                              disabledColor: Colors.grey[200],
+                                              onPressed: null
+                                            ),
                                           )
                                         ]
                                     ),
@@ -312,10 +330,8 @@ class _EventDetailViewState extends State<EventDetailView>
                                           spacing: 8.0,
                                           children: List<Widget>.generate(
                                               eventDetail.tags.length,
-                                                  (i) => Chip(
-                                                  label: Text(
-                                                      eventDetail.tags[i].name
-                                                  )
+                                                  (i) => Chip(label:
+                                                  Text(eventDetail.tags[i].name)
                                               )
                                           )
                                       )
@@ -366,12 +382,11 @@ class _EventDetailViewState extends State<EventDetailView>
 
   void _showDismissDialog(Event eventDetail){
     _dialogService.showDialog(
-      type: DialogType.Alert,
+      type: DialogType.ImportantAlert,
       title: "Dismissing an Event",
-      description: "Are you sure you want to dismiss this Evet?\n"
-          "You will no longer see this event in your feeds",
-      primaryButtonTitle: "CONFIRM",
-      secondaryButtonTitle: "CANCEL"
+      description: "Are you sure you want to dismiss this Event?\n"
+          "You will no longer see this event in your feeds.",
+      primaryButtonTitle: "DISMISS"
     ).then((result) async{
       if(result.result){
         await dismissEventAction(eventDetail);

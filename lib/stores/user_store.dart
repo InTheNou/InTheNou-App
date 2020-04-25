@@ -24,9 +24,14 @@ class UserStore extends flux.Store{
   User _user;
   Future<List<Event>> _followedEvents;
   Future<List<Event>> _historyEvents;
+  Future<List<Event>> _dismissedEvents;
   Future<List<Event>> _createdEvents;
   Future<bool> _cancelEventResult= Future.value(null);
+
+  // MyTags
   Future<List<Tag>> _userTags;
+  Map<Tag, bool> _filteredTags = new Map();
+  Tag _addedTag;
 
   UserRole _selectedRole;
   List<Tag> _selectedTags = new List();
@@ -52,15 +57,19 @@ class UserStore extends flux.Store{
   DialogService _dialogService = DialogService();
 
   UserStore() {
-     _tagRepo.getAllTags().then((tags) {
-       _allTags = new Map<Tag,bool>.fromIterable(tags,
-           key: (tag) => tag,
-           value: (tag) => false
-       );
-       if(_searchTags.isEmpty){
-         _searchTags = new Map.from(_allTags);
-       }
-     });
+//     _tagRepo.getAllTags().then((tags) {
+//       _allTags = new Map<Tag,bool>.fromIterable(tags,
+//           key: (tag) => tag,
+//           value: (tag) => false
+//       );
+//       _searchTags = new Map.from(_allTags);
+//       _filteredTags = new Map.from(_allTags);
+//     }).catchError((e){
+//       _dialogService.showDialog(
+//           type: DialogType.Error,
+//           title: "Unable to Get Tags",
+//           description: null);
+//     });
 
     triggerOnAction(refreshFollowedAction, (_){
       _followedEvents = _userRepo.getFollowedEvents(0, EVENTS_TO_FETCH);
@@ -68,28 +77,147 @@ class UserStore extends flux.Store{
     triggerOnAction(refreshHistoryAction, (_){
       _historyEvents = _userRepo.getFEventsHistory(0, EVENTS_TO_FETCH);
     });
+    triggerOnAction(refreshDismissedAction, (_){
+      _dismissedEvents = _userRepo.getDismissedEvents(0, EVENTS_TO_FETCH);
+    });
     triggerOnAction(refreshCreatedAction, (_){
       _createdEvents = _userRepo.getCreatedEvents(0, EVENTS_TO_FETCH);
     });
-    triggerOnAction(cancelEventAction, (Event event) {
-      _cancelEventResult = _eventRepo.cancelEvent(event);
+    triggerOnAction(cancelEventAction, (Event event) async{
+      DialogResponse response = await _dialogService.showDialog(
+          type: DialogType.ImportantAlert,
+          title: "Event Cancellation",
+          description: "Are you sure you want to cancel this event? \nThis action "
+              "can't be undone.",
+          primaryButtonTitle: "CONFIRM");
+      if(response.result){
+        _eventRepo.cancelEvent(event).catchError((e){
+          _dialogService.showDialog(
+              type: DialogType.Error,
+              title: "Unable to Cancel Event",
+              description: e.toString());
+        });
+        refreshCreatedAction();
+      }
     });
+
+    // MyTags
     triggerOnAction(getMyTagsAction, (_) {
       _userTags = _userRepo.getUserTags();
     });
-     triggerOnAction(addTagAction, (Tag tag) {
-
-       _tagRepo.addTag([tag]);
+     triggerOnAction(addTagAction, (_) async{
+       var tags = await _userTags;
+       if(tags.contains(_addedTag)){
+         _dialogService.showDialog(
+             type: DialogType.Alert,
+             title: "Unable to Add Tag",
+             description: "This Tag is already in your Pofile.");
+         return;
+       }
+       DialogResponse response = await _dialogService.showDialog(
+           type: DialogType.ImportantAlert,
+           title: "Add Tag Confirmation",
+           description: "The ${_addedTag.name} Tag will be added to your "
+               "Profile and you might be recommended events that include this"
+               " Tag.",
+           primaryButtonTitle: "ADD");
+       if(!response.result){
+         return;
+       }
+       _tagRepo.addTag([_addedTag]).then((result) async{
+         _dialogService.goBack();
+         if(result){
+           getMyTagsAction();
+         } else {
+           _dialogService.showDialog(
+               type: DialogType.Error,
+               title: "Adding Tag",
+               description: "Unable to Add that tag, please try again.");
+         }
+       }).catchError((e){
+         _dialogService.goBack();
+         _dialogService.showDialog(
+             type: DialogType.Error,
+             title: "Adding Tag",
+             description: e.toString());
+       });
      });
      triggerOnAction(removeTagAction, (Tag tag) async {
        DialogResponse response = await _dialogService.showDialog(
            type: DialogType.ImportantAlert,
            title: "Remove Tag Confirmation",
-           description: "");
-       _tagRepo.removeTag([tag]);
+           description: "This will remove tha Tag and it's weight from your "
+               "profile. The current progress in the weight will be lost "
+               "forever.",
+           primaryButtonTitle: "REMOVE");
+       if(!response.result){
+         return;
+       }
+       _tagRepo.removeTag([tag]).then((result) async{
+         if(result){
+           getMyTagsAction();
+         } else {
+           _dialogService.showDialog(
+               type: DialogType.Error,
+               title: "Removing Tag",
+               description: "Unable to Remove that tag, please try again.");
+         }
+       }).catchError((e){
+         _dialogService.showDialog(
+             type: DialogType.Error,
+             title: "Removing Tag",
+             description: e.toString());
+       });
      });
-    triggerOnConditionalAction(callAuthAction, (_) async{
+     triggerOnAction(resetTagsAction, (_) {
+       _tagRepo.getAllTags().then((tags) {
+         _allTags = new Map<Tag,bool>.fromIterable(tags,
+             key: (tag) => tag,
+             value: (tag) => false
+         );
+         _searchTags = new Map.from(_allTags);
+         _filteredTags = new Map.from(_allTags);
+         trigger();
+       }).catchError((e){
+         _dialogService.showDialog(
+             type: DialogType.Error,
+             title: "Unable to Get Tags",
+             description: e.toString());
+       });
+       _addedTag = null;
+     });
+     triggerOnAction(filterTagAction, (String keyword) async {
+       _filteredTags.clear();
+       _allTags.forEach((key, value) {
+         if(key.name.toUpperCase().contains(keyword.toUpperCase())){
+           _filteredTags.putIfAbsent(key, () => value);
+         }
+       });
+       trigger();
+     });
+     triggerOnAction(selectTagAction, (MapEntry<Tag,bool> tag) async {
+       if (tag.value){
+         if(_addedTag != null){
+           _dialogService.showDialog(
+               type: DialogType.Alert,
+               title: "Tag Already Chosen",
+               description: "You may add one Tag to your Profile at a time. "
+                   "You have already selected ${_addedTag.name}, please "
+                   "unselect it before selecting another Tag.");
+           return;
+         } else {
+           _addedTag = tag.key;
+         }
+       } else {
+         _addedTag = null;
+       }
+       if(_filteredTags.containsKey(tag.key)){
+         _filteredTags.update(tag.key, (value) => tag.value);
+         _allTags.update(tag.key, (value) => tag.value);
+       }
+     });
 
+    triggerOnConditionalAction(callAuthAction, (_) async{
       return _userRepo.logIn().then((uid) async{
         // Get the latest userAccount object
         getAccount();
@@ -222,8 +350,6 @@ class UserStore extends flux.Store{
   Future<User> getUser() async{
     return _userRepo.getUserFromPrefs().then((value) {
       _user = value;
-      print("getuser");
-      print(_user);
       trigger();
       return _user;
     }).catchError((e){
@@ -249,9 +375,14 @@ class UserStore extends flux.Store{
   User get user => _user;
   Future<List<Event>> get followedEvents => _followedEvents;
   Future<List<Event>> get historyEvents => _historyEvents;
+  Future<List<Event>> get dismissedEvents => _dismissedEvents;
   Future<List<Event>> get createdEvents => _createdEvents;
   Future<bool> get cancelEventResult => _cancelEventResult;
+
+  // MyTags
   Future<List<Tag>> get userTags => _userTags;
+  Map<Tag, bool> get filteredTags => _filteredTags;
+  Tag get addedTag => _addedTag;
 
   UserRole get selectedRole => _selectedRole;
   List<UserRole> get userRoles => _userRoles;
@@ -270,12 +401,18 @@ class UserStore extends flux.Store{
 //Profile Actions
 final flux.Action refreshFollowedAction = new flux.Action();
 final flux.Action refreshHistoryAction = new flux.Action();
+final flux.Action refreshDismissedAction = new flux.Action();
+
 final flux.Action refreshCreatedAction = new flux.Action();
 final flux.Action<Event> cancelEventAction = new flux.Action();
 final flux.Action getMyTagsAction = new flux.Action();
 
-final flux.Action<Tag> addTagAction = new flux.Action();
+//MyTags
+final flux.Action addTagAction = new flux.Action();
 final flux.Action<Tag> removeTagAction = new flux.Action();
+final flux.Action resetTagsAction = new flux.Action();
+final flux.Action<String> filterTagAction = new flux.Action();
+final flux.Action<MapEntry<Tag,bool>> selectTagAction = new flux.Action();
 
 //AccountCreation and Auth Actions
 final flux.Action fetchSession = new flux.Action();

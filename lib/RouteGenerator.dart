@@ -12,6 +12,7 @@ import 'package:InTheNou/views/InformoationBase/room_view.dart';
 import 'package:InTheNou/views/InformoationBase/service_view.dart';
 import 'package:InTheNou/views/Profile/created_events_view.dart';
 import 'package:InTheNou/views/Profile/debug_settings_view.dart';
+import 'package:InTheNou/views/Profile/dismissed_events_view.dart';
 import 'package:InTheNou/views/Profile/followed_events_view.dart';
 import 'package:InTheNou/views/Profile/history_events_view.dart';
 import 'package:InTheNou/views/Profile/my_tags_view.dart';
@@ -113,6 +114,12 @@ class RouteGenerator{
             settings: settings,
             builder: (_) => DialogManager(
                 child: HistoryEventsView())
+        );
+      case '/profile/dismissed_events':
+        return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => DialogManager(
+                child: DismissedEventsView())
         );
       case '/profile/my_tags':
         return MaterialPageRoute(

@@ -14,7 +14,8 @@ const MaterialColor primaryColor = MaterialColor(0xFF24324F, {
   }
 );
 // 6ec8d9
-const MaterialColor secondaryColor = MaterialColor(0xFFBDCCD4, {
+// 39B54A
+const MaterialColor secondaryColor = MaterialColor(0xFF39B54A, {
   50:Color.fromRGBO(255,62,76, .1),
   100:Color.fromRGBO(255,62,76, .2),
   200:Color.fromRGBO(255,62,76, .3),

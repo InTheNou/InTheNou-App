@@ -107,9 +107,9 @@ class _DialogManagerState extends State<DialogManager> {
             content: Text(request.description),
             actions: <Widget>[
               Visibility(
-                visible: request.secondaryButtonTitle.isNotEmpty,
+                visible: request.secondaryButtonTitle != null,
                 child: FlatButton(
-                  child: Text(request.secondaryButtonTitle),
+                  child: Text(request.secondaryButtonTitle ?? "CANCEL"),
                   onPressed: () {
                     _dialogService.dialogComplete(DialogResponse(result: false));
                   },
@@ -139,20 +139,16 @@ class _DialogManagerState extends State<DialogManager> {
             title: Text(request.title),
             content: Text(request.description),
             actions: <Widget>[
-              Visibility(
-                visible: request.secondaryButtonTitle.isNotEmpty,
-                child: FlatButton(
-                  child: Text(request.secondaryButtonTitle),
-                  onPressed: () {
-                    _dialogService.dialogComplete(DialogResponse(result: false));
-                  },
-                ),
+              FlatButton(
+                child: Text(request.secondaryButtonTitle ?? "CANCEL"),
+                onPressed: () {
+                  _dialogService.dialogComplete(DialogResponse(result: false));
+                },
               ),
               Padding(padding: EdgeInsets.only(left: 8.0)),
-              RaisedButton(
-                textColor: Theme.of(context).canvasColor,
-                color: Theme.of(context).primaryColor,
-                child:  Text(request.primaryButtonTitle),
+              FlatButton(
+                textColor: Theme.of(context).primaryColor,
+                child: Text(request.primaryButtonTitle),
                 onPressed: () =>
                     _dialogService.dialogComplete(DialogResponse(result: true))
               ),

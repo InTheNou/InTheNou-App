@@ -1,20 +1,18 @@
-import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/event.dart';
-import 'package:InTheNou/stores/event_feed_store.dart';
 import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
 
-class FollowedEventsView extends StatefulWidget {
+class DismissedEventsView extends StatefulWidget {
 
   @override
-  _FollowedEventsViewState createState() => new _FollowedEventsViewState();
+  _DismissedEventsViewState createState() => new _DismissedEventsViewState();
 
 }
 
-class _FollowedEventsViewState extends State<FollowedEventsView>
-  with flux.StoreWatcherMixin<FollowedEventsView>{
+class _DismissedEventsViewState extends State<DismissedEventsView>
+  with flux.StoreWatcherMixin<DismissedEventsView>{
 
   UserStore _userStore;
 
@@ -22,22 +20,23 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
   void initState() {
     super.initState();
     _userStore = listenToStore(UserStore.userStoreToken);
+    refreshDismissedAction();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Followed Events"),
+        title: Text("Dismissed Events"),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => refreshFollowedAction(),
+            onPressed: () => refreshDismissedAction(),
           ),
         ],
       ),
       body:  FutureBuilder(
-        future: _userStore.followedEvents,
+        future: _userStore.dismissedEvents,
         builder: (BuildContext context,
             AsyncSnapshot<List<Event>> followedEvents) {
 
@@ -65,8 +64,7 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
               ),
             ),
           ],
-        )
-    );
+        ));
   }
 
   Widget _buildLoadingWidget() {
@@ -79,8 +77,7 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
                 height: 100,
                 child: CircularProgressIndicator()),
           ],
-        )
-    );
+        ));
   }
 
   Widget _buildResultsWidget(List<Event> followedEvents) {
@@ -132,35 +129,6 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
                                 style: Theme.of(context).textTheme.subtitle2
                             ),
                             const Padding(padding: EdgeInsets.only(bottom: 8.0)),
-                            Visibility(
-                              visible: _event.status == "active",
-                              child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: <Widget>[
-                                    SizedBox(
-                                      width: 110,
-                                      child: FlatButton(
-                                        child: Text(_event.followed ?
-                                        "FOLLOWING":'FOLLOW'
-                                        ),
-                                        textColor: _event.followed ?
-                                        Theme.of(context).cardColor :
-                                        Theme.of(context).primaryColor ,
-                                        color: _event.followed ?
-                                        Theme.of(context).primaryColor :
-                                        Theme.of(context).cardColor,
-                                        onPressed: () {
-                                          _event.followed ?
-                                          unFollowEventAction
-                                            (MapEntry(FeedType.Detail, _event)):
-                                          followEventAction
-                                            (MapEntry(FeedType.Detail, _event));
-                                        },
-                                      ),
-                                    )
-                                  ]
-                              ),
-                            ),
                           ],
                         ),
                       ),

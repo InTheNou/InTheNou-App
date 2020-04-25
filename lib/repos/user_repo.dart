@@ -116,6 +116,8 @@ class UserRepo {
   /// routed to the Account Creation. Otherwise the UID is provided by the
   /// backend and the user can proceed to the app.
   Future<int> logIn() async {
+    SharedPreferences prefs = await _prefs;
+
     _userAccount = await _googleSignIn.signIn();
     if(_userAccount == null){
       return -1;
@@ -133,6 +135,7 @@ class UserRepo {
           data: convert.jsonEncode(values));
       // this is because we receive an error and no uid when the user is new
       if(response.data["uid"] == null){
+        prefs.setString("Token", response.data["Token"]);
         return null;
       }
       return int.parse(response.data['uid']);
@@ -315,6 +318,31 @@ class UserRepo {
       } else {
         debugPrint("Exception: $error stackTrace: $stacktrace");
         return Future.error("Internal app error while getting Events History");
+      }
+    }
+  }
+
+  Future<List<Event>> getDismissedEvents(int skipEvents, int numEvents) async{
+    try{
+      Response response = await dio.get(
+          "/App/Events/Dismissed/offset=$skipEvents/limit=$numEvents");
+      var eventResults = new List<Event>();
+
+      if(response.data["events"] != null){
+        response.data["events"].forEach((element) {
+          eventResults.add(Event.resultFromJson(element,
+              isFollowed: true));
+        });
+      }
+      return eventResults;
+    } catch(error, stacktrace){
+      if (error is DioError) {
+        debugPrint("Exception: $error");
+        return Future.error(Utils.handleDioError(error, "Dismissed Events") );
+      } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        return Future.error("Internal app error while getting Dismissed "
+            "Events");
       }
     }
   }

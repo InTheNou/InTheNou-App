@@ -225,7 +225,6 @@ class EventsRepo {
   /// Given the [Event._UID] through the [eventUID] parameter, the back-end
   /// will return detailed information about the [Event] that matches the UID.
   Future<Event> getEvent(int eventUID) async{
-
     try{
       Response response = await dio.get("/App/Events/eid=$eventUID/Interaction");
       return Event.fromJson(response.data);
@@ -353,7 +352,6 @@ class EventsRepo {
     } catch(error,stacktrace){
       if (error is DioError) {
         debugPrint("Exception: $error");
-        print(error.response.data.toString());
         return Future.error(Utils.handleDioError(error, "Create Event"));
       } else {
         debugPrint("Exception: $error stackTrace: $stacktrace");

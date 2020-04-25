@@ -1,6 +1,7 @@
 import 'package:InTheNou/RouteGenerator.dart';
 import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/colors.dart';
+import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/dialog_service.dart';
 import 'package:InTheNou/start_up_view.dart';
 import 'package:flutter/material.dart';
@@ -34,7 +35,17 @@ class InTheNouApp extends StatelessWidget {
             elevation: 1.0,
             margin: const EdgeInsets.all(4.0),
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0))
+                borderRadius: BorderRadius.circular(radius))
+        ),
+        buttonTheme: ButtonThemeData(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(radius),
+          ),
+        ),
+        dialogTheme: DialogTheme(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radius),
+          ),
         ),
       ),
       onGenerateRoute: RouteGenerator.generateRoute,

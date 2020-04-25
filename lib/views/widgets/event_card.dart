@@ -58,37 +58,40 @@ class EventCard extends StatelessWidget {
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: <Widget>[
-                              OutlineButton(
-                                child: Text('DISMISS'),
-                                textColor: Theme.of(context).errorColor,
-                                highlightedBorderColor: Theme.of(context).errorColor,
-                                onPressed: () {
-                                  if(!_event.followed){
-                                    _showUndoSnackbar(_event, context);
-                                  }
-                                  dismissEventAction(_event);
-                                },
+                              SizedBox(
+                                width: 110,
+                                child: FlatButton(
+                                  child: Text('DISMISS'),
+                                  textColor: Theme.of(context).errorColor,
+                                  onPressed: () {
+                                    if(!_event.followed){
+                                      _showUndoSnackbar(_event, context);
+                                    }
+                                    dismissEventAction(_event);
+                                  },
+                                ),
                               ),
                               Padding(padding: EdgeInsets.only(left: 30.0)),
-                              ButtonTheme(
-                                  minWidth: 120.0,
-                                  child: OutlineButton(
-                                    child: Text(_event.followed ?
-                                    "UNFOLLOW":'FOLLOW'
-                                    ),
-                                    textColor: Theme.of(context).primaryColor,
-                                    borderSide: BorderSide(
-                                        color: Theme.of(context).primaryColor,
-                                        width: _event.followed ? 1.5 : 0.0
-                                    ),
-                                    onPressed: () {
-                                      _event.followed ?
-                                      unFollowEventAction
-                                        (MapEntry(_feedType, _event)):
-                                      followEventAction
-                                        (MapEntry(_feedType, _event));
-                                    },
-                                  )
+                              SizedBox(
+                                width: 110,
+                                child: FlatButton(
+                                  child: Text(_event.followed ?
+                                  "FOLLOWING":'FOLLOW'
+                                  ),
+                                  textColor: _event.followed ?
+                                  Theme.of(context).cardColor :
+                                  Theme.of(context).primaryColor ,
+                                  color: _event.followed ?
+                                  Theme.of(context).primaryColor :
+                                  Theme.of(context).cardColor,
+                                  onPressed: () {
+                                    _event.followed ?
+                                    unFollowEventAction
+                                      (MapEntry(_feedType, _event)):
+                                    followEventAction
+                                      (MapEntry(_feedType, _event));
+                                  },
+                                ),
                               )
                             ]
                         ),

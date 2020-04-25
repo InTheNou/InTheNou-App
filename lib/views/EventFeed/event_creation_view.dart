@@ -46,6 +46,7 @@ class _EventCreationViewState extends State<EventCreationView>
   void initState() {
     _creationStore = listenToStore(EventCreationStore.eventCreationStoreToken);
     getBuildingsAction();
+    getAllTagsAction();
     // In case the user had decided to save the draft and they had entered at
     // least the Start Date, this would enable the End Date picker
     _endDateEnable = _creationStore.startDateTime != null;
@@ -161,7 +162,7 @@ class _EventCreationViewState extends State<EventCreationView>
                                   width: 1.0),
                             ),
                             border: const OutlineInputBorder(),
-                            labelText: "Event Image (Optional)"),
+                            labelText: "Event Image URL"),
                         autovalidate: _autoValidate,
                         maxLines: 1,
                         maxLength: 400,
@@ -289,7 +290,8 @@ class _EventCreationViewState extends State<EventCreationView>
                           child: DropdownButtonFormField(
                             decoration: InputDecoration(
                                 enabledBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(color: Colors.white))),
+                                    borderSide: BorderSide(
+                                        color: Theme.of(context).accentColor))),
                             autovalidate: _autoValidate,
                             hint: Text("Building *"),
                             disabledHint: Text("Building *",
@@ -314,7 +316,8 @@ class _EventCreationViewState extends State<EventCreationView>
                           child: DropdownButtonFormField(
                             decoration: InputDecoration(
                                 enabledBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(color: Colors.white))),
+                                    borderSide: BorderSide(
+                                        color: Theme.of(context).accentColor))),
                             autovalidate: _autoValidate,
                             hint: Text("Floor *"),
                             disabledHint: Text("Floor *",
@@ -339,7 +342,8 @@ class _EventCreationViewState extends State<EventCreationView>
                           child:DropdownButtonFormField(
                               decoration: InputDecoration(
                                   enabledBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.white))),
+                                      borderSide: BorderSide(
+                                          color: Theme.of(context).accentColor))),
                               autovalidate: _autoValidate,
                               hint: Text("Room *"),
                               disabledHint: Text("Room *",

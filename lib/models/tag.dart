@@ -24,6 +24,10 @@ class Tag {
     "tagweight": _weight
   };
 
+  Map<String, dynamic> toSmallJson() => {
+    "tid": _UID,
+  };
+
   static List<Tag> fromJsonToList(List<dynamic> json){
     if(json == null){
       return null;
@@ -38,6 +42,12 @@ class Tag {
     return new List.generate(tags.length, (i) => tags[i].toJson());
   }
 
+  static List<Map<String, dynamic>> toSmallJsonList(List<Tag> tags) {
+    if(tags == null){
+      return null;
+    }
+    return new List.generate(tags.length, (i) => tags[i].toSmallJson());
+  }
 
   int get UID => _UID;
   String get name => _name;
@@ -45,7 +55,7 @@ class Tag {
 
   @override
   String toString() {
-    return 'Tag{_name: $_name, _weight: $_weight}';
+    return 'Tag{_UID: $_UID, _name: $_name, _weight: $_weight}';
   }
 
   @override

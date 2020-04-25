@@ -20,18 +20,19 @@ class Event {
   List<Website> _websites;
   List<Tag> _tags;
   bool followed;
+  bool dismissed;
   String recommended;
   String status;
 
   Event(this._UID,this._title, this._description, this._creator, this._image,
       this._startDateTime, this._endDateTime, this._timestamp,
-      this._room, this._websites, this._tags, this.followed, this.recommended,
-      this.status);
+      this._room, this._websites, this._tags, this.followed, this.dismissed,
+      this.recommended, this.status);
 
   Event.result({int UID, String title, String description,  String image,
-      DateTime startDateTime,  DateTime endDateTime, DateTime timestamp,
-     Room room, List<Tag> tags, bool followed, String recommended,
-    String status}) {
+    DateTime startDateTime,  DateTime endDateTime, DateTime timestamp,
+    Room room, List<Tag> tags, bool followed, bool dismissed,
+    String recommended, String status}) {
     this._UID = UID;
     this._title = title;
     this._description = description;
@@ -43,6 +44,7 @@ class Event {
     this._websites = null;
     this._tags = tags;
     this.followed = followed;
+    this.dismissed = dismissed;
     this.recommended = recommended;
     this.status = status;
   }
@@ -66,6 +68,7 @@ class Event {
         Website.jsonToList(json["websites"]),
         Tag.fromJsonToList(json["tags"]),
         json['itype'] == Utils.interactionTypeToString(InteractionType.Following),
+        json['itype'] == Utils.interactionTypeToString(InteractionType.dismissed),
         json["recommendstatus"],
         json["estatus"] ?? "active"
     );
@@ -86,6 +89,8 @@ class Event {
         followed: isFollowed ? true :
           json['itype'] == Utils.interactionTypeToString(InteractionType
               .Following),
+        dismissed: json['itype'] == Utils.interactionTypeToString(InteractionType
+            .dismissed),
         status: json["estatus"] ?? "active"
     );
   }
