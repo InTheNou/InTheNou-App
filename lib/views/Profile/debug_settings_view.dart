@@ -274,6 +274,7 @@ class _DebugSettingsViewViewState extends State<DebugSettingsView>
                     ],
                   ),
                 ),
+
               ],
             ),
           );

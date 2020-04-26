@@ -27,11 +27,13 @@ class ApiConnection {
   List<Cookie> get cookies => _cookies;
   PersistCookieJar _persistentCookies;
 
+  /// Gets the Local Path to the Data directory of the app
   Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
     return directory.path;
   }
 
+  /// Creates the local directory for storing Cookies and the Session
   Future<Directory> get _localCookieDirectory async {
     final path = await _localPath;
     final Directory dir = new Directory('$path/cookies');
@@ -39,6 +41,13 @@ class ApiConnection {
     return dir;
   }
 
+  /// Initializes the Dio Http client for the API
+  ///
+  /// Loads u the cookies saved to file and saves the session if it exists.
+  /// Also sets up some basic settings for the Http client including the
+  /// [API_URL] that contains the base URL for the API. Lastly it uses
+  /// interceptors to save the session when we receive it in the response of
+  /// our requests.
   init() async{
     try {
       final Directory dir = await _localCookieDirectory;
@@ -89,7 +98,14 @@ class ApiConnection {
     _persistentCookies.deleteAll();
   }
 
+  /// Returns the Session Cookie
+  ///
+  /// If ti exists it can just return it, if not then it will try to get it
+  /// from the saved cookies.
   Future<Cookie> getSession() async{
+
+    // Sometimes this gets called too early while it's being initialized so we
+    // can wait for a bit
     while(_cookies == null){
       await Future.delayed(Duration(milliseconds: 100));
     }

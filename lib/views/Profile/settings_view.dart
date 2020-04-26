@@ -3,7 +3,6 @@ import 'package:InTheNou/background/background_handler.dart';
 import 'package:InTheNou/background/notification_handler.dart';
 import 'package:InTheNou/home_page.dart';
 import 'package:InTheNou/stores/settings_store.dart';
-import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 import 'package:geolocator/geolocator.dart';

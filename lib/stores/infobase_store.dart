@@ -39,7 +39,7 @@ class InfoBaseStore extends flux.Store{
       switch (search.key) {
         case InfoBaseType.Building:
           _buildingSearchKeyword = search.value;
-          _buildingsResults = _infoBaseRepo.searchBuildings(search.value);
+          _buildingsResults = _infoBaseRepo.searchBuildings(search.value,0, PAGINATION_LENGTH);
           break;
         case InfoBaseType.Room:
           _roomSearchKeyword = search.value;
@@ -47,7 +47,7 @@ class InfoBaseStore extends flux.Store{
           break;
         case InfoBaseType.Service:
           _serviceSearchKeyword = search.value;
-          _servicesResults = _infoBaseRepo.searchServices(search.value);
+          _servicesResults = _infoBaseRepo.searchServices(search.value, 0, PAGINATION_LENGTH);
           break;
       }
     });
@@ -143,10 +143,10 @@ class InfoBaseStore extends flux.Store{
           .firstMatch(code);
       String abrev = codeQuery.namedGroup("abrev");
       String rCode = codeQuery.namedGroup("code");
-      _roomsResults = _infoBaseRepo.searchRoomsByCode(abrev, rCode);
+      _roomsResults = _infoBaseRepo.searchRoomsByCode(abrev, rCode, 0, PAGINATION_LENGTH);
     }
     else{
-      _roomsResults = _infoBaseRepo.searchRoomsByKeyword(code);
+      _roomsResults = _infoBaseRepo.searchRoomsByKeyword(code, 0, PAGINATION_LENGTH);
     }
   }
 

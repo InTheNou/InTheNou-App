@@ -35,7 +35,7 @@ class TestHandler {
               DateTime.now().add(new Duration(minutes: i*2+5)),
               DateTime.now().add(new Duration(minutes: i*20)),
               DateTime.now(),
-              new Room(0, "S-200", "Stefani", 2, "Stefani is Cool", 20,
+              new Room(0, "S-200", "Stefani", 2, "Stefani is Cool","dept", 20,
                   "Alguien.importante@upr.edu",
                   new Coordinate(18.209641, -67.139923, 0)
               ),

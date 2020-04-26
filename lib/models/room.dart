@@ -9,6 +9,7 @@ class Room {
   String _building;
   int _floor;
   String _description;
+  String _department;
   int _occupancy;
   String _custodian;
   Coordinate _coordinates;
@@ -17,7 +18,7 @@ class Room {
   // "room":{},"raltitude":50.04,""rdept":"COMPUTER SCIENCE AND ENGINEERING","rlatitude":50.04,"rlongitude":50.04
   // not taking into account rdept and photourl
   Room(this._UID, this._code, this._building, this._floor, this._description,
-      this._occupancy, this._custodian, this._coordinates);
+      this._department, this._occupancy, this._custodian, this._coordinates);
 
   factory Room.fromJson(Map<String, dynamic> json, Building b) {
     return Room(
@@ -26,6 +27,7 @@ class Room {
         b.name,
         json['rfloor'],
         json['rdescription'],
+        json['rdept'],
         json['roccupancy'],
         json['rcustodian'],
         Coordinate.fromHJson(json)
@@ -67,14 +69,14 @@ class Room {
   String get building => _building;
   int get floor => _floor;
   String get description => _description;
+  String get department => _department;
   int get occupancy => _occupancy;
   String get custodian => _custodian;
   Coordinate get coordinates => _coordinates;
 
-
   @override
   String toString() {
-    return 'Room{_UID: $_UID, _code: $_code, _building: $_building, _floor: $_floor, _description: $_description, _occupancy: $_occupancy, _custodian: $_custodian, _coordinates: $_coordinates, services: $services}';
+    return 'Room{_UID: $_UID, _code: $_code, _building: $_building, _floor: $_floor, _description: $_description, _department: $_department, _occupancy: $_occupancy, _custodian: $_custodian, _coordinates: $_coordinates}';
   }
 
   @override

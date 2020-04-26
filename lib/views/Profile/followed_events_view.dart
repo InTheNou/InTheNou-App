@@ -22,6 +22,7 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
   void initState() {
     super.initState();
     _userStore = listenToStore(UserStore.userStoreToken);
+    refreshFollowedAction();
   }
 
   @override
@@ -40,7 +41,6 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
         future: _userStore.followedEvents,
         builder: (BuildContext context,
             AsyncSnapshot<List<Event>> followedEvents) {
-
           if(followedEvents.hasError){
             return _buildErrorWidget(followedEvents.error);
           } else if (followedEvents.hasData){

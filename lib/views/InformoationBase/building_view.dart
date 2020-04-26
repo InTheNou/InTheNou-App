@@ -48,7 +48,7 @@ class _BuildingViewState extends State<BuildingView>
               SliverAppBar(
                 expandedHeight: detailBuilding.image != null ?
                 250.0 : 0,
-                floating: false,
+                floating: true,
                 pinned: true,
                 title: Text(detailBuilding.commonName,
                   style: Theme.of(context).textTheme.headline6.copyWith(
@@ -90,79 +90,81 @@ class _BuildingViewState extends State<BuildingView>
                   Card(
                     child: Row(
                       children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                detailBuilding.name,
-                                style: Theme.of(context).textTheme.headline5,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(8.0, 16.0,
-                                    8.0, 4.0),
-                                child: RichText(
-                                  text: TextSpan(
-                                      style: Theme.of(context).textTheme.subtitle1,
-                                      children: <TextSpan>[
-                                        TextSpan(
-                                            text: "Common name: "
-                                        ),
-                                        TextSpan(
-                                            text: detailBuilding
-                                                .commonName,
-                                            style: Theme.of(context).textTheme
-                                                .subtitle1.copyWith(fontWeight:
-                                            FontWeight.bold)
-                                        )
-                                      ]
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  detailBuilding.name,
+                                  style: Theme.of(context).textTheme.headline5,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(8.0, 16.0,
+                                      8.0, 4.0),
+                                  child: RichText(
+                                    text: TextSpan(
+                                        style: Theme.of(context).textTheme.subtitle1,
+                                        children: <TextSpan>[
+                                          TextSpan(
+                                              text: "Common name: "
+                                          ),
+                                          TextSpan(
+                                              text: detailBuilding
+                                                  .commonName,
+                                              style: Theme.of(context).textTheme
+                                                  .subtitle1.copyWith(fontWeight:
+                                              FontWeight.bold)
+                                          )
+                                        ]
+                                    ),
                                   ),
                                 ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(8.0, 4.0,
-                                    8.0, 4.0),
-                                child: RichText(
-                                  text: TextSpan(
-                                      style: Theme.of(context).textTheme.subtitle1,
-                                      children: <TextSpan>[
-                                        TextSpan(
-                                            text: "Abbreviation: "
-                                        ),
-                                        TextSpan(
-                                            text: detailBuilding
-                                                .abbreviation,
-                                            style: Theme.of(context).textTheme
-                                                .subtitle1.copyWith(fontWeight:
-                                            FontWeight.bold)
-                                        )
-                                      ]
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(8.0, 4.0,
+                                      8.0, 4.0),
+                                  child: RichText(
+                                    text: TextSpan(
+                                        style: Theme.of(context).textTheme.subtitle1,
+                                        children: <TextSpan>[
+                                          TextSpan(
+                                              text: "Abbreviation: "
+                                          ),
+                                          TextSpan(
+                                              text: detailBuilding
+                                                  .abbreviation,
+                                              style: Theme.of(context).textTheme
+                                                  .subtitle1.copyWith(fontWeight:
+                                              FontWeight.bold)
+                                          )
+                                        ]
+                                    ),
                                   ),
                                 ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(8.0, 4.0,
-                                    8.0, 4.0),
-                                child: RichText(
-                                  text: TextSpan(
-                                      style: Theme.of(context).textTheme
-                                          .subtitle1,
-                                      children: <TextSpan>[
-                                        TextSpan(
-                                            text: "Type of Building: "
-                                        ),
-                                        TextSpan(
-                                            text: detailBuilding.type,
-                                            style: Theme.of(context).textTheme
-                                                .subtitle1.copyWith(fontWeight:
-                                            FontWeight.bold)
-                                        )
-                                      ]
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(8.0, 4.0,
+                                      8.0, 4.0),
+                                  child: RichText(
+                                    text: TextSpan(
+                                        style: Theme.of(context).textTheme
+                                            .subtitle1,
+                                        children: <TextSpan>[
+                                          TextSpan(
+                                              text: "Type of Building: "
+                                          ),
+                                          TextSpan(
+                                              text: detailBuilding.type,
+                                              style: Theme.of(context).textTheme
+                                                  .subtitle1.copyWith(fontWeight:
+                                              FontWeight.bold)
+                                          )
+                                        ]
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         )
                       ],

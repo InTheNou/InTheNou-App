@@ -1,6 +1,7 @@
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/event.dart';
-import 'package:InTheNou/stores/event_feed_store.dart';
+import 'package:InTheNou/views/widgets/dismiss_button.dart';
+import 'package:InTheNou/views/widgets/follow_button.dart';
 import 'package:flutter/material.dart';
 
 class EventCard extends StatelessWidget {
@@ -58,41 +59,9 @@ class EventCard extends StatelessWidget {
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: <Widget>[
-                              SizedBox(
-                                width: 110,
-                                child: FlatButton(
-                                  child: Text('DISMISS'),
-                                  textColor: Theme.of(context).errorColor,
-                                  onPressed: () {
-                                    if(!_event.followed){
-                                      _showUndoSnackbar(_event, context);
-                                    }
-                                    dismissEventAction(_event);
-                                  },
-                                ),
-                              ),
+                              DismissButton(_event, _feedType),
                               Padding(padding: EdgeInsets.only(left: 30.0)),
-                              SizedBox(
-                                width: 110,
-                                child: FlatButton(
-                                  child: Text(_event.followed ?
-                                  "FOLLOWING":'FOLLOW'
-                                  ),
-                                  textColor: _event.followed ?
-                                  Theme.of(context).cardColor :
-                                  Theme.of(context).primaryColor ,
-                                  color: _event.followed ?
-                                  Theme.of(context).primaryColor :
-                                  Theme.of(context).cardColor,
-                                  onPressed: () {
-                                    _event.followed ?
-                                    unFollowEventAction
-                                      (MapEntry(_feedType, _event)):
-                                    followEventAction
-                                      (MapEntry(_feedType, _event));
-                                  },
-                                ),
-                              )
+                              FollowButton(_event, _feedType),
                             ]
                         ),
                       ),
@@ -106,35 +75,4 @@ class EventCard extends StatelessWidget {
     );
   }
 
-  /// Creates a Snackbar to undo the Dismissal of [event].
-  ///
-  /// Shows the [SnackBar] instance in [_undoSnackbar] that calls the
-  /// backend to do the proper dismissal of
-  /// th event if the snackbar action is not used.
-  void _showUndoSnackbar(Event event, BuildContext context){
-    Scaffold.of(context).showSnackBar(_undoSnackbar).closed
-        .then((SnackBarClosedReason reason) {
-      if (reason == SnackBarClosedReason.dismiss ||
-          reason == SnackBarClosedReason.hide ||
-          reason == SnackBarClosedReason.remove ||
-          reason == SnackBarClosedReason.timeout){
-        confirmDismissAction(_feedType);
-      }
-    });
-  }
-
-  /// Creates a [SnackBar] that undoes Dismissing an event.
-  ///
-  /// Gives the user the option to bring back the Event they just dismissed
-  /// by calling [undoDismissAction] and add the event back to the list
-  /// locally.
-  final _undoSnackbar = SnackBar(
-    content: Text('Undo Dismiss'),
-    action: SnackBarAction(
-      label: 'Undo',
-      onPressed: () {
-        undoDismissAction();
-      },
-    ),
-  );
 }

@@ -164,6 +164,7 @@ class UserRepo {
 
       if(response.data != null){
         user = User.fromJson(response.data);
+        user.photo = _userAccount.photoUrl;
       }
       prefs.setString(USER_KEY, convert.jsonEncode(user.toJson()));
       return user;

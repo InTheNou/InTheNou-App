@@ -4,6 +4,8 @@ import 'package:InTheNou/dialog_service.dart';
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/models/website.dart';
 import 'package:InTheNou/stores/event_feed_store.dart';
+import 'package:InTheNou/views/widgets/dismiss_button.dart';
+import 'package:InTheNou/views/widgets/follow_button.dart';
 import 'package:InTheNou/views/widgets/link_with_icon_widget.dart';
 import 'package:InTheNou/views/widgets/loading_image.dart';
 import 'package:InTheNou/views/widgets/multi_text_with_icon_widget.dart';
@@ -103,256 +105,216 @@ class _EventDetailViewState extends State<EventDetailView>
             ];
           },
           body: SingleChildScrollView(
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  Expanded (
-                    child: Column(
+            child: Column(
+              children: <Widget>[
+                //
+                //Basic Info
+                Card(
+                  child: Padding(
+                      padding: const EdgeInsets.fromLTRB(8.0, 16.0, 8.0, 8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            eventDetail.title,
+                            style: TextStyle(
+                              color: Theme.of(context).primaryColor,
+                              fontSize: Theme.of(context).textTheme
+                                  .headline5.fontSize,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Padding(padding: EdgeInsets.only(bottom:
+                          8.0)),
+                          TextWithIcon(
+                              eventDetail.creator,
+                              Icon(Icons.account_circle)),
+                          LinkWithIconWidget(
+                              eventDetail.room.building+" "+
+                                  eventDetail.room.code,
+                              Utils.buildGoogleMapsLink(eventDetail
+                                  .room.coordinates),
+                              Icon(Icons.location_on)),
+                          const Padding(padding: EdgeInsets.only(bottom: 4.0)),
+                          TextWithIcon(eventDetail.getDurationString(),
+                              Icon(Icons.today)),
+                          const Padding(padding: EdgeInsets.only(bottom: 8.0)),
+                          Text(
+                              eventDetail.description,
+                              style: Theme.of(context).textTheme.subtitle1
+                          ),
+                          const Padding(padding: EdgeInsets.only(bottom: 8.0)),
+                          Visibility(
+                            visible: eventDetail.status == "active" &&
+                                !eventDetail.dismissed,
+                            child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  DismissButton(eventDetail, FeedType.Detail),
+                                  Padding(padding: EdgeInsets.only(
+                                      left: 80.0)),
+                                  FollowButton(eventDetail, FeedType.Detail),
+                                ]
+                            ),
+                          ),
+                          Visibility(
+                            visible: eventDetail.status != "active",
+                            child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  SizedBox(
+                                    width: 110,
+                                  ),
+                                  Padding(padding: EdgeInsets.only(
+                                      left: 80.0)),
+                                  SizedBox(
+                                    width: 110,
+                                    child: FlatButton(
+                                        child: Text("CANCELLED"),
+                                        disabledColor: Colors.grey[200],
+                                        onPressed: null
+                                    ),
+                                  )
+                                ]
+                            ),
+                          ),
+                        ],
+                      )
+                  ),
+                ),
+                //
+                // Links
+                Visibility(
+                  visible: eventDetail.websites.length>0,
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(8.0,4.0,8.0,8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Text("Links",
+                            style: TextStyle(
+                              color: Theme.of(context).primaryColor,
+                              fontSize: Theme.of(context).textTheme
+                                  .bodyText1.fontSize,
+                              fontWeight: FontWeight.w300,
+                            ),
+                          ),
+                          const Padding(padding: EdgeInsets.only(
+                              bottom: 4.0)),
+                          ListView.builder(
+                              physics: const NeverScrollableScrollPhysics(),
+                              shrinkWrap: true,
+                              padding: EdgeInsets.all(0),
+                              itemCount: eventDetail.websites.length,
+                              itemBuilder: (context, index) {
+                                Website website = eventDetail
+                                    .websites[index];
+                                return LinkWithIconWidget(
+                                    website.description ?? website.URL,
+                                    website.URL,
+                                    Icon(Icons.language));
+                              }
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, left:
+                    8.0, right: 8.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        //
-                        //Basic Info
-                        Card(
-                          child: Padding(
-                              padding: const EdgeInsets.fromLTRB(8.0, 16.0, 8.0, 8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    eventDetail.title,
-                                    style: TextStyle(
-                                      color: Theme.of(context).primaryColor,
-                                      fontSize: Theme.of(context).textTheme
-                                          .headline5.fontSize,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const Padding(padding: EdgeInsets.only(bottom:
-                                  8.0)),
-                                  TextWithIcon(
-                                      eventDetail.creator,
-                                      Icon(Icons.account_circle)),
-                                  LinkWithIconWidget(
-                                      eventDetail.room.building+" "+
-                                          eventDetail.room.code,
-                                      Utils.buildGoogleMapsLink(eventDetail
-                                          .room.coordinates),
-                                      Icon(Icons.location_on)),
-                                  const Padding(padding: EdgeInsets.only(bottom: 4.0)),
-                                  TextWithIcon(eventDetail.getDurationString(),
-                                      Icon(Icons.today)),
-                                  const Padding(padding: EdgeInsets.only(bottom: 8.0)),
-                                  Text(
-                                      eventDetail.description,
-                                      style: Theme.of(context).textTheme.subtitle1
-                                  ),
-                                  const Padding(padding: EdgeInsets.only(bottom: 8.0)),
-                                  Visibility(
-                                    visible: eventDetail.status == "active" &&
-                                        !eventDetail.dismissed,
-                                    child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: <Widget>[
-                                          SizedBox(
-                                            width: 110,
-                                            child: FlatButton(
-                                              child: const Text('DISMISS'),
-                                              textColor: Theme.of(context).errorColor,
-                                              onPressed: () {
-                                                if(!eventDetail.followed){
-                                                  _showDismissDialog(eventDetail);
-                                                } else {
-                                                  dismissEventAction(eventDetail);
-                                                }
-                                              },
-                                            ),
-                                          ),
-                                          Padding(padding: EdgeInsets.only(
-                                              left: 80.0)),
-                                          SizedBox(
-                                            width: 110,
-                                            child: FlatButton(
-                                              child: Text(eventDetail.followed ?
-                                              "FOLLOWING":'FOLLOW'
-                                              ),
-                                              textColor: eventDetail.followed ?
-                                              Theme.of(context).cardColor :
-                                              Theme.of(context).primaryColor ,
-                                              color: eventDetail.followed ?
-                                              Theme.of(context).primaryColor :
-                                              Theme.of(context).cardColor,
-                                              onPressed: () {
-                                                eventDetail.followed ?
-                                                unFollowEventAction
-                                                  (MapEntry(FeedType.Detail, eventDetail)):
-                                                followEventAction
-                                                  (MapEntry(FeedType.Detail, eventDetail));
-                                              },
-                                            ),
-                                          )
-                                        ]
-                                    ),
-                                  ),
-                                  Visibility(
-                                    visible: eventDetail.status != "active",
-                                    child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: <Widget>[
-                                          SizedBox(
-                                            width: 110,
-                                          ),
-                                          Padding(padding: EdgeInsets.only(
-                                              left: 80.0)),
-                                          SizedBox(
-                                            width: 110,
-                                            child: FlatButton(
-                                              child: Text("CANCELLED"),
-                                              disabledColor: Colors.grey[200],
-                                              onPressed: null
-                                            ),
-                                          )
-                                        ]
-                                    ),
-                                  ),
-                                ],
-                              )
-                          ),
-                        ),
-                        //
-                        // Links
-                        Visibility(
-                          visible: eventDetail.websites.length>0,
-                          child: Card(
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(8.0,4.0,8.0,8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  Text("Links",
-                                    style: TextStyle(
-                                      color: Theme.of(context).primaryColor,
-                                      fontSize: Theme.of(context).textTheme
-                                          .bodyText1.fontSize,
-                                      fontWeight: FontWeight.w300,
-                                    ),
-                                  ),
-                                  const Padding(padding: EdgeInsets.only(
-                                      bottom: 4.0)),
-                                  ListView.builder(
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      shrinkWrap: true,
-                                      padding: EdgeInsets.all(0),
-                                      itemCount: eventDetail.websites.length,
-                                      itemBuilder: (context, index) {
-                                        Website website = eventDetail
-                                            .websites[index];
-                                        return LinkWithIconWidget(
-                                            website.description ?? website.URL,
-                                            website.URL,
-                                            Icon(Icons.language));
-                                      }
-                                  ),
-                                ],
+                        Expanded(
+                          flex: 2,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                "Reminders",
+                                style: TextStyle(
+                                  color: Theme.of(context).primaryColor,
+                                  fontSize: Theme.of(context).textTheme
+                                      .bodyText1.fontSize,
+                                  fontWeight: FontWeight.w300,
+                                ),
                               ),
-                            ),
+                              const Padding(padding: EdgeInsets.only(
+                                  bottom: 8.0)),
+                              MultiTextWithIcon(
+                                  "Default Notification:",
+                                  _eventFeedStore
+                                      .getDefaultNotification()
+                                      .toString()+ " mins before",
+                                  Icons.alarm_on),
+                              const Padding(padding: EdgeInsets.only(
+                                  bottom: 8.0)),
+                              MultiTextWithIcon(
+                                  "Smart Notification:",
+                                  _eventFeedStore
+                                      .getSmartNotification(),
+                                  Icons.alarm_on),
+                              const Padding(padding: EdgeInsets.only(
+                                  bottom: 8.0)),
+                            ],
                           ),
                         ),
-                        Card(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, left:
-                            8.0, right: 8.0),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Expanded(
-                                  flex: 2,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      Text(
-                                        "Reminders",
-                                        style: TextStyle(
-                                          color: Theme.of(context).primaryColor,
-                                          fontSize: Theme.of(context).textTheme
-                                              .bodyText1.fontSize,
-                                          fontWeight: FontWeight.w300,
-                                        ),
-                                      ),
-                                      const Padding(padding: EdgeInsets.only(
-                                          bottom: 8.0)),
-                                      MultiTextWithIcon(
-                                          "Default Notification:",
-                                          _eventFeedStore
-                                              .getDefaultNotification()
-                                              .toString()+ " mins before",
-                                          Icons.alarm_on),
-                                      const Padding(padding: EdgeInsets.only(
-                                          bottom: 8.0)),
-                                      MultiTextWithIcon(
-                                          "Smart Notification:",
-                                          _eventFeedStore
-                                              .getSmartNotification(),
-                                          Icons.alarm_on),
-                                      const Padding(padding: EdgeInsets.only(
-                                          bottom: 8.0)),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Expanded(
-                                  flex: 2,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      Text(
-                                        "Tags",
-                                        style: TextStyle(
-                                          color: Theme.of(context).primaryColor,
-                                          fontSize: Theme.of(context).textTheme
-                                              .bodyText1.fontSize,
-                                          fontWeight: FontWeight.w300,
-                                        ),
-                                      ),
-                                      const Padding(padding: EdgeInsets.only(
-                                          bottom: 8.0)),
-                                      Wrap(
-                                          alignment: WrapAlignment.start,
-                                          direction: Axis.horizontal,
-                                          spacing: 8.0,
-                                          children: List<Widget>.generate(
-                                              eventDetail.tags.length,
-                                                  (i) => Chip(label:
-                                                  Text(eventDetail.tags[i].name)
-                                              )
-                                          )
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
                       ],
                     ),
-                  )
-                ]
+                  ),
+                ),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Expanded(
+                          flex: 2,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                "Tags",
+                                style: TextStyle(
+                                  color: Theme.of(context).primaryColor,
+                                  fontSize: Theme.of(context).textTheme
+                                      .bodyText1.fontSize,
+                                  fontWeight: FontWeight.w300,
+                                ),
+                              ),
+                              const Padding(padding: EdgeInsets.only(
+                                  bottom: 8.0)),
+                              Wrap(
+                                  alignment: WrapAlignment.start,
+                                  direction: Axis.horizontal,
+                                  spacing: 8.0,
+                                  children: List<Widget>.generate(
+                                      eventDetail.tags.length,
+                                          (i) => Chip(label:
+                                      Text(eventDetail.tags[i].name)
+                                      )
+                                  )
+                              )
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              ],
             ),
           )
       ),
     );
   }
 
-  Widget _buildError(Exception e){
+  Widget _buildError(String e){
     return Scaffold(
       appBar: AppBar(
         title: Text("Error"),
@@ -378,21 +340,6 @@ class _EventDetailViewState extends State<EventDetailView>
         ),
       ),
     );
-  }
-
-  void _showDismissDialog(Event eventDetail){
-    _dialogService.showDialog(
-      type: DialogType.ImportantAlert,
-      title: "Dismissing an Event",
-      description: "Are you sure you want to dismiss this Event?\n"
-          "You will no longer see this event in your feeds.",
-      primaryButtonTitle: "DISMISS"
-    ).then((result) async{
-      if(result.result){
-        await dismissEventAction(eventDetail);
-        confirmDismissAction(FeedType.Detail);
-      }
-    });
   }
 
 }

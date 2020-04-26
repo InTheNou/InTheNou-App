@@ -72,16 +72,16 @@ class UserStore extends flux.Store{
 //     });
 
     triggerOnAction(refreshFollowedAction, (_){
-      _followedEvents = _userRepo.getFollowedEvents(0, EVENTS_TO_FETCH);
+      _followedEvents = _userRepo.getFollowedEvents(0, PAGINATION_LENGTH);
     });
     triggerOnAction(refreshHistoryAction, (_){
-      _historyEvents = _userRepo.getFEventsHistory(0, EVENTS_TO_FETCH);
+      _historyEvents = _userRepo.getFEventsHistory(0, PAGINATION_LENGTH);
     });
     triggerOnAction(refreshDismissedAction, (_){
-      _dismissedEvents = _userRepo.getDismissedEvents(0, EVENTS_TO_FETCH);
+      _dismissedEvents = _userRepo.getDismissedEvents(0, PAGINATION_LENGTH);
     });
     triggerOnAction(refreshCreatedAction, (_){
-      _createdEvents = _userRepo.getCreatedEvents(0, EVENTS_TO_FETCH);
+      _createdEvents = _userRepo.getCreatedEvents(0, PAGINATION_LENGTH);
     });
     triggerOnAction(cancelEventAction, (Event event) async{
       DialogResponse response = await _dialogService.showDialog(
@@ -227,7 +227,6 @@ class UserStore extends flux.Store{
           }
           return _userRepo.getUserInfo(uid).then((user){
             loginUser = Future.value(user);
-            print(user);
             _user = user;
             return true;
           }).catchError((e){
@@ -350,7 +349,6 @@ class UserStore extends flux.Store{
   Future<User> getUser() async{
     return _userRepo.getUserFromPrefs().then((value) {
       _user = value;
-      trigger();
       return _user;
     }).catchError((e){
       _dialogService.showDialog(
@@ -402,7 +400,6 @@ class UserStore extends flux.Store{
 final flux.Action refreshFollowedAction = new flux.Action();
 final flux.Action refreshHistoryAction = new flux.Action();
 final flux.Action refreshDismissedAction = new flux.Action();
-
 final flux.Action refreshCreatedAction = new flux.Action();
 final flux.Action<Event> cancelEventAction = new flux.Action();
 final flux.Action getMyTagsAction = new flux.Action();

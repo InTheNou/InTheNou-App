@@ -20,6 +20,7 @@ class _CreatedEventsViewState extends State<CreatedEventsView>
   void initState() {
     super.initState();
     _userStore = listenToStore(UserStore.userStoreToken);
+    refreshCreatedAction();
   }
 
   @override

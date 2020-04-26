@@ -113,6 +113,7 @@ class EventCreationStore extends flux.Store {
     triggerOnAction(getBuildingsAction, (_) async{
       _infoBaseRepo.getAllBuildings().then((buildings){
         _buildings = buildings;
+        trigger();
       }).catchError((e){
         _dialogService.showDialog(
             type: DialogType.Error,
@@ -160,6 +161,7 @@ class EventCreationStore extends flux.Store {
       _infoBaseRepo.getBuilding(building.UID).then((value) {
         _selectedBuilding = value;
         _floors = selectedBuilding.floors;
+        trigger();
       }).catchError((e){
         _dialogService.showDialog(
             type: DialogType.Error,
@@ -173,6 +175,7 @@ class EventCreationStore extends flux.Store {
       _infoBaseRepo.getRoomsOfFloor(_selectedBuilding.UID,
           floor.floorNumber).then((value){
         _roomsInBuilding = value;
+        trigger();
       }).catchError((e){
         _dialogService.showDialog(
             type: DialogType.Error,
@@ -226,7 +229,6 @@ class EventCreationStore extends flux.Store {
     _image = null;
     _startDateTime = null;
     _endDateTime = null;
-    _buildings = new List();
     _selectedBuilding = null;
     _floors = new List();
     _selectedFloor = null;

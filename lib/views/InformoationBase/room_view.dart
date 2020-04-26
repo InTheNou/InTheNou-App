@@ -104,6 +104,24 @@ class _RoomViewState extends State<RoomView>
                           ),
                         ),
                         Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                              8.0, 4.0, 8.0, 4.0),
+                          child: RichText(
+                            text: TextSpan(
+                                style: Theme.of(context).textTheme.subtitle1,
+                                children: <TextSpan>[
+                                  TextSpan(text: "Department: "),
+                                  TextSpan(
+                                      text: detailRoom.department,
+                                      style: Theme.of(context).textTheme
+                                          .subtitle1.copyWith(
+                                          fontWeight: FontWeight.bold)
+                                  )
+                                ]
+                            ),
+                          ),
+                        ),
+                        Padding(
                           padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
                           child: RichText(
                             text: TextSpan(

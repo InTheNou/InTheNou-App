@@ -224,7 +224,6 @@ class NotificationHandler {
         importance: Importance.Max,
         priority: Priority.High,
         visibility: NotificationVisibility.Public,
-        style: AndroidNotificationStyle.BigText,
         groupKey: SMART_NOTIFICATION_GID,
         styleInformation: bigTextStyleInformation);
     var platformChannelSpecifics = NotificationDetails(
@@ -280,7 +279,6 @@ class NotificationHandler {
         importance: Importance.Max,
         priority: Priority.High,
         visibility: NotificationVisibility.Public,
-        style: AndroidNotificationStyle.Default,
         groupKey: DEFAULT_NOTIFICATION_GID,
         styleInformation: defaultStyleInformation);
     var platformChannelSpecifics = NotificationDetails(
@@ -309,7 +307,6 @@ class NotificationHandler {
         importance: Importance.Max,
         priority: Priority.High,
         visibility: NotificationVisibility.Public,
-        style: AndroidNotificationStyle.BigText,
         groupKey: RECOMMENDATION_NOTIFICATION_GID,
         styleInformation: bigTextStyleInformation);
     var platformChannelSpecifics = NotificationDetails(
@@ -338,7 +335,6 @@ class NotificationHandler {
         importance: Importance.Max,
         priority: Priority.High,
         visibility: NotificationVisibility.Public,
-        style: AndroidNotificationStyle.BigText,
         styleInformation: bigTextStyleInformation);
     var platformChannelSpecifics = NotificationDetails(
         androidPlatformChannelSpecifics, null);
@@ -366,7 +362,6 @@ class NotificationHandler {
         importance: Importance.Max,
         priority: Priority.High,
         visibility: NotificationVisibility.Public,
-        style: AndroidNotificationStyle.BigText,
         groupKey: CANCELLATION_NOTIFICATION_GID,
         styleInformation: bigTextStyleInformation);
     var platformChannelSpecifics = NotificationDetails(

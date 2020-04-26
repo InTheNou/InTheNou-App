@@ -11,6 +11,7 @@ class User {
   UserRole _role;
   List<Tag> _tags;
   UserPrivilege _userPrivilege;
+  String photo;
 
   User(this._UID, this._firstName, this._fullName, this._email, this._role,
       this._tags, this._userPrivilege);

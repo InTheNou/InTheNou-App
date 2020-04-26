@@ -46,7 +46,7 @@ class EventFeedStore extends flux.Store{
         trigger();
         try{
           _personalSearch = _eventsRepo.searchPerEvents(search.value,0,
-              EVENTS_TO_FETCH);
+              PAGINATION_LENGTH);
         } catch(e){
           _personalSearch = Future.error(e);
         }
@@ -56,7 +56,7 @@ class EventFeedStore extends flux.Store{
         trigger();
         try{
           _generalSearch = _eventsRepo.searchGenEvents(search.value,0,
-              EVENTS_TO_FETCH);
+              PAGINATION_LENGTH);
         } catch(e){
           _generalSearch = Future.error(e);
         }
@@ -80,6 +80,8 @@ class EventFeedStore extends flux.Store{
         return _eventsRepo.getEvent(eventID).then((event) {
           _eventDetail =  Future.value(event);
           return true;
+        }).catchError((e){
+          _eventDetail = Future.error(e);
         });
       }
       return false;
@@ -243,7 +245,7 @@ class EventFeedStore extends flux.Store{
     if (feed == FeedType.PersonalFeed) {
       _personalSearch = Future.value(null);
       trigger();
-      _eventsRepo.getPerEvents(0, EVENTS_TO_FETCH).then((value) {
+      _eventsRepo.getPerEvents(0, PAGINATION_LENGTH).then((value) {
         _personalSearch = Future.value(value);
         trigger();
       }).catchError((e){
@@ -253,7 +255,7 @@ class EventFeedStore extends flux.Store{
     } else {
       _generalSearch = Future.value(null);
       trigger();
-      _eventsRepo.getGenEvents(0, EVENTS_TO_FETCH).then((value) {
+      _eventsRepo.getGenEvents(0, PAGINATION_LENGTH).then((value) {
         _generalSearch = Future.value(value);
         trigger();
       }).catchError((e){
