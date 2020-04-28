@@ -51,6 +51,16 @@ class BackgroundHandler {
     _prefs = await SharedPreferences.getInstance();
 
     BackgroundFetch.scheduleTask(TaskConfig(
+        taskId: "com.inthenou.app.smart",
+        delay: _prefs.getInt(SMART_INTERVAL_KEY)*60000,
+        periodic: true,
+        forceAlarmManager: true,
+        stopOnTerminate: false,
+        enableHeadless: true
+    )).then((value) {
+      print('[smart] started: $value');
+    });
+    BackgroundFetch.scheduleTask(TaskConfig(
         taskId: "com.inthenou.app.reccomendation",
         delay: _prefs.getInt(RECOMMENDATION_INTERVAL_KEY)*60000,
         periodic: true,
@@ -97,6 +107,11 @@ class BackgroundHandler {
           _prepareForSmartNotification();
         }
         break;
+      case "com.inthenou.app.smart":
+        if(_prefs.getBool(SMART_NOTIFICATION_KEY)){
+          _prepareForSmartNotification();
+        }
+        break;
       case "com.inthenou.app.reccomendation":
         _doRecommendation();
         break;
@@ -139,7 +154,6 @@ class BackgroundHandler {
       return;
     });
     try{
-      UserRepo _userRepo = UserRepo();
       _prefs = await SharedPreferences.getInstance();
 
       // Gets all Smart Notifications that are scheduled already
@@ -148,6 +162,15 @@ class BackgroundHandler {
 
       // Calls the database to get all the events followed by the uer
       List<Event> _events = await _userRepo.getFollowedEvents(0,100000);
+      if(_prefs.getBool(DEBUG_NOTIFICATION_KEY)){
+        NotificationHandler.showAlertNotification(NotificationObject(
+            id: SMART_ALERT_NOTIFICATION_ID,
+            payload: "",
+            time: DateTime.now(),
+            type: NotificationType.Alert
+        ), "Smart Notification ", "Trying to Schedule Smart Notification "
+            "in background", "");
+      }
 
       // Decodes the json strings into a map with the NotificationObject fields
       // Also removes the followed events that have been scheduled already
@@ -214,6 +237,16 @@ class BackgroundHandler {
         _prefs.setString(LAST_CANCELLATION_DATE_KEY,
             Utils.formatTimeStamp(DateTime.now()));
       }
+      if(_prefs.getBool(DEBUG_NOTIFICATION_KEY)){
+        NotificationHandler.showAlertNotification(NotificationObject(
+            id: CANCELLATION_ALERT_NOTIFICATION_ID,
+            payload: "",
+            time: DateTime.now(),
+            type: NotificationType.Alert
+        ), "Trying Cancellation", "Cancellation results.",
+            cancelledEvents.isEmpty ? "No Events to cancel" :
+            cancelledEvents);
+      }
     } catch(e){
       NotificationHandler.showAlertNotification(NotificationObject(
           id: SMART_ALERT_NOTIFICATION_ID,
@@ -264,14 +297,14 @@ class BackgroundHandler {
         }
         rec = rec + "eid= ${event.UID}, weight= $weight rec?= ${event.recommended}\n";
       });
-      if(rec.isNotEmpty && _prefs.getBool(RECOMMENDATION_DEBUG_KEY)){
+      if(_prefs.getBool(DEBUG_NOTIFICATION_KEY)){
         NotificationHandler.showAlertNotification(NotificationObject(
-            id: LOCATION_ALERT_NOTIFICATION_ID,
+            id: RECOMMENDATION_NOTIFICATION_ID,
             payload: "",
             time: DateTime.now(),
             type: NotificationType.Alert
         ), "Trying Recommendation", "Reccomendation results.",
-            rec);
+            rec.isEmpty ? "No Events to recommend" : rec);
       }
 
       _eventRepo.requestRecommendation(newEvents);

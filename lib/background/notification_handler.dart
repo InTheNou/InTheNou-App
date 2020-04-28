@@ -183,7 +183,8 @@ class NotificationHandler {
         if(Utils.isEventInTheNextDay(event.startDateTime, timestamp)){
           double timeToWalk = Utils.GPSTimeToWalkCalculation(timeToEvent,
               userCoords, event.room.coordinates);
-          if(Utils.isScheduleSmartNecessary(timeToEvent, timeToWalk)){
+          //TODO:Change this back
+          if(Utils.isScheduleSmartNecessary(timeToEvent, timeToWalk) || true){
             int seconds = ((timeToWalk - timeToWalk.floor()) * 60).ceil();
 
             DateTime scheduleTime;
@@ -191,8 +192,8 @@ class NotificationHandler {
 
             scheduleTime = event.startDateTime.subtract(Duration(minutes:
             timeToWalk.ceil(), seconds: seconds));
-//          print("[SmartNotification] Scheduled for at: "
-//              "${scheduleTime.toString()}");
+            print("[SmartNotification] Scheduled for at: "
+                "${scheduleTime.toString()}");
             notificationID = _prefs.getInt(NOTIFICATION_ID_KEY);
             _prefs.setInt(NOTIFICATION_ID_KEY, notificationID+1);
             // Save the Notification to mark it as scheduled
@@ -213,47 +214,24 @@ class NotificationHandler {
                     "away from the "
                     "event, it will take you ${Utils.toSmartTime(timeToWalk)} to "
                     "walk to the event.",
-                scheduleTime,
+                DateTime.now(),
                 convert.jsonEncode(eventNotification)
             );
+            //TODO:Change this back
           }
         }
       });
     } catch(e){
-      _dialogService.showDialog(type: DialogType.Error, title: " ",
-          description: e.toString());
+      showAlertNotification(NotificationObject(
+          id: SMART_ALERT_NOTIFICATION_ID,
+          payload: "",
+          time: DateTime.now(),
+          type: NotificationType.Alert
+      ), "Smart Notification Error", "Unable to Schedule Smart Notification",
+          e.toString());
     }
 
     return jsonNotifications;
-  }
-
-  /// Setup of the notification and schedules it
-  static void _scheduleSmartNotification(int id, String title,
-      String description, String bigDescription, DateTime scheduledDate,
-      String payload) async {
-    var bigTextStyleInformation = BigTextStyleInformation(
-        bigDescription,
-        htmlFormatBigText: true,
-        contentTitle: '<b>$title</b>',
-        htmlFormatContentTitle: true,
-        summaryText: '<b>Smart Notification</b>',
-        htmlFormatSummaryText: true);
-    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-        'com.inthenou.app.channel.smartnotification',
-        'Smart Notification',
-        'Smart notifications for Events followed',
-        importance: Importance.Max,
-        priority: Priority.High,
-        visibility: NotificationVisibility.Public,
-        groupKey: SMART_NOTIFICATION_GID,
-        styleInformation: bigTextStyleInformation);
-    var platformChannelSpecifics = NotificationDetails(
-        androidPlatformChannelSpecifics, null);
-
-    await flutterLocalNotificationsPlugin.schedule(
-        id, title, description, scheduledDate,
-        platformChannelSpecifics, payload: payload);
-
   }
 
   /// Creates the Default notification for the [event]
@@ -288,6 +266,66 @@ class NotificationHandler {
       _prefs.setStringList(DEFAULT_NOTIFICATION_LIST,jsonNotifications);
     }
   }
+//TODO:Remove this
+  static void makeDummy(Event event) async{
+    if(Utils.isScheduleDefaultNecessary(event.startDateTime, DateTime.now())){
+      _prefs = await SharedPreferences.getInstance();
+      int defaultTime = _prefs.getInt(DEFAULT_NOTIFICATION_KEY);
+      int notificationID = _prefs.getInt(NOTIFICATION_ID_KEY);
+      _prefs.setInt(NOTIFICATION_ID_KEY, notificationID+1);
+
+      // Gets all Default Notifications that are scheduled already
+      List<String> jsonNotifications = _prefs.getStringList
+        (DEFAULT_NOTIFICATION_LIST) ?? new List();
+
+      DateTime notificationTime = event.startDateTime
+          .subtract(Duration(minutes: defaultTime));
+      NotificationObject notification = NotificationObject(
+          type: NotificationType.DefaultNotification,
+          id: notificationID, time: DateTime.now(),
+          payload: event.UID.toString());
+
+      DateFormat df = new DateFormat("K:mm a");
+      String startOfEvent = "The event starts at ${df.format(event.startDateTime)}";
+      _scheduleDefaultNotification(notification,
+          event.title, startOfEvent
+      );
+
+      // Update notification list and NotificationID
+      jsonNotifications.add(convert.jsonEncode(notification));
+      _prefs.setStringList(DEFAULT_NOTIFICATION_LIST,jsonNotifications);
+    }
+  }
+
+  /// Setup of the notification and schedules it
+  static void _scheduleSmartNotification(int id, String title,
+      String description, String bigDescription, DateTime scheduledDate,
+      String payload) async {
+    var bigTextStyleInformation = BigTextStyleInformation(
+        bigDescription,
+        htmlFormatBigText: true,
+        contentTitle: '<b>$title</b>',
+        htmlFormatContentTitle: true,
+        summaryText: '<b>Smart Notification</b>',
+        htmlFormatSummaryText: true);
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+        'com.inthenou.app.channel.smartnotification',
+        'Smart Notification',
+        'Smart notifications for Events followed',
+        importance: Importance.Max,
+        priority: Priority.High,
+        visibility: NotificationVisibility.Public,
+//        groupKey: SMART_NOTIFICATION_GID,
+        icon: "ic_notification",
+        styleInformation: bigTextStyleInformation);
+    var platformChannelSpecifics = NotificationDetails(
+        androidPlatformChannelSpecifics, null);
+
+    //TODO:Change this back
+    await flutterLocalNotificationsPlugin.schedule(
+        id, title, description, scheduledDate,
+        platformChannelSpecifics, payload: "");
+  }
 
   /// Setup of the notification and schedules it
   static void _scheduleDefaultNotification(NotificationObject notification,
@@ -299,8 +337,9 @@ class NotificationHandler {
         'Default notifications for Events followed.',
         importance: Importance.Max,
         priority: Priority.High,
+        icon: "ic_notification",
         visibility: NotificationVisibility.Public,
-        groupKey: DEFAULT_NOTIFICATION_GID,
+//        groupKey: DEFAULT_NOTIFICATION_GID,
         styleInformation: defaultStyleInformation);
     var platformChannelSpecifics = NotificationDetails(
         androidPlatformChannelSpecifics, null);
@@ -327,6 +366,7 @@ class NotificationHandler {
         'Notifications of Events that have been recommended based on interest.',
         importance: Importance.Max,
         priority: Priority.High,
+        icon: "ic_notification",
         visibility: NotificationVisibility.Public,
         groupKey: RECOMMENDATION_NOTIFICATION_GID,
         styleInformation: bigTextStyleInformation);
@@ -349,6 +389,7 @@ class NotificationHandler {
         htmlFormatContentTitle: true,
         summaryText: '<b>Alert</b>',
         htmlFormatSummaryText: true);
+    //TODO:Change this back
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
         'com.inthenou.app.channel.alert',
         'Alert Notification',
@@ -356,14 +397,18 @@ class NotificationHandler {
         importance: Importance.Max,
         priority: Priority.High,
         visibility: NotificationVisibility.Public,
+        groupKey: "test",
+        icon: "ic_notification",
+        setAsGroupSummary: true,
         styleInformation: bigTextStyleInformation);
     var platformChannelSpecifics = NotificationDetails(
         androidPlatformChannelSpecifics, null);
 
+    //TODO:Change this back
     await flutterLocalNotificationsPlugin.show(
         notification.id, title, description,
         platformChannelSpecifics,
-        payload: convert.jsonEncode(notification));
+        payload: "");
   }
 
   static void showCancellationNotification(
@@ -382,6 +427,7 @@ class NotificationHandler {
         'Notifications of Cancelled Events.',
         importance: Importance.Max,
         priority: Priority.High,
+        icon: "ic_notification",
         visibility: NotificationVisibility.Public,
         groupKey: CANCELLATION_NOTIFICATION_GID,
         styleInformation: bigTextStyleInformation);

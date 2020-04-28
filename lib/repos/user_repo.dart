@@ -27,7 +27,6 @@ class UserRepo {
       ]
   );
 
-  Dio dio;
   GoogleSignInAccount _userAccount;
   int _userID;
 
@@ -35,9 +34,7 @@ class UserRepo {
     return _instance;
   }
 
-  UserRepo._internal(){
-    dio = apiConnection.dio;
-  }
+  UserRepo._internal();
 
   /// Verify there is a user logged in and a valid session
   ///
@@ -60,6 +57,8 @@ class UserRepo {
   /// is thrown again.
   Future<Cookie> getSession() async{
     try{
+      await apiConnection.ensureInitialized();
+
       Cookie session = await apiConnection.getSession();
       // In case the session has been lost, send the user to the login screen
       if (session == null) {
@@ -134,7 +133,9 @@ class UserRepo {
     };
 
     try{
-      Response response = await dio.post("/App/login",
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.post("/App/login",
           data: convert.jsonEncode(values));
       // this is because we receive an error and no uid when the user is new
       if(response.data["uid"] == null){
@@ -162,7 +163,9 @@ class UserRepo {
   Future<User> getUserInfo(int uid) async{
     SharedPreferences prefs = await _prefs;
     try{
-      Response response = await dio.get("/App/Users/uid=$uid");
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.get("/App/Users/uid=$uid");
       User user;
 
       if(response.data != null){
@@ -203,8 +206,11 @@ class UserRepo {
         "display_name":_userAccount.displayName,
         "tags": tagsJson
       };
+
+      await apiConnection.ensureInitialized();
+
       // Do the signup request
-      Response response = await dio.post("/App/signup",
+      Response response = await apiConnection.dio.post("/App/signup",
         data: convert.jsonEncode(values));
 
       // Get the complete information of the user given the response UID
@@ -254,8 +260,10 @@ class UserRepo {
   /// back in.
   logOut() async{
     try{
+      await apiConnection.ensureInitialized();
+
       // Do the logout request
-      Response response = await dio.get("/App/logout");
+      Response response = await apiConnection.dio.get("/App/logout");
 
       final SharedPreferences prefs = await _prefs;
       prefs.setString(USER_SESSION_KEY, null);
@@ -282,7 +290,9 @@ class UserRepo {
   /// provided for pagination.
   Future<List<Event>> getFollowedEvents(int skipEvents, int numEvents) async{
     try{
-      Response response = await dio.get(
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.get(
           "/App/Events/Following/offset=$skipEvents/limit=$numEvents");
       var eventResults = new List<Event>();
       if(response.data["events"] != null){
@@ -310,7 +320,9 @@ class UserRepo {
   /// [numEvents] are provided for pagination.
   Future<List<Event>> getFEventsHistory(int skipEvents, int numEvents) async{
     try{
-      Response response = await dio.get(
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.get(
           "/App/Events/History/offset=$skipEvents/limit=$numEvents");
       var eventResults = new List<Event>();
 
@@ -334,7 +346,9 @@ class UserRepo {
 
   Future<List<Event>> getDismissedEvents(int skipEvents, int numEvents) async{
     try{
-      Response response = await dio.get(
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.get(
           "/App/Events/Dismissed/offset=$skipEvents/limit=$numEvents");
       var eventResults = new List<Event>();
 
@@ -364,7 +378,9 @@ class UserRepo {
   /// provided for pagination.
   Future<List<Event>> getCreatedEvents(int skipEvents, int numEvents) async{
     try{
-      Response response = await dio.get(
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.get(
           "/App/Events/Created//offset=$skipEvents/limit=$numEvents");
       var eventResults = new List<Event>();
       if(response.data["events"] != null){
@@ -389,7 +405,9 @@ class UserRepo {
   ///
   Future<List<Tag>> getUserTags() async{
     try{
-      Response response = await dio.get("/App/Tags/UserTags");
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.get("/App/Tags/UserTags");
       var tagResults = new List<Tag>();
 
       if(response.data["tags"] != null){

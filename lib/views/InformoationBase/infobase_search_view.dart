@@ -278,10 +278,10 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
   String _buildHint(InfoBaseType type){
     if(type == InfoBaseType.Building){
       return "Search: Stefani";
-    } else if (type == InfoBaseType.Service){
+    } else if (type == InfoBaseType.Room){
       return "Search: S-100, Salon";
     } else {
-      return "Search: Oficina";
+      return "Search: Office";
     }
   }
 

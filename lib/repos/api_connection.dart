@@ -8,7 +8,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:path_provider/path_provider.dart';
 
 class ApiConnection {
-  final Dio _dio = Dio();
+  Dio _dio;
 
   static final ApiConnection _instance = ApiConnection._internal();
 
@@ -50,6 +50,7 @@ class ApiConnection {
   /// our requests.
   init() async{
     try {
+      _dio = Dio();
       final Directory dir = await _localCookieDirectory;
       final cookiePath = dir.path;
       _persistentCookies = new PersistCookieJar(
@@ -87,10 +88,19 @@ class ApiConnection {
                 return response;
               }
           )
-      );
+    );
     } catch (error, stacktrace) {
       print("Exception Initializing Dio: $error stackTrace: $stacktrace");
       return null;
+    }
+  }
+
+  Future ensureInitialized() async{
+    if(dio == null || dio.options == null || dio.options.baseUrl == null){
+      await Future.delayed(Duration(milliseconds: 500));
+    }
+    if(dio == null || dio.options == null || dio.options.baseUrl == null){
+      init();
     }
   }
 

@@ -11,31 +11,22 @@ class LinkWithIconWidget extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 4.0, bottom: 4.0),
-      child: Row(
-        children: <Widget>[
-          const Padding(padding: EdgeInsets.only(left: 8.0)),
-          _icon,
-          const Padding(padding: EdgeInsets.only(left: 16.0)),
-          Expanded(
-            flex: 1,
-            child: RichText(
-              overflow: TextOverflow.ellipsis,
-              text: TextSpan(
-                text: _description,
-                style: new TextStyle(
-                    color: Colors.blue,
-                    decoration: TextDecoration.underline,
-                    fontSize: Theme.of(context).textTheme.subtitle1.fontSize),
-                recognizer: new TapGestureRecognizer()
-                  ..onTap = () { _launchURL(_URL);
-                  },
-              ),
-            )
-          ),
-        ],
+    return  ListTile(
+      title: RichText(
+        overflow: TextOverflow.ellipsis,
+        text: TextSpan(
+          text: _description,
+          style: new TextStyle(
+              color: Colors.blue,
+              decoration: TextDecoration.underline,
+              fontSize: Theme.of(context).textTheme.subtitle1.fontSize),
+          recognizer: new TapGestureRecognizer()
+            ..onTap = () { _launchURL(_URL);
+            },
+        ),
       ),
+      leading: _icon,
+      dense: true,
     );
   }
   _launchURL(String URL) async {

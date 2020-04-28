@@ -11,15 +11,12 @@ class InfoBaseRepo {
 
   static final InfoBaseRepo _instance = InfoBaseRepo._internal();
   final ApiConnection apiConnection = ApiConnection();
-  Dio dio;
 
   factory InfoBaseRepo() {
     return _instance;
   }
 
-  InfoBaseRepo._internal(){
-    dio = apiConnection.dio;
-  }
+  InfoBaseRepo._internal();
 
   /// Calls the back-end to get all the [Building]s in the system
   ///
@@ -27,7 +24,7 @@ class InfoBaseRepo {
   /// traduced to a proper error with [Utils.handleDioError].
   Future<List<Building>> getAllBuildings() async{
     try{
-      Response response = await dio.get("/App/Buildings/offset=0/limit=1000");
+      Response response = await apiConnection.dio.get("/App/Buildings/offset=0/limit=1000");
       List<Building> buildingResults = new List();
 
       if(response.data != null){
@@ -62,7 +59,7 @@ class InfoBaseRepo {
   Future<List<Building>> searchBuildings(String keyword, int skipBuildings,
       int numBuildings) async{
     try{
-      Response response = await dio.get("/App/Buildings/Search/searchstring="
+      Response response = await apiConnection.dio.get("/App/Buildings/Search/searchstring="
           "$keyword/offset=$skipBuildings/limit=$numBuildings");
       List<Building> buildingResults = new List();
 
@@ -93,7 +90,7 @@ class InfoBaseRepo {
   /// traduced to a proper error with [Utils.handleDioError].
   Future<Building> getBuilding(int buildingUID) async{
     try{
-      Response response = await dio.get("/App/Buildings/bid=$buildingUID");
+      Response response = await apiConnection.dio.get("/App/Buildings/bid=$buildingUID");
       Building buildingResult;
 
       if(response.data != null){
@@ -120,7 +117,7 @@ class InfoBaseRepo {
   /// traduced to a proper error with [Utils.handleDioError].
   Future<List<Room>> getRoomsOfFloor(int buildingUID, int floor) async{
     try{
-      Response response = await dio.get("/App/Rooms/bid=$buildingUID/rfloor=$floor");
+      Response response = await apiConnection.dio.get("/App/Rooms/bid=$buildingUID/rfloor=$floor");
       List<Room> roomResults = new List();
 
       if(response.data != null){
@@ -161,7 +158,7 @@ class InfoBaseRepo {
   Future<List<Room>> searchRoomsByKeyword(String keyword, int skipRooms,
       int numRooms) async{
     try{
-      Response response = await dio.get("/App/Rooms/searchstring=$keyword/"
+      Response response = await apiConnection.dio.get("/App/Rooms/searchstring=$keyword/"
           "offset=$skipRooms/limit=$numRooms");
       List<Room> roomResults = new List();
 
@@ -202,7 +199,7 @@ class InfoBaseRepo {
   Future<List<Room>> searchRoomsByCode(String abrev, String code, int skipRooms,
       int numRooms) async{
     try{
-      Response response = await dio.get("/App/Rooms/babbrev=$abrev/"
+      Response response = await apiConnection.dio.get("/App/Rooms/babbrev=$abrev/"
           "rcode=$code/offset=$skipRooms/limit=$numRooms");
       List<Room> roomResults = new List();
 
@@ -236,7 +233,7 @@ class InfoBaseRepo {
   /// traduced to a proper error with [Utils.handleDioError].
   Future<Room> getRoom(int roomUID) async{
     try{
-      Response response = await dio.get("/App/Rooms/rid=$roomUID");
+      Response response = await apiConnection.dio.get("/App/Rooms/rid=$roomUID");
       Room roomResult;
 
       if(response.data != null){
@@ -278,7 +275,7 @@ class InfoBaseRepo {
   Future<List<Service>> searchServices(String keyword, int skipServices,
       int numServices) async{
     try{
-      Response response = await dio.get("/App/Services/searchstring=$keyword/"
+      Response response = await apiConnection.dio.get("/App/Services/searchstring=$keyword/"
           "offset=$skipServices/limit=$numServices");
       List<Service> serviceResult = List();
 
@@ -310,7 +307,7 @@ class InfoBaseRepo {
   /// traduced to a proper error with [Utils.handleDioError].
   Future<Service> getService(int serviceUID) async{
     try{
-      Response response = await dio.get("/App/Services/sid=$serviceUID");
+      Response response = await apiConnection.dio.get("/App/Services/sid=$serviceUID");
       Room roomResult;
       Service service;
 

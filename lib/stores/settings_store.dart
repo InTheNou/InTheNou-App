@@ -13,7 +13,7 @@ class SettingsStore extends flux.Store {
   int _recommendationInterval;
   int _smartInterval;
   int _cancellationInterval;
-  bool _recommendationDebug;
+  bool _debugNotification;
 
   PackageInfo packageInfo;
 
@@ -77,9 +77,9 @@ class SettingsStore extends flux.Store {
         return true;
       });
     });
-    triggerOnConditionalAction(changeRecommendationDebugAction, (bool toggle) {
-      return _settingsRepo.changeRecommendationDebug(toggle).then((value){
-        _recommendationDebug = value;
+    triggerOnConditionalAction(changeDebugNotificationsAction, (bool toggle) {
+      return _settingsRepo.changeDebugNotification(toggle).then((value){
+        _debugNotification = value;
         return true;
       });
     });
@@ -107,9 +107,9 @@ class SettingsStore extends flux.Store {
     return _cancellationInterval ??
         _settingsRepo.getCancellationTime();
   }
-  Future<bool> get recommendationDebug async{
-    return _recommendationDebug ??
-        _settingsRepo.getRecommendationDebug();
+  Future<bool> get debugNotification async{
+    return _debugNotification ??
+        _settingsRepo.getDebugNotification();
   }
 }
 
@@ -122,7 +122,7 @@ final flux.Action logoutAction = new flux.Action();
 final flux.Action<int> changeRecommendationIntervalAction = new flux.Action();
 final flux.Action<int> changeSmartIntervalAction = new flux.Action();
 final flux.Action<int> changeCancellationIntervalAction = new flux.Action();
-final flux.Action<bool> changeRecommendationDebugAction = new flux.Action();
+final flux.Action<bool> changeDebugNotificationsAction = new flux.Action();
 
 
 final flux.StoreToken settingsStoreToken = new flux.StoreToken(

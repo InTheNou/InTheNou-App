@@ -104,8 +104,11 @@ class Utils {
     if(!prefs.containsKey(CANCELLATION_INTERVAL_KEY)){
       prefs.setInt(CANCELLATION_INTERVAL_KEY, 120);
     }
-    if(!prefs.containsKey(RECOMMENDATION_DEBUG_KEY)){
-      prefs.setBool(RECOMMENDATION_DEBUG_KEY, false);
+    if(!prefs.containsKey(SMART_INTERVAL_KEY)){
+      prefs.setInt(SMART_INTERVAL_KEY, 15);
+    }
+    if(!prefs.containsKey(DEBUG_NOTIFICATION_KEY)){
+      prefs.setBool(DEBUG_NOTIFICATION_KEY, false);
     }
   }
 

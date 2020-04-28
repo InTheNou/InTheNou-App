@@ -42,6 +42,163 @@ class _DebugSettingsViewViewState extends State<DebugSettingsView>
                   child: Row(
                     children: <Widget>[
                       Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                          "Recommendation Check Interval",
+                                          style: Theme.of(context).textTheme.subtitle1
+                                      ),
+                                    ),
+                                  ),
+                                  FutureBuilder<int>(
+                                      future: _settingsStore.recommendationInterval,
+                                      builder: (BuildContext context, AsyncSnapshot<int> time) {
+                                        return Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: new DropdownButton<int>(
+                                              value: time.data,
+                                              style: Theme.of(context).textTheme.subtitle2,
+                                              underline: Container(
+                                                height: 2,
+                                                color: Theme.of(context).primaryColor,
+                                              ),
+                                              items: _settingsStore.defaultTimes
+                                                  .map<DropdownMenuItem<int>>((int value) {
+                                                return DropdownMenuItem<int>(
+                                                  value: value,
+                                                  child: Text(value.toString()),
+                                                );
+                                              }).toList(),
+                                              onChanged: (int newValue) {
+                                                changeRecommendationIntervalAction(newValue);
+                                              }
+                                          ),
+                                        );
+                                      }),
+                                ],
+                              ),
+                              Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                          "Smart Notification Check Interval",
+                                          style: Theme.of(context).textTheme.subtitle1
+                                      ),
+                                    ),
+                                  ),
+                                  FutureBuilder<int>(
+                                      future: _settingsStore.smartInterval,
+                                      builder: (BuildContext context, AsyncSnapshot<int> time) {
+                                        return Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: new DropdownButton<int>(
+                                              value: time.data,
+                                              style: Theme.of(context).textTheme.subtitle2,
+                                              underline: Container(
+                                                height: 2,
+                                                color: Theme.of(context).primaryColor,
+                                              ),
+                                              items: _settingsStore.defaultTimes
+                                                  .map<DropdownMenuItem<int>>((int value) {
+                                                return DropdownMenuItem<int>(
+                                                  value: value,
+                                                  child: Text(value.toString()),
+                                                );
+                                              }).toList(),
+                                              onChanged: (int newValue) {
+                                                changeSmartIntervalAction(newValue);
+                                              }
+                                          ),
+                                        );
+                                      }),
+                                ],
+                              ),
+                              Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                          "Cancellation Check Interval",
+                                          style: Theme.of(context).textTheme.subtitle1
+                                      ),
+                                    ),
+                                  ),
+                                  FutureBuilder<int>(
+                                      future: _settingsStore.cancellationInterval,
+                                      builder: (BuildContext context, AsyncSnapshot<int> time) {
+                                        return Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: new DropdownButton<int>(
+                                              value: time.data,
+                                              style: Theme.of(context).textTheme.subtitle2,
+                                              underline: Container(
+                                                height: 2,
+                                                color: Theme.of(context).primaryColor,
+                                              ),
+                                              items: _settingsStore.defaultTimes
+                                                  .map<DropdownMenuItem<int>>((int value) {
+                                                return DropdownMenuItem<int>(
+                                                  value: value,
+                                                  child: Text(value.toString()),
+                                                );
+                                              }).toList(),
+                                              onChanged: (int newValue) {
+                                                changeCancellationIntervalAction(newValue);
+                                              }
+                                          ),
+                                        );
+                                      }),
+                                ],
+                              ),
+                              Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                          "Debug notifications",
+                                          style: Theme.of(context).textTheme.subtitle1
+                                      ),
+                                    ),
+                                  ),
+                                  FutureBuilder<bool>(
+                                      future: _settingsStore.debugNotification,
+                                      initialData: false,
+                                      builder: (BuildContext context,
+                                          AsyncSnapshot<bool>toggle) {
+                                        return Padding(
+                                          padding: const EdgeInsets.only(top: 4.0, bottom: 4.0,
+                                              right: 8.0),
+                                          child: new Switch(
+                                              value: toggle.data,
+                                              onChanged: (value)  async =>
+                                                  changeDebugNotificationsAction(value)
+                                          ),
+                                        );
+                                      }),
+                                ],
+                              ),
+                            ],
+                          )
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(padding: const EdgeInsets.all(4.0)),
+
+                Card(
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
                           child: InkWell(
                               child: Padding(
                                   padding: const EdgeInsets.only(top:16.0, bottom: 16.0,
@@ -57,7 +214,7 @@ class _DebugSettingsViewViewState extends State<DebugSettingsView>
                                 NotificationHandler.cancelAllSmartNotifications();
                                 Utils.clearNotificationsPrefs();
                               }
-                          )
+                          ),
                       ),
                     ],
                   ),
@@ -80,7 +237,7 @@ class _DebugSettingsViewViewState extends State<DebugSettingsView>
                                     )
                                 );
                               }
-                          )
+                          ),
                       ),
                     ],
                   ),
@@ -103,147 +260,13 @@ class _DebugSettingsViewViewState extends State<DebugSettingsView>
                                 );
                                 changeUserPrivilegeAction();
                               }
-                          )
+                          ),
                       ),
                     ],
                   ),
                 ),
 
-                // Recommendation
-                Card(
-                  child: Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                              "Recommendation Check Interval",
-                              style: Theme.of(context).textTheme.subtitle1
-                          ),
-                        ),
-                      ),
-                      FutureBuilder<int>(
-                          future: _settingsStore.recommendationInterval,
-                          builder: (BuildContext context, AsyncSnapshot<int> time) {
-                            return Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: new DropdownButton<int>(
-                                  value: time.data,
-                                  style: Theme.of(context).textTheme.subtitle2,
-                                  underline: Container(
-                                    height: 2,
-                                    color: Theme.of(context).primaryColor,
-                                  ),
-                                  items: _settingsStore.defaultTimes
-                                      .map<DropdownMenuItem<int>>((int value) {
-                                    return DropdownMenuItem<int>(
-                                      value: value,
-                                      child: Text(value.toString()),
-                                    );
-                                  }).toList(),
-                                  onChanged: (int newValue) {
-                                    changeRecommendationIntervalAction(newValue);
-                                  }
-                              ),
-                            );
-                          }),
-                    ],
-                  ),
-                ),
-
-                // Smart Interval
-                Card(
-                  child: Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                              "Smart Notification Check Interval",
-                              style: Theme.of(context).textTheme.subtitle1
-                          ),
-                        ),
-                      ),
-                      Text(
-                          "15 min",
-                          style: Theme.of(context).textTheme.subtitle1
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Cancellation Interval
-                Card(
-                  child: Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                              "Cancellation Check Interval",
-                              style: Theme.of(context).textTheme.subtitle1
-                          ),
-                        ),
-                      ),
-                      FutureBuilder<int>(
-                          future: _settingsStore.cancellationInterval,
-                          builder: (BuildContext context, AsyncSnapshot<int> time) {
-                            return Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: new DropdownButton<int>(
-                                  value: time.data,
-                                  style: Theme.of(context).textTheme.subtitle2,
-                                  underline: Container(
-                                    height: 2,
-                                    color: Theme.of(context).primaryColor,
-                                  ),
-                                  items: _settingsStore.defaultTimes
-                                      .map<DropdownMenuItem<int>>((int value) {
-                                    return DropdownMenuItem<int>(
-                                      value: value,
-                                      child: Text(value.toString()),
-                                    );
-                                  }).toList(),
-                                  onChanged: (int newValue) {
-                                    changeCancellationIntervalAction(newValue);
-                                  }
-                              ),
-                            );
-                          }),
-                    ],
-                  ),
-                ),
-                Card(
-                  child: Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                              "Recommendation debug notification",
-                              style: Theme.of(context).textTheme.subtitle1
-                          ),
-                        ),
-                      ),
-                      FutureBuilder<bool>(
-                          future: _settingsStore.recommendationDebug,
-                          initialData: false,
-                          builder: (BuildContext context,
-                              AsyncSnapshot<bool>toggle) {
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 4.0, bottom: 4.0,
-                                  right: 8.0),
-                              child: new Switch(
-                                  value: toggle.data,
-                                  activeColor: Theme.of(context).primaryColor,
-                                  onChanged: (value)  async =>
-                                      changeRecommendationDebugAction(value)
-                              ),
-                            );
-                          }),
-                    ],
-                  ),
-                ),
+                Padding(padding: const EdgeInsets.all(8.0)),
                 Text("Click this if you change the above times"),
                 Card(
                   child: Row(

@@ -40,74 +40,77 @@ class _SettingsViewState extends State<SettingsView>
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
                 Card(
-                  child: Row(
+                  child: Column(
                     children: <Widget>[
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                              "Default Notification (minutes)",
-                              style: Theme.of(context).textTheme.subtitle1
-                          ),
-                        ),
-                      ),
-                      FutureBuilder<int>(
-                          future: _settingsStore.defaultNotificationTime,
-                          builder: (BuildContext context, AsyncSnapshot<int> time) {
-                            return Padding(
+                      Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: DropdownButton<int>(
-                                  value: time.data,
-                                  underline: Container(
-                                    height: 2,
-                                    color: Theme.of(context).accentColor,
-                                  ),
-                                  items: _settingsStore.defaultTimes
-                                      .map<DropdownMenuItem<int>>((int value) {
-                                    return DropdownMenuItem<int>(
-                                      value: value,
-                                      child: Text(value.toString()),
-                                    );
-                                  }).toList(),
-                                  onChanged: (int newValue) {
-                                    changeNotificationTimeAction(newValue);
-                                  }
+                              child: Text(
+                                  "Default Notification (minutes)",
+                                  style: Theme.of(context).textTheme.subtitle1
                               ),
-                            );
-                          }),
-                    ],
-                  ),
-                ),
-                Card(
-                  child: Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                              "Smart Notification",
-                              style: Theme.of(context).textTheme.subtitle1
+                            ),
                           ),
-                        ),
+                          FutureBuilder<int>(
+                              future: _settingsStore.defaultNotificationTime,
+                              builder: (BuildContext context, AsyncSnapshot<int> time) {
+                                return Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: DropdownButton<int>(
+                                      value: time.data,
+                                      underline: Container(
+                                        height: 2,
+                                        color: Theme.of(context).accentColor,
+                                      ),
+                                      items: _settingsStore.defaultTimes
+                                          .map<DropdownMenuItem<int>>((int value) {
+                                        return DropdownMenuItem<int>(
+                                          value: value,
+                                          child: Text(value.toString()),
+                                        );
+                                      }).toList(),
+                                      onChanged: (int newValue) {
+                                        changeNotificationTimeAction(newValue);
+                                      }
+                                  ),
+                                );
+                              }),
+                        ],
                       ),
-                      FutureBuilder<bool>(
-                          future: _settingsStore.smartNotificationEnabled,
-                          initialData: false,
-                          builder: (BuildContext context,
-                              AsyncSnapshot<bool>toggle) {
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 4.0, bottom: 4.0,
-                                  right: 8.0),
-                              child: new Switch(
-                                  value: toggle.data,
-                                  onChanged: (value)  async =>
-                                      checkPermissionAndUpdate(value)
+                      Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                  "Smart Notification",
+                                  style: Theme.of(context).textTheme.subtitle1
                               ),
-                            );
-                          }),
+                            ),
+                          ),
+                          FutureBuilder<bool>(
+                              future: _settingsStore.smartNotificationEnabled,
+                              initialData: false,
+                              builder: (BuildContext context,
+                                  AsyncSnapshot<bool>toggle) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 4.0, bottom: 4.0,
+                                      right: 8.0),
+                                  child: new Switch(
+                                      value: toggle.data,
+                                      onChanged: (value)  async =>
+                                          checkPermissionAndUpdate(value)
+                                  ),
+                                );
+                              }),
+                        ],
+                      ),
                     ],
                   ),
                 ),
+                Padding(padding: const EdgeInsets.only(top:8.0)),
                 Card(
                   child: Row(
                     children: <Widget>[
@@ -166,9 +169,7 @@ class _SettingsViewState extends State<SettingsView>
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top:16.0)
-                ),
+                Padding(padding: const EdgeInsets.only(top:16.0)),
                 Card(
                   child: Row(
                     children: <Widget>[
@@ -203,7 +204,7 @@ class _SettingsViewState extends State<SettingsView>
   String _getVersionInfo(){
     if(_settingsStore.packageInfo != null){
       return "Version: "
-          "${_settingsStore.packageInfo.version}+"
+          "${_settingsStore.packageInfo.version} build "
           "${_settingsStore.packageInfo.buildNumber}";
     } else {
       return "Version: 0.0.0+0";

@@ -29,6 +29,7 @@ class NotificationView extends StatelessWidget {
                     'Notifications of Alerts or Errors.',
                     importance: Importance.Max,
                     priority: Priority.High,
+                    icon: "ic_notification",
                     visibility: NotificationVisibility.Public,
                     styleInformation: defaultStyleInformation);
                 var platformChannelSpecifics = NotificationDetails(
@@ -58,6 +59,7 @@ class NotificationView extends StatelessWidget {
                     priority: Priority.High,
                     visibility: NotificationVisibility.Public,
                     groupKey: "test",
+                    icon: "@drawable/ic_notification",
                     setAsGroupSummary: true,
                     styleInformation: bigTextStyleInformation);
                 var platformChannelSpecifics = NotificationDetails(
@@ -97,6 +99,7 @@ class NotificationView extends StatelessWidget {
                     'Notifications of Cancelled Events.',
                     importance: Importance.Max,
                     priority: Priority.High,
+                    icon: "ic_notification",
                     visibility: NotificationVisibility.Public,
                     styleInformation: bigTextStyleInformation);
                 var platformChannelSpecifics = NotificationDetails(
@@ -154,6 +157,7 @@ class NotificationView extends StatelessWidget {
                     groupChannelId, groupChannelName, groupChannelDescription,
                     styleInformation: inboxStyleInformation,
                     groupKey: groupKey,
+                    icon: "ic_notification",
                     setAsGroupSummary: true);
                 var platformChannelSpecifics =
                 NotificationDetails(androidPlatformChannelSpecifics, null);

@@ -6,29 +6,92 @@ import 'package:InTheNou/models/tag.dart';
 import 'package:InTheNou/models/website.dart';
 import 'package:intl/intl.dart';
 
+/// Object representation of an Event in the System
+///
+/// It contains the identifiable and descriptive properties of the Event
+/// entity in our database.
+///
+/// {@category Model}
 class Event {
 
+  /// Unique identifier of this Event entity
+  /// It is represented in the API a "eid'
   int _UID;
+
+  /// The title of the Event entity given by the Event Creator.
+  /// Is it represented in the API as "etitle'
   String _title;
+
+  /// The description of the Event entity given by the Event Creator.
+  /// Is it represented in the API as "edescription'
   String _description;
+
+  /// The name of the Event Creator of the Event entity.
+  /// Is it represented in the API as "ecreator'
   String _creator;
+
+  /// An optional image URL for the Event entity given by the Event Creator.
+  /// Is it represented in the API as "photourl'
   String _image;
+
+  /// The [DateTime] start time and date of the Event entity set by the Event
+  /// Creator.
+  /// Is it represented in the API as "estart'
   DateTime _startDateTime;
+
+  /// The [DateTime] start time and date of the Event entity set by the Event
+  /// Creator.
+  /// Is it represented in the API as "eend'
   DateTime _endDateTime;
+
+  /// The [DateTime] timestamp of when the Event entity was created.
+  /// Is it represented in the API as "eend'
   DateTime _timestamp;
+
+  /// The [Room] of the Event entity set by the Event Creator.
+  /// Is it represented in the API as "room'
   Room _room;
+
+  /// The optional [Website]s associated with the Event entity, set by the
+  /// Event Creator.
+  /// Is it represented in the API as "websites'
   List<Website> _websites;
+
+  /// The [Tag]s of the Event entity set by the Event Creator.
+  /// Is it represented in the API as "tags'
   List<Tag> _tags;
+
+  /// The flag used to indicate if the Event entity is being followed by the
+  /// current user.
+  /// Is it represented in the API as "itype' being equal to "following"
   bool followed;
+
+  /// The flag used to indicate if the Event entity was dismissed by the
+  /// current user.
+  /// Is it represented in the API as "itype' being equal to "dismissed"
   bool dismissed;
+
+  /// The flag used to indicate if the Event entity was dismissed by the
+  /// current user.
+  /// Is it represented in the API as "itype' being equal to "dismissed"
   String recommended;
+
+  /// The flag used to indicate if the Event entity was cancelled by the
+  /// Event Creator.
+  /// Is it represented in the API as "estatus' being equal to "active"
   String status;
 
+  static DateFormat df = DateFormat("yyyy-MM-dd HH:mm:ss");
+
+
+  /// Default constructor for any Event entity
   Event(this._UID,this._title, this._description, this._creator, this._image,
       this._startDateTime, this._endDateTime, this._timestamp,
       this._room, this._websites, this._tags, this.followed, this.dismissed,
       this.recommended, this.status);
 
+  /// Constructor used for when showing Event entities as a list. This
+  /// constructor only uses the bare minimum properties.
   Event.result({int UID, String title, String description,  String image,
     DateTime startDateTime,  DateTime endDateTime, DateTime timestamp,
     Room room, List<Tag> tags, bool followed, bool dismissed,
@@ -49,7 +112,9 @@ class Event {
     this.status = status;
   }
 
-  static DateFormat df = DateFormat("yyyy-MM-dd HH:mm:ss");
+
+  /// Factory constructor to create Event entities from json objects
+  /// from the API.
   factory Event.fromJson(Map<String, dynamic> json) {
     if(json == null){
       return null;
@@ -74,6 +139,9 @@ class Event {
     );
   }
 
+  /// Factory constructor to create Building entities from [json] object
+  /// from the API, using the Result constructor. The [isFollowed] parameter
+  /// is to bypass the 'itype' returned from the API call.
   factory Event.resultFromJson(Map<String, dynamic> json,
       {bool isFollowed = false}) {
     Building b = Building.resultFromJson(json['room']['building']);
@@ -95,6 +163,10 @@ class Event {
     );
   }
 
+  /// Factory constructor to create Building entities from [json] object
+  /// from the API, to be used for the Recommendation functionality. The
+  /// [isFollowed] parameter is to bypass the 'itype' returned from the API
+  /// call.
   factory Event.recommendationFromJson(Map<String, dynamic> json,
       {bool isFollowed = false}) {
     return Event.result(
@@ -103,6 +175,8 @@ class Event {
     );
   }
 
+  /// Helper method to convert the Event object into json object to be sent
+  /// to the API.
   Map<String, dynamic> toJson() => {
         "etitle": _title,
         "edescription": _description,
@@ -120,23 +194,15 @@ class Event {
   String get description => _description;
   String get creator => _creator;
   String get image => _image;
+  DateTime get startDateTime => _startDateTime;
   DateTime get endDateTime => _endDateTime;
   DateTime get timestamp => _timestamp;
   Room get room => _room;
   List<Website> get websites => _websites;
   List<Tag> get tags => _tags;
 
-  String getEEndTimeString() {
-    if (_startDateTime.month ==  DateTime.now().month){
-      return DateFormat('EEE d: hh:mm aaa - ').format(_startDateTime);
-    } else {
-      return DateFormat('EEE, MMM d: hh:mm aaa - ').format(_startDateTime)
-          + DateFormat('hh:mm aaa').format(_endDateTime);
-    }
-  }
 
-  DateTime get startDateTime => _startDateTime;
-
+  /// Helper method to format the [_startDateTime] as a readable string
   String getStartTimeString() {
     if (_startDateTime.month ==  DateTime.now().month){
       return DateFormat('EEE d: hh:mm aaa - ').format(_startDateTime);
@@ -146,6 +212,18 @@ class Event {
     }
   }
 
+  /// Helper method to format the [_endDateTime] as a readable string
+  String getEEndTimeString() {
+    if (_endDateTime.month ==  DateTime.now().month){
+      return DateFormat('EEE d: hh:mm aaa - ').format(_endDateTime);
+    } else {
+      return DateFormat('EEE, MMM d: hh:mm aaa - ').format(_endDateTime)
+          + DateFormat('hh:mm aaa').format(_endDateTime);
+    }
+  }
+
+  /// Helper method to format the [_startDateTime] and [_endDateTime] into a
+  /// readable string
   String getDurationString() {
     if (_startDateTime.month ==  DateTime.now().month){
       if (_startDateTime.day == _endDateTime.day){
@@ -180,8 +258,5 @@ class Event {
 
   @override
   int get hashCode => _UID.hashCode;
-
-
-
 
 }

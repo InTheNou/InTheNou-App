@@ -27,7 +27,7 @@ class ServicesCard extends StatelessWidget {
                   Text(
                     _service.roomCode,
                     style: Theme.of(context).textTheme.bodyText2.copyWith(
-                        color: Theme.of(context).accentColor
+                        color: Theme.of(context).primaryColor
                     ),
                   ),
                   const Padding(padding: EdgeInsets.only(top: 4.0)),

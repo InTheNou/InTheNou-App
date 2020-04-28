@@ -85,17 +85,17 @@ class SettingsRepo {
     return prefs.getInt(CANCELLATION_INTERVAL_KEY);
   }
 
-  /// Updates the local Recommendation Debug Notification toggle setting
-  Future<bool> changeRecommendationDebug(bool toggle) async {
+  /// Updates the local Debug Notification toggle setting
+  Future<bool> changeDebugNotification(bool toggle) async {
     final SharedPreferences prefs = await _prefs;
-    return prefs.setBool(RECOMMENDATION_DEBUG_KEY, toggle)
+    return prefs.setBool(DEBUG_NOTIFICATION_KEY, toggle)
         .then((success) => toggle);
   }
 
-  /// Gets the local Recommendation Debug Notification toggle setting
-  Future<bool> getRecommendationDebug() async{
+  /// Gets the local Debug Notification toggle setting
+  Future<bool> getDebugNotification() async{
     final SharedPreferences prefs = await _prefs;
-    return prefs.getBool(RECOMMENDATION_DEBUG_KEY);
+    return prefs.getBool(DEBUG_NOTIFICATION_KEY);
   }
 
 

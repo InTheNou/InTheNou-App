@@ -90,6 +90,7 @@ class InfoBaseStore extends flux.Store{
         return;
       }
       _detailRoom = null;
+      _selectedFloor = null;
       _selectedBuilding = building;
       trigger();
       _detailBuilding = _infoBaseRepo.getBuilding(building.UID);

@@ -212,7 +212,7 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
   /// Notifications are initialized adn setup.
   void initializeNotifications() async {
     var initializationSettingsAndroid = AndroidInitializationSettings
-      ('ic_notification');
+      ("ic_notification");
     // Here is where we could add the iOS settings when the platform gets
     // supported by the app
     var initializationSettings = InitializationSettings(

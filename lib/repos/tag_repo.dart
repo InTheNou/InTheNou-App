@@ -11,15 +11,12 @@ class TagRepo {
 
   static final TagRepo _instance = TagRepo._internal();
   final ApiConnection apiConnection = ApiConnection();
-  Dio dio;
 
   factory TagRepo() {
     return _instance;
   }
 
-  TagRepo._internal(){
-    dio = apiConnection.dio;
-  }
+  TagRepo._internal();
 
   /// Calls the API to get all [Tag]s in the system
   ///
@@ -33,7 +30,7 @@ class TagRepo {
       if(prefs.getString("Token") != null){
         token = prefs.getString("Token");
       }
-      Response response = await dio.get("/App/Tags",
+      Response response = await apiConnection.dio.get("/App/Tags",
       options: Options(
         headers: {
           "Token": "$token"
@@ -64,7 +61,7 @@ class TagRepo {
   /// Calls the API to get add a [Tag] in the current user
   Future<bool> addTag(List<Tag> tags) async{
     try{
-      Response response = await dio.post("/App/Tags/User/Add",
+      Response response = await apiConnection.dio.post("/App/Tags/User/Add",
           data: convert.jsonEncode({
             "tags": Tag.toSmallJsonList(tags)
           }));
@@ -85,7 +82,7 @@ class TagRepo {
   /// Calls the API to get remove a [Tag] from the current user
   Future<bool> removeTag(List<Tag> tags) async{
     try{
-      Response response = await dio.post("/App/Tags/User/Remove",
+      Response response = await apiConnection.dio.post("/App/Tags/User/Remove",
         data: convert.jsonEncode({
           "tags": Tag.toSmallJsonList(tags)
         }));

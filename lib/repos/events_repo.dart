@@ -14,15 +14,12 @@ class EventsRepo {
   static final EventsRepo _instance = EventsRepo._internal();
   final ApiConnection apiConnection = ApiConnection();
   Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
-  Dio dio;
 
   factory EventsRepo() {
     return _instance;
   }
 
-  EventsRepo._internal(){
-    dio = apiConnection.dio;
-  }
+  EventsRepo._internal();
 
   /// Calls the back-end to get the Events for the General Feed
   ///
@@ -37,7 +34,9 @@ class EventsRepo {
   /// traduced to a proper error with [Utils.handleDioError].
   Future<List<Event>> getGenEvents (int skipEvents, int numEvents) async{
     try{
-      Response response = await dio.get(
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.get(
           "/App/Events/General/offset=$skipEvents"
               "/limit=$numEvents");
       List<Event> eventResults = new List();
@@ -73,7 +72,9 @@ class EventsRepo {
   /// traduced to a proper error with [Utils.handleDioError].
   Future<List<Event>> getPerEvents(int skipEvents, int numEvents) async{
     try{
-      Response response = await dio.get(
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.get(
           "/App/Events/Recommended/offset=$skipEvents/"
               "limit=$numEvents");
       List<Event> eventResults = new List();
@@ -106,7 +107,9 @@ class EventsRepo {
   Future<List<Event>> getNewEvents(String lastDate) async{
     DateTime date = DateTime.parse(lastDate);
     try{
-      Response response = await dio.get(
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.get(
           "/App/Events/CAT/timestamp=${Utils.formatTimeStamp(date)}");
       List<Event> eventResults = new List();
 
@@ -139,7 +142,9 @@ class EventsRepo {
   Future<List<Event>> getDeletedEvents(String lastDate) async{
     DateTime date = DateTime.parse(lastDate);
     try{
-      Response response = await dio.get(
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.get(
           "/App/Events/Deleted/New/timestamp=${Utils.formatTimeStamp(date)}");
       List<Event> eventResults = new List();
 
@@ -177,7 +182,9 @@ class EventsRepo {
   Future<List<Event>> searchGenEvents(String keyword, int skipEvents,
       int numEvents) async{
     try{
-      Response response = await dio.get(
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.get(
           "/App/Events/General/search=$keyword/offset=$skipEvents/limit=$numEvents");
       List<Event> eventResults = new List();
 
@@ -216,7 +223,9 @@ class EventsRepo {
   Future<List<Event>> searchPerEvents(String keyword, int skipEvents,
       int numEvents) async{
     try{
-      Response response = await dio.get(
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.get(
           "/App/Events/Recommended/search=$keyword/offset=$skipEvents/limit"
               "=$numEvents");
       List<Event> eventResults = new List();
@@ -249,7 +258,9 @@ class EventsRepo {
   /// traduced to a proper error with [Utils.handleDioError].
   Future<Event> getEvent(int eventUID) async{
     try{
-      Response response = await dio.get("/App/Events/eid=$eventUID/Interaction");
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.get("/App/Events/eid=$eventUID/Interaction");
 
       return Event.fromJson(response.data);
     } catch(error,stacktrace){
@@ -272,7 +283,9 @@ class EventsRepo {
   /// traduced to a proper error with [Utils.handleDioError].
   Future<bool> requestFollowEvent(int eventUID) async{
     try{
-      Response response = await dio.post("/App/Events/eid=$eventUID/"
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.post("/App/Events/eid=$eventUID/"
           "/Follow");
 
       return response.data["event"]["eid"] == eventUID;
@@ -296,7 +309,9 @@ class EventsRepo {
   /// traduced to a proper error with [Utils.handleDioError].
   Future<bool> requestUnFollowEvent(int eventUID) async{
     try{
-      Response response = await dio.post("/App/Events/eid=$eventUID/"
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.post("/App/Events/eid=$eventUID/"
           "Unfollow");
 
       return response.data["event"]["eid"] == eventUID;
@@ -321,7 +336,9 @@ class EventsRepo {
   /// traduced to a proper error with [Utils.handleDioError].
   Future<bool> requestDismissEvent(int eventUID) async{
     try{
-      Response response = await dio.post("/App/Events/eid=$eventUID/"
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.post("/App/Events/eid=$eventUID/"
           "Dismiss");
 
       return response.data["event"]["eid"] == eventUID;
@@ -349,7 +366,9 @@ class EventsRepo {
     Future<List<bool>> result;
     result = Future.wait<bool>(events.map((event) async{
       try{
-        Response response = await dio.post(
+        await apiConnection.ensureInitialized();
+
+        Response response = await apiConnection.dio.post(
             "/App/Events/eid=${event.UID}/"
                 "recommendstatus=${event.recommended}");
 
@@ -382,9 +401,11 @@ class EventsRepo {
     SharedPreferences prefs = await _prefs;
     User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
     try{
+      await apiConnection.ensureInitialized();
+
       Map<String, dynamic> eventJson = event.toJson();
       eventJson["ecreator"] = user.UID;
-      Response response = await dio.post("/App/Events/Create",
+      Response response = await apiConnection.dio.post("/App/Events/Create",
         data: convert.jsonEncode(eventJson));
 
       if(response.data["eid"] == null){
@@ -415,7 +436,9 @@ class EventsRepo {
   /// traduced to a proper error with [Utils.handleDioError].
   Future<bool> cancelEvent(Event event) async{
     try{
-      Response response = await dio.post("/App/Events/eid=${event.UID}"
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.post("/App/Events/eid=${event.UID}"
           "/estatus=deleted");
 
       return response.data["eid"] == event.UID;

@@ -1,5 +1,6 @@
 import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
+import 'package:InTheNou/background/notification_handler.dart';
 import 'package:InTheNou/dialog_service.dart';
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/models/website.dart';
@@ -101,6 +102,24 @@ class _EventDetailViewState extends State<EventDetailView>
                       ),
                     )
                 ),
+                //TODO:Remove this
+                actions: <Widget>[
+                  FlatButton(
+                    child: Text("Smart"),
+                    textColor: Colors.white,
+                    onPressed: (){
+                      NotificationHandler.doSmartNotification([eventDetail],
+                          []);
+                    },
+                  ),
+                  FlatButton(
+                    child: Text("Default"),
+                    textColor: Colors.white,
+                    onPressed: (){
+                      NotificationHandler.makeDummy(eventDetail);
+                    },
+                  )
+                ],
               ),
             ];
           },
@@ -148,11 +167,9 @@ class _EventDetailViewState extends State<EventDetailView>
                             visible: eventDetail.status == "active" &&
                                 !eventDetail.dismissed,
                             child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: <Widget>[
                                   DismissButton(eventDetail, FeedType.Detail),
-                                  Padding(padding: EdgeInsets.only(
-                                      left: 80.0)),
                                   FollowButton(eventDetail, FeedType.Detail),
                                 ]
                             ),

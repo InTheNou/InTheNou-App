@@ -111,6 +111,6 @@ const CANCELLATION_NOTIFICATION_GID = "cancellationNotificationList";
 
 
 const RECOMMENDATION_INTERVAL_KEY = "recomendationInterval";
-const RECOMMENDATION_DEBUG_KEY = "recommendationDebug";
+const DEBUG_NOTIFICATION_KEY = "debugNotification";
 const SMART_INTERVAL_KEY = "smartinterval";
 const CANCELLATION_INTERVAL_KEY = "cancellationInterval";
