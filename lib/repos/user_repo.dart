@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// {@category Repo}
 class UserRepo {
 
   static final UserRepo _instance = UserRepo._internal();
@@ -78,6 +79,7 @@ class UserRepo {
     }
   }
 
+  /// Utility method to pass the Google Account of the current user
   Future<GoogleSignInAccount> getGoogleAccount() async{
     if(_userAccount == null){
       _userAccount = await _googleSignIn.signInSilently(suppressErrors: true);
@@ -98,6 +100,7 @@ class UserRepo {
     });
   }
 
+  /// Utility method to sign out of the current Google Account
   Future<GoogleSignInAccount> googleSignOut() async{
     await _googleSignIn.signOut();
     _userAccount = null;
@@ -153,7 +156,7 @@ class UserRepo {
   /// Calls the backend to get the user information.
   ///
   /// The method contacts the backend through the route to get user
-  /// information by UID using the provided [User_.UID] via [uid].
+  /// information by UID using the provided [User._UID] via [uid].
   /// Once the user information is returned, it it parsed from the json to a
   /// [User] object.
   Future<User> getUserInfo(int uid) async{
@@ -257,7 +260,7 @@ class UserRepo {
       final SharedPreferences prefs = await _prefs;
       prefs.setString(USER_SESSION_KEY, null);
       apiConnection.deleteSession();
-      _googleSignIn.signOut();
+      googleSignOut();
       _userID = null;
       _userAccount = null;
 
@@ -299,6 +302,12 @@ class UserRepo {
     }
   }
 
+  /// Calls the backend to get the Followed [Event]s by the current [User]
+  /// that have ended
+  ///
+  /// The method calls the backend to get the Followed events of the current
+  /// user on the app that have ended. The parameters [skipEvents] and
+  /// [numEvents] are provided for pagination.
   Future<List<Event>> getFEventsHistory(int skipEvents, int numEvents) async{
     try{
       Response response = await dio.get(
@@ -376,7 +385,7 @@ class UserRepo {
     }
   }
 
-  /// Calls the backend to get the [Tags] associated to the current [User]
+  /// Calls the backend to get the [Tag]s associated to the current [User]
   ///
   Future<List<Tag>> getUserTags() async{
     try{

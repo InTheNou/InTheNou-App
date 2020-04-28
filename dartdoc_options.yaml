@@ -1,0 +1,15 @@
+dartdoc:
+  categories:
+    "Stores":
+      name: Stores
+    "Views":
+      name: Views
+    "Models":
+      name: Models
+    "Repos":
+      name: Repos
+  showUndocumentedCategories: true
+  errors:
+    - unresolved-doc-reference
+  warnings:
+    - tool-error

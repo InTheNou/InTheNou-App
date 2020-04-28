@@ -3,6 +3,7 @@ import 'package:InTheNou/background/notification_handler.dart';
 import 'package:InTheNou/repos/settings_repo.dart';
 import 'package:InTheNou/repos/user_repo.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
+import 'package:package_info/package_info.dart';
 
 class SettingsStore extends flux.Store {
 
@@ -14,15 +15,29 @@ class SettingsStore extends flux.Store {
   int _cancellationInterval;
   bool _recommendationDebug;
 
+  PackageInfo packageInfo;
+
   SettingsRepo _settingsRepo = new SettingsRepo();
   UserRepo _userRepo = new UserRepo();
 
   SettingsStore() {
+    PackageInfo.fromPlatform().then((value) {
+      packageInfo = value;
+    });
+
     _settingsRepo.getDefaultNotificationTime().then((value) {
       _defaultNotificationTime = value;
     });
     _settingsRepo.getSmartNotificationToggle().then((value) {
       _smartNotificationEnabled = value;
+    });
+    triggerOnAction(refreshSettings, (_) {
+      _settingsRepo.getDefaultNotificationTime().then((value) {
+        _defaultNotificationTime = value;
+      });
+      _settingsRepo.getSmartNotificationToggle().then((value) {
+        _smartNotificationEnabled = value;
+      });
     });
     triggerOnConditionalAction(changeNotificationTimeAction, (int time) {
       return _settingsRepo.changeDefaultNotificationTime(time).then((value){
@@ -97,6 +112,8 @@ class SettingsStore extends flux.Store {
         _settingsRepo.getRecommendationDebug();
   }
 }
+
+final flux.Action refreshSettings = new flux.Action();
 
 final flux.Action<int> changeNotificationTimeAction = new flux.Action();
 final flux.Action<bool> toggleSmartAction = new flux.Action();

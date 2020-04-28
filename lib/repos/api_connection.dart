@@ -72,7 +72,7 @@ class ApiConnection {
       _dio.options = new BaseOptions(
         baseUrl: API_URL,
         responseType: ResponseType.json,
-        connectTimeout: 5000,
+        connectTimeout: 10000,
         receiveTimeout: 100000,
       );
       _dio.interceptors.add(

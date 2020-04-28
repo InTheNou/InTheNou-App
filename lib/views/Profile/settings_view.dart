@@ -19,11 +19,12 @@ class _SettingsViewState extends State<SettingsView>
   with flux.StoreWatcherMixin<SettingsView>{
 
   SettingsStore _settingsStore;
-
+  bool enableDebug = false;
   @override
   void initState() {
     super.initState();
     _settingsStore = listenToStore(settingsStoreToken);
+    refreshSettings();
   }
 
   @override
@@ -131,7 +132,7 @@ class _SettingsViewState extends State<SettingsView>
                                 NotificationHandler.cancelAllSmartNotifications();
                                 Utils.clearAllPreferences();
                                 // Disable the background tasks
-                                BackgroundHandler.onClickEnable(false);
+                                BackgroundHandler.toggleBackgroundTask(false);
                                 Navigator.pushNamedAndRemoveUntil(
                                   context, "/login", (Route<dynamic> route) => false,);
                               }
@@ -139,6 +140,34 @@ class _SettingsViewState extends State<SettingsView>
                       ),
                     ],
                   ),
+                ),
+                Visibility(
+                  visible: enableDebug,
+                  child: Card(
+                    child: Row(
+                      children: <Widget>[
+                        Expanded(
+                            child: InkWell(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top:16.0, bottom: 16.0,
+                                      left: 8.0),
+                                  child: Text("Debug Settings",
+                                      style: Theme.of(context).textTheme.subtitle1.copyWith(
+                                          color: Theme.of(context).errorColor
+                                      )
+                                  ),
+                                ),
+                                onTap: () async {
+                                  Navigator.pushNamed(context, "/profile/settings/debug");
+                                }
+                            )
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top:16.0)
                 ),
                 Card(
                   child: Row(
@@ -148,26 +177,37 @@ class _SettingsViewState extends State<SettingsView>
                               child: Padding(
                                 padding: const EdgeInsets.only(top:16.0, bottom: 16.0,
                                     left: 8.0),
-                                child: Text("Debug Settings",
-                                    style: Theme.of(context).textTheme.subtitle1.copyWith(
-                                        color: Theme.of(context).errorColor
-                                    )
+                                child: Text(_getVersionInfo(),
+                                    style: Theme.of(context).textTheme.subtitle1
                                 ),
                               ),
-                              onTap: () async {
-                                Navigator.pushNamed(context, "/profile/settings/debug");
-                              }
+                              onTap: null,
+                              onLongPress: () {
+                                setState(() {
+                                  enableDebug = !enableDebug;
+                                });
+                              },
                           )
                       ),
                     ],
                   ),
-                ),
+                )
               ],
             ),
           );
         },
       )
     );
+  }
+
+  String _getVersionInfo(){
+    if(_settingsStore.packageInfo != null){
+      return "Version: "
+          "${_settingsStore.packageInfo.version}+"
+          "${_settingsStore.packageInfo.buildNumber}";
+    } else {
+      return "Version: 0.0.0+0";
+    }
   }
 
   /// Checks if the permission has been changed after the lat time the

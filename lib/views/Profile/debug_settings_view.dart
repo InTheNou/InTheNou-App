@@ -274,7 +274,51 @@ class _DebugSettingsViewViewState extends State<DebugSettingsView>
                     ],
                   ),
                 ),
-
+                Card(
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                          child: InkWell(
+                              child: Padding(
+                                padding: const EdgeInsets.only(top:16.0, bottom: 16.0,
+                                    left: 8.0),
+                                child: Text("Crash The App",
+                                    style: Theme.of(context).textTheme.subtitle1.copyWith(
+                                        color: Theme.of(context).errorColor
+                                    )
+                                ),
+                              ),
+                              onTap: () {
+                                Navigator.of(context).pushNamed("crashy");
+                              }
+                          )
+                      ),
+                    ],
+                  ),
+                ),
+                Card(
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                          child: InkWell(
+                              child: Padding(
+                                padding: const EdgeInsets.only(top:16.0, bottom: 16.0,
+                                    left: 8.0),
+                                child: Text("Notifications",
+                                    style: Theme.of(context).textTheme.subtitle1.copyWith(
+                                        color: Theme.of(context).errorColor
+                                    )
+                                ),
+                              ),
+                              onTap: () {
+                                Navigator.of(context).pushNamed
+                                  ("notifications");
+                              }
+                          )
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           );

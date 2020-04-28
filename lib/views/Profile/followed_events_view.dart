@@ -1,7 +1,7 @@
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/event.dart';
-import 'package:InTheNou/stores/event_feed_store.dart';
 import 'package:InTheNou/stores/user_store.dart';
+import 'package:InTheNou/views/widgets/follow_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
@@ -137,27 +137,7 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
                               child: Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: <Widget>[
-                                    SizedBox(
-                                      width: 110,
-                                      child: FlatButton(
-                                        child: Text(_event.followed ?
-                                        "FOLLOWING":'FOLLOW'
-                                        ),
-                                        textColor: _event.followed ?
-                                        Theme.of(context).cardColor :
-                                        Theme.of(context).primaryColor ,
-                                        color: _event.followed ?
-                                        Theme.of(context).primaryColor :
-                                        Theme.of(context).cardColor,
-                                        onPressed: () {
-                                          _event.followed ?
-                                          unFollowEventAction
-                                            (MapEntry(FeedType.Detail, _event)):
-                                          followEventAction
-                                            (MapEntry(FeedType.Detail, _event));
-                                        },
-                                      ),
-                                    )
+                                    FollowButton(_event, FeedType.Detail)
                                   ]
                               ),
                             ),

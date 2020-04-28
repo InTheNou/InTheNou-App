@@ -76,7 +76,7 @@ class _LoginViewState extends State<LoginView>
                 ),
                 GoogleSignInButton(
                   key: ValueKey("LogInButton"),
-                  text: account.hasData ? "COntinue with Google":
+                  text: account.hasData ? "Continue with Google":
                   "Sign in with Google",
                   onPressed: () {
                     // Call the Auth service and wait for the user to be

@@ -6,6 +6,7 @@ import 'package:InTheNou/repos/api_connection.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
+/// {@category Repo}
 class InfoBaseRepo {
 
   static final InfoBaseRepo _instance = InfoBaseRepo._internal();

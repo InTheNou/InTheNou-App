@@ -1,6 +1,7 @@
 import 'dart:convert' as convert;
 import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
+import 'package:InTheNou/dialog_service.dart';
 import 'package:InTheNou/models/coordinate.dart';
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/repos/events_repo.dart';
@@ -19,6 +20,8 @@ class NotificationHandler {
 
   static SharedPreferences _prefs;
   static final Geolocator _geolocator = Geolocator();
+  static DialogService _dialogService = DialogService();
+  static EventsRepo eventsRepo = EventsRepo();
 
   /// Checks if a Smart Notification needs to be created, and creates a
   /// Default notification
@@ -28,27 +31,40 @@ class NotificationHandler {
   static void checkNotifications(Event event) async{
     _prefs = await SharedPreferences.getInstance();
 
-    // Gets all Smart Notifications that are scheduled already
-    List<String> jsonNotifications = _prefs.getStringList
-      (SMART_NOTIFICATION_LIST) ?? new List();
-
-    // Check if the event needs a notification and if so, add to the list
-    EventsRepo eventsRepo = EventsRepo();
-    event = await eventsRepo.getEvent(event.UID).catchError((error){
+    try{
       showAlertNotification(NotificationObject(
           id: SMART_ALERT_NOTIFICATION_ID,
           payload: "",
           time: DateTime.now(),
           type: NotificationType.Alert
-      ), "Smart Notification Error", "Unable to Schdule Smart Notification",
+      ), "Smart Notification", "Trying to Create Smart Notification",
+          "Trying to Create Smart Notification");
+
+      // Gets all Smart Notifications that are scheduled already
+      List<String> jsonNotifications = _prefs.getStringList
+        (SMART_NOTIFICATION_LIST) ?? new List();
+      // Check if the event needs a notification and if so, add to the list
+      event = await eventsRepo.getEvent(event.UID);
+      if(_prefs.getBool(SMART_NOTIFICATION_KEY) &&
+          event.startDateTime.isAfter(DateTime.now())){
+        jsonNotifications = await NotificationHandler.doSmartNotification(
+            [event], jsonNotifications);
+
+        // Update notification list
+        _prefs.setStringList(SMART_NOTIFICATION_LIST,jsonNotifications);
+      }
+    } catch(e){
+      _dialogService.showDialog(type: DialogType.Error, title: "Error",
+          description: e.toString());
+      showAlertNotification(NotificationObject(
+          id: SMART_ALERT_NOTIFICATION_ID,
+          payload: "",
+          time: DateTime.now(),
+          type: NotificationType.Alert
+      ), "Smart Notification Error", "Unable to Schedule Smart Notification",
           "There was an error trying to schedule a Smart notification, we "
               "will try again shortly");
-    });
-    jsonNotifications = await NotificationHandler.doSmartNotification(
-        [event], jsonNotifications);
-
-    // Update notification list
-    _prefs.setStringList(SMART_NOTIFICATION_LIST,jsonNotifications);
+    }
 
     // Get all the details for event and create Default notification
     _makeDefaultNotification(event);
@@ -151,58 +167,63 @@ class NotificationHandler {
   static Future<List<String>> doSmartNotification(List<Event> events,
       List<String> jsonNotifications) async{
     _prefs = await SharedPreferences.getInstance();
-
     Coordinate userCoords;
-    _geolocator.forceAndroidLocationManager = true;
-    await _geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy
-        .high).then((coordinate) {
-      userCoords = Coordinate(coordinate.latitude, coordinate.longitude, 0);
-    });
+    try{
+//      _geolocator.forceAndroidLocationManager = true;
+      await _geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy
+          .high).then((coordinate) {
+        userCoords = Coordinate(coordinate.latitude, coordinate.longitude, 0);
+      });
 
-    DateTime timestamp = new DateTime.now();
-    Duration timeToEvent;
-    int notificationID;
-    events.forEach((event) {
-      timeToEvent = event.startDateTime.difference(timestamp);
-      if(Utils.isEventInTheNextDay(event.startDateTime, timestamp)){
-        double timeToWalk = Utils.GPSTimeToWalkCalculation(timeToEvent,
-            userCoords, event.room.coordinates);
-        if(Utils.isScheduleSmartNecessary(timeToEvent, timeToWalk)){
-          int seconds = ((timeToWalk - timeToWalk.floor()) * 60).ceil();
+      DateTime timestamp = new DateTime.now();
+      Duration timeToEvent;
+      int notificationID;
+      events.forEach((event) {
+        timeToEvent = event.startDateTime.difference(timestamp);
+        if(Utils.isEventInTheNextDay(event.startDateTime, timestamp)){
+          double timeToWalk = Utils.GPSTimeToWalkCalculation(timeToEvent,
+              userCoords, event.room.coordinates);
+          if(Utils.isScheduleSmartNecessary(timeToEvent, timeToWalk)){
+            int seconds = ((timeToWalk - timeToWalk.floor()) * 60).ceil();
 
-          DateTime scheduleTime;
-          NotificationObject eventNotification;
+            DateTime scheduleTime;
+            NotificationObject eventNotification;
 
-          scheduleTime = event.startDateTime.subtract(Duration(minutes:
-          timeToWalk.ceil(), seconds: seconds));
+            scheduleTime = event.startDateTime.subtract(Duration(minutes:
+            timeToWalk.ceil(), seconds: seconds));
 //          print("[SmartNotification] Scheduled for at: "
 //              "${scheduleTime.toString()}");
-          notificationID = _prefs.getInt(NOTIFICATION_ID_KEY);
-          _prefs.setInt(NOTIFICATION_ID_KEY, notificationID+1);
-          // Save the Notification to mark it as scheduled
-          eventNotification = NotificationObject(
-              type: NotificationType.SmartNotification,
-              id: notificationID, time: scheduleTime, payload: event.UID.toString());
-          jsonNotifications.add(convert.jsonEncode(eventNotification));
+            notificationID = _prefs.getInt(NOTIFICATION_ID_KEY);
+            _prefs.setInt(NOTIFICATION_ID_KEY, notificationID+1);
+            // Save the Notification to mark it as scheduled
+            eventNotification = NotificationObject(
+                type: NotificationType.SmartNotification,
+                id: notificationID, time: scheduleTime, payload: event.UID.toString());
+            jsonNotifications.add(convert.jsonEncode(eventNotification));
 
-          NumberFormat nf = NumberFormat("#####.##", "en_US");
-          DateFormat df = new DateFormat("K:mm a");
-          String startOfEvent = "The event starts at ${df.format(event.startDateTime)}";
-          NotificationHandler._scheduleSmartNotification(
-              notificationID,
-              event.title,
-              startOfEvent,
-              startOfEvent + "\n" + "You are"
-                  " ${nf.format(Utils.distanceToTravel(timeToWalk))} miles "
-                  "away from the "
-                  "event, it will take you ${Utils.toSmartTime(timeToWalk)} to "
-                  "walk to the event.",
-              scheduleTime,
-              convert.jsonEncode(eventNotification)
-          );
+            NumberFormat nf = NumberFormat("#####.##", "en_US");
+            DateFormat df = new DateFormat("K:mm a");
+            String startOfEvent = "The event starts at ${df.format(event.startDateTime)}";
+            NotificationHandler._scheduleSmartNotification(
+                notificationID,
+                event.title,
+                startOfEvent,
+                startOfEvent + "\n" + "You are"
+                    " ${nf.format(Utils.distanceToTravel(timeToWalk))} miles "
+                    "away from the "
+                    "event, it will take you ${Utils.toSmartTime(timeToWalk)} to "
+                    "walk to the event.",
+                scheduleTime,
+                convert.jsonEncode(eventNotification)
+            );
+          }
         }
-      }
-    });
+      });
+    } catch(e){
+      _dialogService.showDialog(type: DialogType.Error, title: " ",
+          description: e.toString());
+    }
+
     return jsonNotifications;
   }
 

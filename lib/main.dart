@@ -37,18 +37,19 @@ Future<Null> main() async {
     } else {
       // In production mode report to the application zone to report to
       // Sentry.
-      Zone.current.handleUncaughtError(details.exception, details.stack);
+      _reportError(details.exception, details.stack);
+//      Zone.current.handleUncaughtError(details.exception, details.stack);
     }
   };
   // This is used to be able to report errors thrown by Dart
-  runZoned<Future<void>>(() async {
+  runZoned(() {
     runApp(
       Phoenix(
         child: InTheNouApp(),
       ),
     );
-  }, onError: (error, stackTrace) async{
-    await _reportError(error, stackTrace);
+  }, onError: (error, stackTrace){
+    _reportError(error, stackTrace);
   });
 
 }
@@ -56,9 +57,10 @@ final _format = DateFormat("EE, MMMM d, yyyy 'at' h:mma");
 
 void _reportError(dynamic error, dynamic stackTrace) async{
   if (isInDebugMode) {
-    debugPrint("Caught: "+ error.toString());
+    print("Debug Caught: "+ error.toString());
     return;
   }
+  print("Caught: "+ error.toString());
   DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
   AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
 
@@ -76,6 +78,7 @@ void _reportError(dynamic error, dynamic stackTrace) async{
           "StackTrace: $stack"
   ;
   String url = "mailto:inthenouproject@gmail.com?subject=$subject&body=$body";
+  print(url);
   launch(url);
 }
 

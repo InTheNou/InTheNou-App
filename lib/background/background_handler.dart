@@ -14,21 +14,23 @@ import 'package:background_fetch/background_fetch.dart';
 class BackgroundHandler {
 
   static SharedPreferences _prefs;
+  static EventsRepo _eventRepo = EventsRepo();
+  static UserRepo _userRepo = UserRepo();
 
   /// Configure the BackgroundFetch library.
   ///
   /// It creates a background process that is initialized every
   /// [BackgroundFetchConfig.minimumFetchInterval] and calls the function
   /// [onBackgroundFetch]. The SmartNotification functionality gets handled
-  /// every time this initiated and it it handled in [_doSmartNotification].
+  /// every time this initiated and it it handled in
+  /// [NotificationHandler.doSmartNotification].
   /// This method  can also schedule any other background tasks needed, be
   /// it one-hot or recurring. Here the Recommendation feature handled by
   /// the [_doRecommendation] task.
   ///
-  /// The variable [BackgroundFetchConfig.stopOnTerminate] makes these tasks to
-  /// operate when the app is not active.
-  /// [BackgroundFetchConfig.enableHeadless] makes it so that a headless
-  /// background task [onBackgroundFetch] is executed.
+  /// The variable stopOnTerminate makes these tasks to
+  /// operate when the app is not active. enableHeadless makes it so that a
+  /// headless background task [onBackgroundFetch] is executed.
   static Future<void> initBackgroundTasks() async {
     BackgroundFetch.configure(BackgroundFetchConfig(
       minimumFetchInterval: 15,
@@ -113,7 +115,8 @@ class BackgroundHandler {
   /// Preparation for creating the Smart notifications by getting the ones
   /// already scheduled and a lis of [Event] that the user is following.
   ///
-  /// Delegates actually creating the Notifications to [_doSmartNotification]
+  /// Delegates actually creating the Notifications to
+  /// [NotificationHandler.doSmartNotification]
   /// by passing the list of scheduled  notifications in the form of
   /// [NotificationObject] and json.
   /// Upon receiving the json list back it removes any that have already
@@ -135,128 +138,173 @@ class BackgroundHandler {
       }
       return;
     });
-    UserRepo _userRepo = UserRepo();
-    _prefs = await SharedPreferences.getInstance();
+    try{
+      UserRepo _userRepo = UserRepo();
+      _prefs = await SharedPreferences.getInstance();
 
-    // Gets all Smart Notifications that are scheduled already
-    List<String> jsonNotifications = _prefs.getStringList
-      (SMART_NOTIFICATION_LIST) ?? new List();
+      // Gets all Smart Notifications that are scheduled already
+      List<String> jsonNotifications = _prefs.getStringList
+        (SMART_NOTIFICATION_LIST) ?? new List();
 
-    // Calls the database to get all the events followed by the uer
-    List<Event> _events = await _userRepo.getFollowedEvents(0,100000);
+      // Calls the database to get all the events followed by the uer
+      List<Event> _events = await _userRepo.getFollowedEvents(0,100000);
 
-    // Decodes the json strings into a map with the NotificationObject fields
-    // Also removes the followed events that have been scheduled already
-    Map notificationMap;
-    jsonNotifications.forEach((notification) {
-      notificationMap = jsonDecode(notification);
-      // The payload of the notification is the same as the eventUID for a given
-      // Smart Notification
-      _events.removeWhere((event) => event.UID.toString() ==
-          notificationMap["payload"]);
-    });
-
-    jsonNotifications = await NotificationHandler.doSmartNotification(
-        _events,
-        jsonNotifications);
-
-    _prefs.setStringList(SMART_NOTIFICATION_LIST,jsonNotifications);
-  }
-
-  static void _checkCanceledEvents() async{
-    EventsRepo _eventRepo = new EventsRepo();
-    UserRepo _userRepo = new UserRepo();
-    _prefs = await SharedPreferences.getInstance();
-
-    String lastDate = _prefs.getString(LAST_CANCELLATION_DATE_KEY);
-    List<Event> cancelledEvents = await _eventRepo.getDeletedEvents(lastDate);
-    if(cancelledEvents.length > 0){
-      List<Event> followedEvents = await _userRepo.getFollowedEvents(0,100000);
-      followedEvents.retainWhere((fEvent) {
-        return cancelledEvents.contains(fEvent);
+      // Decodes the json strings into a map with the NotificationObject fields
+      // Also removes the followed events that have been scheduled already
+      Map notificationMap;
+      jsonNotifications.forEach((notification) {
+        notificationMap = jsonDecode(notification);
+        // The payload of the notification is the same as the eventUID for a given
+        // Smart Notification
+        _events.removeWhere((event) => event.UID.toString() ==
+            notificationMap["payload"]);
       });
-      print("reduced");
-      print(followedEvents);
-      int notificationID = _prefs.getInt(NOTIFICATION_ID_KEY);
-      followedEvents.forEach((cancelled) {
-        NotificationHandler.showCancellationNotification(NotificationObject(
-            id: notificationID,
-            payload: cancelled.UID.toString(),
-            time: DateTime.now(),
-            type: NotificationType.Cancellation
-        ), "Event Cancelled", cancelled.title,
-            "The Event \"${cancelled.title}\" that you were following has been "
-                "cancelled.");
-        notificationID ++;
-      });
-      _prefs.setInt(NOTIFICATION_ID_KEY, notificationID + followedEvents.length);
-      _prefs.setString(LAST_CANCELLATION_DATE_KEY,
-          Utils.formatTimeStamp(DateTime.now()));
-    }
-  }
 
-  static void _doRecommendation() async{
-    EventsRepo _eventRepo = new EventsRepo();
-    UserRepo _userRepo = new UserRepo();
-    _prefs = await SharedPreferences.getInstance();
+      jsonNotifications = await NotificationHandler.doSmartNotification(
+          _events,
+          jsonNotifications);
 
-    String lastDate = _prefs.getString(LAST_RECOMMENDATION_DATE_KEY);
-
-    List<Event> newEvents = await _eventRepo.getNewEvents(lastDate);
-    List<Tag> userTags = await _userRepo.getUserTags();
-    List<Event> recommendedEvents = new List();
-
-    List<Tag> commonTags;
-    String rec = "";
-    // Remove all events that have been ran through the recommendation
-    newEvents.removeWhere((event) => event.recommended != null);
-    newEvents.forEach((event) {
-      commonTags = checkTagsSimilarity(event.tags, userTags);
-
-      double weight = 0;
-      if(commonTags.length >= 2){
-        weight = calcWeightedSum(commonTags, event.tags.length);
-        if(weight >= WEIGHTED_SUM_THRESHOLD){
-          event.recommended = "R";
-          recommendedEvents.add(event);
-        }
-        else {
-          event.recommended = "N";
-        }
-      } else{
-        event.recommended = "N";
-      }
-      rec = rec + "eid= ${event.UID}, weight= $weight rec?= ${event.recommended}\n";
-    });
-    if(rec.isNotEmpty && _prefs.getBool(RECOMMENDATION_DEBUG_KEY)){
+      _prefs.setStringList(SMART_NOTIFICATION_LIST,jsonNotifications);
+    } catch(e){
       NotificationHandler.showAlertNotification(NotificationObject(
-          id: LOCATION_ALERT_NOTIFICATION_ID,
+          id: SMART_ALERT_NOTIFICATION_ID,
           payload: "",
           time: DateTime.now(),
           type: NotificationType.Alert
-      ), "Trying Recommendation", "Reccomendation results.",
-          rec);
+      ), "Smart Notification Error", "Unable to Schedule Smart Notification "
+          "in background",
+          e.toString());
     }
-
-    print("recommend");
-    print(newEvents);
-    _eventRepo.requestRecommendation(newEvents);
-
-    if(recommendedEvents.length > 0){
-      NotificationHandler.scheduleRecommendationNotification
-        (NotificationObject(id: RECOMMENDATION_NOTIFICATION_ID,
-          type: NotificationType.RecommendationNotification,
-          time: DateTime.now(),
-          payload: ""),"Event Recommendations!",
-          "You have ${recommendedEvents.length} new Events",
-          "There are ${recommendedEvents.length} new Events recommended to you "
-              "based on your interests. Check em out!");
-    }
-
-    _prefs.setString(LAST_RECOMMENDATION_DATE_KEY,
-        Utils.formatTimeStamp(DateTime.now()));
   }
 
+  /// Method calls the API to check for any followed events that have been
+  /// cancelled.
+  ///
+  /// The API return any events deleted after the last date this wa called,
+  /// which is stored in [LAST_CANCELLATION_DATE_KEY]. This list of events is
+  /// compared to the list of followed events, to get left with a list of
+  /// cancelled followed events. A notification is then created for each one
+  /// of these events so that the user will be aware that they have been
+  /// concealed.
+  static void _checkCanceledEvents() async{
+    _prefs = await SharedPreferences.getInstance();
+
+    try{
+      String lastDate = _prefs.getString(LAST_CANCELLATION_DATE_KEY);
+      List<Event> cancelledEvents = await _eventRepo.getDeletedEvents(lastDate);
+      if(cancelledEvents.length > 0){
+        List<Event> followedEvents = await _userRepo.getFollowedEvents(0,100000);
+        followedEvents.retainWhere((fEvent) {
+          return cancelledEvents.contains(fEvent);
+        });
+
+        int notificationID = _prefs.getInt(NOTIFICATION_ID_KEY);
+        followedEvents.forEach((cancelled) {
+          NotificationHandler.showCancellationNotification(NotificationObject(
+              id: notificationID,
+              payload: cancelled.UID.toString(),
+              time: DateTime.now(),
+              type: NotificationType.Cancellation
+          ), "Event Cancelled", cancelled.title,
+              "The Event \"${cancelled.title}\" that you were following has been "
+                  "cancelled.");
+          notificationID ++;
+        });
+        _prefs.setInt(NOTIFICATION_ID_KEY, notificationID + followedEvents.length);
+        _prefs.setString(LAST_CANCELLATION_DATE_KEY,
+            Utils.formatTimeStamp(DateTime.now()));
+      }
+    } catch(e){
+      NotificationHandler.showAlertNotification(NotificationObject(
+          id: SMART_ALERT_NOTIFICATION_ID,
+          payload: "",
+          time: DateTime.now(),
+          type: NotificationType.Alert
+      ), "Cancel Notification Error", "Unable to Check Cancelled Events ",
+          e.toString());
+    }
+  }
+
+  /// Method calls the API to check for any new events
+  ///
+  /// The API returns any events created after the last date this wa called,
+  /// which is stored in [LAST_RECOMMENDATION_DATE_KEY]. These events are
+  /// passed through the Recommendation algorithm to see which aer of
+  /// interest to the user. The user is then sent a Recommendation
+  /// Notification saying how many events have been recommended.
+  static void _doRecommendation() async{
+    _prefs = await SharedPreferences.getInstance();
+
+    try{
+      String lastDate = _prefs.getString(LAST_RECOMMENDATION_DATE_KEY);
+
+      List<Event> newEvents = await _eventRepo.getNewEvents(lastDate);
+      List<Tag> userTags = await _userRepo.getUserTags();
+      List<Event> recommendedEvents = new List();
+
+      List<Tag> commonTags;
+      String rec = "";
+      // Remove all events that have been ran through the recommendation
+      newEvents.removeWhere((event) => event.recommended != null);
+      newEvents.forEach((event) {
+        commonTags = checkTagsSimilarity(event.tags, userTags);
+
+        double weight = 0;
+        if(commonTags.length >= 2){
+          weight = calcWeightedSum(commonTags, event.tags.length);
+          if(weight >= WEIGHTED_SUM_THRESHOLD){
+            event.recommended = "R";
+            recommendedEvents.add(event);
+          }
+          else {
+            event.recommended = "N";
+          }
+        } else{
+          event.recommended = "N";
+        }
+        rec = rec + "eid= ${event.UID}, weight= $weight rec?= ${event.recommended}\n";
+      });
+      if(rec.isNotEmpty && _prefs.getBool(RECOMMENDATION_DEBUG_KEY)){
+        NotificationHandler.showAlertNotification(NotificationObject(
+            id: LOCATION_ALERT_NOTIFICATION_ID,
+            payload: "",
+            time: DateTime.now(),
+            type: NotificationType.Alert
+        ), "Trying Recommendation", "Reccomendation results.",
+            rec);
+      }
+
+      _eventRepo.requestRecommendation(newEvents);
+
+      if(recommendedEvents.length > 0){
+        NotificationHandler.scheduleRecommendationNotification
+          (NotificationObject(id: RECOMMENDATION_NOTIFICATION_ID,
+            type: NotificationType.RecommendationNotification,
+            time: DateTime.now(),
+            payload: ""),"Event Recommendations!",
+            "You have ${recommendedEvents.length} new Events",
+            "There are ${recommendedEvents.length} new Events recommended to you "
+                "based on your interests. Check em out!");
+      }
+
+      _prefs.setString(LAST_RECOMMENDATION_DATE_KEY,
+          Utils.formatTimeStamp(DateTime.now()));
+    } catch (e){
+      NotificationHandler.showAlertNotification(NotificationObject(
+          id: SMART_ALERT_NOTIFICATION_ID,
+          payload: "",
+          time: DateTime.now(),
+          type: NotificationType.Alert
+      ), "Recommendation Notification Error", "Unable to Recommend",
+          e.toString());
+    }
+
+  }
+
+  /// Method gets the common Tags
+  ///
+  /// Compares the [Tag] lists of [eventTags] and [userTags] to return of
+  /// list of common tags.
   static List<Tag> checkTagsSimilarity(List<Tag> eventTags, List<Tag> userTags){
     List<Tag> commonTags = new List();
     userTags.forEach((tag) {
@@ -267,6 +315,7 @@ class BackgroundHandler {
     return commonTags;
   }
 
+  /// Implements the Weighted Sum calculation
   static double calcWeightedSum(List<Tag> commonTags, int eventTagsNumber){
     double relevanceValue = RELEVANCE_VALUE_FACTOR/eventTagsNumber;
     double sum = 0;
@@ -276,7 +325,7 @@ class BackgroundHandler {
     return sum;
   }
 
-  static void onClickEnable(enabled) {
+  static void toggleBackgroundTask(enabled) {
     if (enabled) {
       BackgroundFetch.start().then((int status) {
         print('[BackgroundFetch] start success: $status');

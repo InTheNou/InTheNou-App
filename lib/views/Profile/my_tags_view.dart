@@ -100,6 +100,7 @@ class _MyTagsViewState extends State<MyTagsView>
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
+                    const Padding(padding: EdgeInsets.only(left: 8.0)),
                     Expanded(
                       child: Text(
                         _tag.name,

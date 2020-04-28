@@ -8,6 +8,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// {@category Repo}
 class EventsRepo {
 
   static final EventsRepo _instance = EventsRepo._internal();

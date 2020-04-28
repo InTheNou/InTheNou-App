@@ -121,7 +121,6 @@ class Utils {
 
   static void clearAllPreferences() async{
     SharedPreferences _prefs = await SharedPreferences.getInstance();
-    _prefs = await SharedPreferences.getInstance();
     _prefs.remove(DEFAULT_NOTIFICATION_KEY);
     _prefs.remove(SMART_NOTIFICATION_KEY);
     _prefs.remove(USER_SESSION_KEY);
@@ -315,6 +314,8 @@ class Utils {
         return "Connection to API server failed due to internet unavailability";
         break;
       case DioErrorType.RECEIVE_TIMEOUT:
+        print(error.error.toString());
+        print(error.message.toString());
         return "$feature Recieve timeout with server";
         break;
       case DioErrorType.RESPONSE:

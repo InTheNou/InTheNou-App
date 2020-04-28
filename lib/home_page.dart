@@ -3,6 +3,7 @@ import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/background/background_handler.dart';
 import 'package:InTheNou/background/notification_handler.dart';
+import 'package:InTheNou/dialog_service.dart';
 import 'package:InTheNou/stores/settings_store.dart';
 import 'package:InTheNou/views/EventFeed/feed_view.dart';
 import 'package:InTheNou/views/InformoationBase/infobase_category_view.dart';
@@ -30,6 +31,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
   NavigationStore navigationStore;
   SharedPreferences prefs;
+  DialogService _dialogService = DialogService();
 
   final List<Widget> _children = [
     FeedView(type: FeedType.PersonalFeed),
@@ -131,6 +133,7 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
               );
             });
       } else{
+        if(prefs.getBool(SMART_NOTIFICATION_KEY) == null )
         prefs.setBool(SMART_NOTIFICATION_KEY, true);
       }
     });
@@ -158,7 +161,7 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
         builder: (_) {
           return AlertDialog(
             title: Text("Smart Notifications"),
-            content: Text("TSmart notifications have been enabled.\n This "
+            content: Text("Smart notifications have been enabled.\n This "
                 "functionality can be turned off in the settings."),
             actions: <Widget>[
               FlatButton(
@@ -216,8 +219,15 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
         initializationSettingsAndroid, null);
     // We finally initialize the Notifications and provide the callback
     // function that will be ued.
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+    var result = await flutterLocalNotificationsPlugin.initialize
+      (initializationSettings,
         onSelectNotification: onSelectNotification);
+    if(!result){
+      _dialogService.showDialog(
+          type: DialogType.Error, title: "Failed to Enable Notifications",
+          description: "This is bad.");
+      throw StateError("Unable to initialize notifications");
+    }
   }
 
   /// Callback for when a Notification is clicked by the user.

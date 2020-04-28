@@ -102,7 +102,8 @@ class EventFeedStore extends flux.Store{
             type: DialogType.Alert,
             title: "Following an event that has started",
             description: "You have Followed an event that has already"
-                " started. Your disinterest in the event will be recorded.",
+                " started. Your interest in the event will be recorded but "
+                "you will not recieve a notification.",
             primaryButtonTitle: "OK");
       }
 

@@ -19,6 +19,7 @@ import 'package:InTheNou/views/Profile/history_events_view.dart';
 import 'package:InTheNou/views/Profile/my_tags_view.dart';
 import 'package:InTheNou/views/Profile/settings_view.dart';
 import 'package:InTheNou/views/widgets/crashy_view.dart';
+import 'package:InTheNou/views/widgets/notification_view.dart';
 import "package:flutter/material.dart";
 
 class RouteGenerator{
@@ -74,6 +75,8 @@ class RouteGenerator{
               return CreatedEventsView();
             case "crashy":
               return CrashyView();
+            case "notifications":
+              return NotificationView();
             default:
               return _errorRoute();
           }
