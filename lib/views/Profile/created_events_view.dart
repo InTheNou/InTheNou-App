@@ -1,6 +1,6 @@
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/stores/user_store.dart';
-import 'package:InTheNou/views/widgets/cancelled_button.dart';
+import 'package:InTheNou/views/widgets/cancel_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
@@ -38,8 +38,11 @@ class _CreatedEventsViewState extends State<CreatedEventsView>
       ),
         body:  FutureBuilder(
           future: _userStore.createdEvents,
-          builder: (BuildContext context,
-              AsyncSnapshot<List<Event>> createdEvents) {
+          builder: (context, AsyncSnapshot<List<Event>> createdEvents) {
+
+            if(createdEvents.connectionState == ConnectionState.waiting){
+              return _buildLoadingWidget();
+            }
             if(createdEvents.hasError){
               return _buildErrorWidget(createdEvents.error);
             } else if (createdEvents.hasData){
@@ -82,72 +85,76 @@ class _CreatedEventsViewState extends State<CreatedEventsView>
 
   Widget _buildResultsWidget(List<Event> createdEvents) {
     return Scrollbar(
-      child: ListView.builder(
-          itemCount: createdEvents.length,
-          itemBuilder: (context, index){
-            Event _event = createdEvents[index];
-            return Card(
-                key: ValueKey(_event.UID),
-                margin: EdgeInsets.only(top: 8.0),
-                child: InkWell(
-                  onTap: () {
-                    Navigator.of(context).pushNamed('/eventdetail',
-                        arguments: _event.UID
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 16.0, bottom: 8.0, left:
-                    8.0, right: 8.0),
-                    child: Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                _event.title,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: Theme.of(context).primaryColor,
-                                  fontSize: Theme.of(context).textTheme.headline6.fontSize,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const Padding(padding: EdgeInsets.only(bottom: 4.0)),
-                              Text(
-                                  _event.getDurationString(),
-                                  style: Theme.of(context).textTheme.bodyText1
-                              ),
-                              const Padding(padding: EdgeInsets.only(bottom: 8.0)),
-                              Text(
-                                  _event.description,
+      child: RefreshIndicator(
+        onRefresh: () => refreshCreatedAction(),
+        child: ListView.builder(
+            itemCount: createdEvents.length,
+            itemBuilder: (context, index){
+              Event _event = createdEvents[index];
+              return Card(
+                  key: ValueKey(_event.UID),
+                  margin: EdgeInsets.only(top: 8.0),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.of(context).pushNamed('/eventdetail',
+                          arguments: _event.UID
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 16.0, bottom: 8.0, left:
+                      8.0, right: 8.0),
+                      child: Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  _event.title,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context).textTheme.subtitle2
-                              ),
-                              const Padding(padding: EdgeInsets.only(bottom: 8.0)),
-                              Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: <Widget>[
-                                    Visibility(
-                                        visible:
-                                        (_event.endDateTime.isAfter(DateTime.now())
-                                            && _event.status == "active") ||
-                                            _event.status == "deleted",
-                                        child: CancelledButton(_event),
-                                    ),
-                                  ]
-                              ),
-                            ],
+                                  style: Theme.of(context).textTheme.headline6.copyWith(
+                                    color: Theme.of(context).brightness == Brightness.dark ?
+                                      Theme.of(context).primaryColorLight :
+                                      Theme.of(context).primaryColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const Padding(padding: EdgeInsets.only(bottom: 4.0)),
+                                Text(
+                                    _event.getDurationString(),
+                                    style: Theme.of(context).textTheme.bodyText1
+                                ),
+                                const Padding(padding: EdgeInsets.only(bottom: 8.0)),
+                                Text(
+                                    _event.description,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: Theme.of(context).textTheme.subtitle2
+                                ),
+                                const Padding(padding: EdgeInsets.only(bottom: 8.0)),
+                                Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: <Widget>[
+                                      Visibility(
+                                          visible:
+                                          (_event.endDateTime.isAfter(DateTime.now())
+                                              && _event.status == "active") ||
+                                              _event.status == "deleted",
+                                          child: CancelButton(_event),
+                                      ),
+                                    ]
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                )
-            );
-          }),
+                  )
+              );
+            }),
+      ),
     );
   }
 

@@ -76,7 +76,7 @@ class Event {
   /// Is it represented in the API as "itype' being equal to "dismissed"
   String recommended;
 
-  /// The flag used to indicate if the Event entity was cancelled by the
+  /// The flag used to indicate if the Event entity was canceled by the
   /// Event Creator.
   /// Is it represented in the API as "estatus' being equal to "active"
   String status;
@@ -143,7 +143,7 @@ class Event {
   /// from the API, using the Result constructor. The [isFollowed] parameter
   /// is to bypass the 'itype' returned from the API call.
   factory Event.resultFromJson(Map<String, dynamic> json,
-      {bool isFollowed = false}) {
+      {bool isFollowed = false, bool isDismissed = false}) {
     Building b = Building.resultFromJson(json['room']['building']);
     return Event.result(
         UID: json['eid'],
@@ -157,7 +157,8 @@ class Event {
         followed: isFollowed ? true :
           json['itype'] == Utils.interactionTypeToString(InteractionType
               .Following),
-        dismissed: json['itype'] == Utils.interactionTypeToString(InteractionType
+        dismissed: isDismissed ? true:
+          json['itype'] == Utils.interactionTypeToString(InteractionType
             .dismissed),
         status: json["estatus"] ?? "active"
     );

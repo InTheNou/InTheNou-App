@@ -1,3 +1,4 @@
+import 'package:InTheNou/assets/colors.dart';
 import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_auth_buttons/flutter_auth_buttons.dart';
@@ -52,7 +53,7 @@ class _LoginViewState extends State<LoginView>
       future: _userStore.account,
       builder: (BuildContext context, AsyncSnapshot<GoogleSignInAccount> account) {
         return Scaffold(
-          backgroundColor: Theme.of(context).primaryColor,
+          backgroundColor: primaryColor,
           body: Center(
             child: Column(
               children: <Widget>[
@@ -98,9 +99,7 @@ class _LoginViewState extends State<LoginView>
                               margin: EdgeInsets.all(8),
                               child: RichText(
                                   text: TextSpan(
-                                      style: Theme.of(context).accentTextTheme.subtitle1.copyWith(
-                                          color: Theme.of(context).canvasColor
-                                      ),
+                                      style: Theme.of(context).accentTextTheme.subtitle1,
                                       children: <TextSpan>[
                                         TextSpan(
                                             text: "Currently Signed in as:\n"
@@ -109,8 +108,6 @@ class _LoginViewState extends State<LoginView>
                                           text: "${_userEmail(account
                                               .data)}",
                                           style: Theme.of(context).accentTextTheme.subtitle1.copyWith(
-                                              color: Theme.of(context)
-                                                  .canvasColor,
                                               fontWeight: FontWeight.bold
                                           ),
                                         )

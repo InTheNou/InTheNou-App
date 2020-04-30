@@ -64,6 +64,21 @@ class InfoBaseStore extends flux.Store{
           break;
       }
     });
+    triggerOnAction(reloadSearch, (InfoBaseType type) {
+      switch (type) {
+        case InfoBaseType.Building:
+          _buildingsResults = _infoBaseRepo.searchBuildings(
+              _buildingSearchKeyword,0, PAGINATION_LENGTH);
+          break;
+        case InfoBaseType.Room:
+          _searchRooms(_roomSearchKeyword);
+          break;
+        case InfoBaseType.Service:
+          _servicesResults = _infoBaseRepo.searchServices(
+              _serviceSearchKeyword, 0, PAGINATION_LENGTH);
+          break;
+      }
+    });
     triggerOnAction(clearInfoBaseKeywordAction, (InfoBaseType searching) {
       switch (searching) {
         case InfoBaseType.Building:
@@ -192,8 +207,8 @@ final flux.Action<MapEntry<InfoBaseType, String>> searchInfoBaseAction = new
   flux.Action();
 final flux.Action<MapEntry<InfoBaseType, bool>> setSearchingAction = new
   flux.Action();
-final flux.Action<InfoBaseType> clearInfoBaseKeywordAction = new
-  flux.Action();
+final flux.Action<InfoBaseType> reloadSearch = new flux.Action();
+final flux.Action<InfoBaseType> clearInfoBaseKeywordAction = new flux.Action();
 final flux.Action getAllBuildingsAction = new flux.Action();
 final flux.Action<Building> selectBuildingAction = new flux.Action();
 final flux.Action<MapEntry<Building,Floor>> selectFloorAction = new flux

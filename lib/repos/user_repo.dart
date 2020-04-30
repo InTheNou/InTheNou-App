@@ -80,9 +80,7 @@ class UserRepo {
 
   /// Utility method to pass the Google Account of the current user
   Future<GoogleSignInAccount> getGoogleAccount() async{
-    if(_userAccount == null){
-      _userAccount = await _googleSignIn.signInSilently(suppressErrors: true);
-    }
+    _userAccount = await _googleSignIn.signInSilently(suppressErrors: true);
     return _userAccount;
   }
 
@@ -169,6 +167,7 @@ class UserRepo {
       User user;
 
       if(response.data != null){
+        getGoogleAccount();
         user = User.fromJson(response.data);
         user.photo = _userAccount.photoUrl;
       }
@@ -355,7 +354,7 @@ class UserRepo {
       if(response.data["events"] != null){
         response.data["events"].forEach((element) {
           eventResults.add(Event.resultFromJson(element,
-              isFollowed: true));
+              isDismissed: true));
         });
       }
       return eventResults;

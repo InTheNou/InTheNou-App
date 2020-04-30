@@ -8,7 +8,8 @@ class EventCard extends StatelessWidget {
 
   final Event _event;
   final FeedType _feedType;
-  EventCard(this._event, this._feedType);
+  final bool interactionEnabled;
+  EventCard(this._event, this._feedType, {this.interactionEnabled = true});
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +36,10 @@ class EventCard extends StatelessWidget {
                         _event.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Theme.of(context).primaryColor,
-                          fontSize: Theme.of(context).textTheme.headline6.fontSize,
+                        style: Theme.of(context).textTheme.headline6.copyWith(
+                          color: Theme.of(context).brightness == Brightness.dark ?
+                            Theme.of(context).primaryColorLight :
+                            Theme.of(context).primaryColor,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -55,7 +57,10 @@ class EventCard extends StatelessWidget {
                       ),
                       const Padding(padding: EdgeInsets.only(bottom: 8.0)),
                       Visibility(
-                        visible: _event.status == "active",
+                        visible: interactionEnabled &&
+                            _event.status == "active" &&
+                            !_event.dismissed &&
+                            _event.endDateTime.isAfter(DateTime.now()),
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: <Widget>[

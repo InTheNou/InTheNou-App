@@ -36,7 +36,7 @@ class InformationBaseState extends State<InfoBaseCategoryView> with flux.StoreWa
             padding: EdgeInsets.all(16.0),
             child: Text("Buildings",
                 style: Theme.of(context).textTheme.headline5.copyWith(
-                    color: Theme.of(context).canvasColor
+                    color: Colors.white
                 )),
             onPressed: () => Navigator.of(context).pushNamed(
                 '/infobase/search', arguments: InfoBaseType.Building),
@@ -46,7 +46,7 @@ class InformationBaseState extends State<InfoBaseCategoryView> with flux.StoreWa
             textColor: Theme.of(context).canvasColor,
             child: Text("Rooms",
                 style: Theme.of(context).textTheme.headline5.copyWith(
-                    color: Theme.of(context).canvasColor
+                    color: Colors.white
                 )),
             padding: EdgeInsets.all(16.0),
             onPressed: () => Navigator.of(context).pushNamed
@@ -57,7 +57,7 @@ class InformationBaseState extends State<InfoBaseCategoryView> with flux.StoreWa
             textColor: Theme.of(context).canvasColor,
             child: Text("Services",
                 style: Theme.of(context).textTheme.headline5.copyWith(
-                    color: Theme.of(context).canvasColor
+                    color: Colors.white
                 )),
             padding: EdgeInsets.all(16.0),
             onPressed: () => Navigator.of(context).pushNamed

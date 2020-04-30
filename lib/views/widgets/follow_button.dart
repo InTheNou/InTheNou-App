@@ -20,8 +20,9 @@ class FollowButton extends StatelessWidget {
         "FOLLOWING":'FOLLOW'
         ),
         textColor: _event.followed ?
-        Theme.of(context).cardColor :
-        Theme.of(context).primaryColor ,
+        Colors.white :
+          Theme.of(context).brightness == Brightness.dark ?
+          Theme.of(context).primaryColorLight : Theme.of(context).primaryColor,
         color: _event.followed ?
         Theme.of(context).primaryColor :
         Theme.of(context).cardColor,

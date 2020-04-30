@@ -39,8 +39,11 @@ class _MyTagsViewState extends State<MyTagsView>
         ),
         body: FutureBuilder(
           future: _userStore.userTags,
-          builder: (BuildContext context, AsyncSnapshot<List<Tag>> userTags) {
+          builder: (context, AsyncSnapshot<List<Tag>> userTags) {
 
+            if(userTags.connectionState == ConnectionState.waiting){
+              return _buildLoadingWidget();
+            }
             if(userTags.hasError){
               return _buildErrorWidget(userTags.error);
             } else if (userTags.hasData){
@@ -52,7 +55,6 @@ class _MyTagsViewState extends State<MyTagsView>
         ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
-        foregroundColor: Theme.of(context).canvasColor,
         onPressed: () => _showAddTagDialog(),
       ),
     );
@@ -88,47 +90,52 @@ class _MyTagsViewState extends State<MyTagsView>
 
   Widget _buildResultsWidget(List<Tag> userTags) {
     return Scrollbar(
-      child: ListView.builder(
-          padding:const EdgeInsets.only(bottom: 75.0),
-          itemCount: userTags.length,
-          itemBuilder: (context, index) {
-            Tag _tag = userTags[index];
-            return Card(
-                key: ValueKey(_tag.UID),
-                margin: EdgeInsets.only(top: 8.0),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      const Padding(padding: EdgeInsets.only(left: 8.0)),
-                      Expanded(
-                        child: Text(
-                          _tag.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Theme.of(context).primaryColor,
-                            fontSize: Theme.of(context).textTheme.headline6.fontSize,
-                            fontWeight: FontWeight.bold,
+      child: RefreshIndicator(
+        onRefresh: () => getMyTagsAction(),
+        child: ListView.builder(
+            padding:const EdgeInsets.only(bottom: 75.0),
+            itemCount: userTags.length,
+            itemBuilder: (context, index) {
+              Tag _tag = userTags[index];
+              return Card(
+                  key: ValueKey(_tag.UID),
+                  margin: EdgeInsets.only(top: 8.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        const Padding(padding: EdgeInsets.only(left: 8.0)),
+                        Expanded(
+                          child: Text(
+                            _tag.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.headline6.copyWith(
+                              color: Theme.of(context).brightness == Brightness.dark ?
+                                Theme.of(context).primaryColorLight :
+                                Theme.of(context).primaryColor,
+                              fontSize: Theme.of(context).textTheme.headline6.fontSize,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
-                      Text(
-                        "Weight: ${_tag.weight}",
-                        style: Theme.of(context).textTheme.bodyText1,
-                        textAlign: TextAlign.start,
-                      ),
-                      const Padding(padding: EdgeInsets.only(left: 16.0)),
-                      IconButton(
-                        icon: Icon(Icons.delete),
-                        onPressed: () => removeTagAction(_tag),
-                      )
-                    ],
-                  ),
-                )
-            );
-          }),
+                        Text(
+                          "Weight: ${_tag.weight}",
+                          style: Theme.of(context).textTheme.bodyText1,
+                          textAlign: TextAlign.start,
+                        ),
+                        const Padding(padding: EdgeInsets.only(left: 16.0)),
+                        IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () => removeTagAction(_tag),
+                        )
+                      ],
+                    ),
+                  )
+              );
+            }),
+      ),
     );
   }
 

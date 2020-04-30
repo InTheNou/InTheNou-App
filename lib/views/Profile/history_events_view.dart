@@ -1,5 +1,6 @@
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/stores/user_store.dart';
+import 'package:InTheNou/views/widgets/event_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
@@ -37,13 +38,15 @@ class _HistoryEventsViewState extends State<HistoryEventsView>
       ),
       body:  FutureBuilder(
         future: _userStore.historyEvents,
-        builder: (BuildContext context,
-            AsyncSnapshot<List<Event>> followedEvents) {
+        builder: (context, AsyncSnapshot<List<Event>> historyEvents) {
 
-          if(followedEvents.hasError){
-            return _buildErrorWidget(followedEvents.error);
-          } else if (followedEvents.hasData){
-            return _buildResultsWidget(followedEvents.data);
+          if(historyEvents.connectionState == ConnectionState.waiting){
+            return _buildLoadingWidget();
+          }
+          if(historyEvents.hasError){
+            return _buildErrorWidget(historyEvents.error);
+          } else if (historyEvents.hasData){
+            return _buildResultsWidget(historyEvents.data);
           } else {
             return _buildLoadingWidget();
           }
@@ -77,68 +80,22 @@ class _HistoryEventsViewState extends State<HistoryEventsView>
                 height: 100,
                 child: CircularProgressIndicator()),
           ],
-        ));
+        )
+    );
   }
 
-  Widget _buildResultsWidget(List<Event> followedEvents) {
+  Widget _buildResultsWidget(List<Event> historyEvents) {
     return Scrollbar(
-      child: ListView.builder(
-          itemCount: followedEvents.length,
-          itemBuilder: (context, index){
-            Event _event = followedEvents[index];
-            return Card(
-                key: ValueKey(_event.UID),
-                margin: EdgeInsets.only(top: 8.0),
-                child: InkWell(
-                  onTap: () {
-                    Navigator.of(context).pushNamed(
-                        '/eventdetail',
-                        arguments: _event.UID
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 16.0, bottom: 8.0, left:
-                    8.0, right: 8.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Expanded(
-                          flex: 2,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                _event.title,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: Theme.of(context).primaryColor,
-                                  fontSize: Theme.of(context).textTheme.headline6.fontSize,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const Padding(padding: EdgeInsets.only(bottom: 4.0)),
-                              Text(
-                                  _event.getDurationString(),
-                                  style: Theme.of(context).textTheme.bodyText1
-                              ),
-                              const Padding(padding: EdgeInsets.only(bottom: 8.0)),
-                              Text(
-                                  _event.description,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context).textTheme.subtitle2
-                              ),
-                              const Padding(padding: EdgeInsets.only(bottom: 8.0)),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-            );
-          }),
+      child: RefreshIndicator(
+        onRefresh: () => refreshHistoryAction(),
+        child: ListView.builder(
+            itemCount: historyEvents.length,
+            itemBuilder: (context, index){
+              Event _event = historyEvents[index];
+              return EventCard(_event, null);
+            }
+        ),
+      ),
     );
   }
 }

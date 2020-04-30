@@ -201,12 +201,12 @@ class BackgroundHandler {
   }
 
   /// Method calls the API to check for any followed events that have been
-  /// cancelled.
+  /// canceled.
   ///
   /// The API return any events deleted after the last date this wa called,
   /// which is stored in [LAST_CANCELLATION_DATE_KEY]. This list of events is
   /// compared to the list of followed events, to get left with a list of
-  /// cancelled followed events. A notification is then created for each one
+  /// canceled followed events. A notification is then created for each one
   /// of these events so that the user will be aware that they have been
   /// concealed.
   static void _checkCanceledEvents() async{
@@ -219,16 +219,16 @@ class BackgroundHandler {
             payload: "",
             time: DateTime.now(),
             type: NotificationType.Debug
-        ), "Trying Cancellation", "Trying to check for cancelled events",
+        ), "Trying Cancellation", "Trying to check for canceled events",
             "");
       }
       String lastDate = _prefs.getString(LAST_CANCELLATION_DATE_KEY);
-      List<Event> cancelledEvents = await _eventRepo.getDeletedEvents(lastDate);
+      List<Event> canceledEvents = await _eventRepo.getDeletedEvents(lastDate);
       List<Event> followedEvents = List();
-      if(cancelledEvents.length > 0){
+      if(canceledEvents.length > 0){
         followedEvents = await _userRepo.getFollowedEvents(0,PAGINATION_LENGTH);
         followedEvents.retainWhere((fEvent) {
-          return cancelledEvents.contains(fEvent);
+          return canceledEvents.contains(fEvent);
         });
 
         int notificationID = _prefs.getInt(NOTIFICATION_ID_KEY);
@@ -255,7 +255,7 @@ class BackgroundHandler {
                 time: DateTime.now(),
                 type: NotificationType.Debug
             ), "Cancellation", "Cancellation results.",
-                "${cancelledEvents.length} cancelled events "
+                "${canceledEvents.length} cancelled events "
                     "${followedEvents.length} were followed");
           }
         }

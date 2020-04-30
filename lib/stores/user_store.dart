@@ -74,6 +74,7 @@ class UserStore extends flux.Store{
     triggerOnAction(refreshUserInfoAction, (_){
       _userRepo.getUserInfo(_user.UID).then((user) {
         _user = user;
+        trigger();
       });
       _account = _userRepo.getGoogleAccount();
     });

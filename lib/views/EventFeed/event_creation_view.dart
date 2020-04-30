@@ -114,8 +114,11 @@ class _EventCreationViewState extends State<EventCreationView>
                       //Title
                       TextFormField(
                         decoration: InputDecoration(
-                          enabledBorder: const OutlineInputBorder(
-                            borderSide: const BorderSide(color: primaryColor,
+                          enabledBorder:  OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Theme.of(context).brightness == Brightness.dark ?
+                                Theme.of(context).primaryColorLight :
+                                Theme.of(context).primaryColor,
                                 width: 1.0),
                           ),
                           border: const OutlineInputBorder(),
@@ -135,8 +138,11 @@ class _EventCreationViewState extends State<EventCreationView>
                       // Description
                       TextFormField(
                         decoration: InputDecoration(
-                            enabledBorder: const OutlineInputBorder(
-                              borderSide: const BorderSide(color: primaryColor,
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Theme.of(context).brightness == Brightness.dark ?
+                                  Theme.of(context).primaryColorLight :
+                                  Theme.of(context).primaryColor,
                                   width: 1.0),
                             ),
                             border: const OutlineInputBorder(),
@@ -157,8 +163,11 @@ class _EventCreationViewState extends State<EventCreationView>
                       // Image
                       TextFormField(
                         decoration: InputDecoration(
-                            enabledBorder: const OutlineInputBorder(
-                              borderSide: const BorderSide(color: primaryColor,
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Theme.of(context).brightness == Brightness.dark ?
+                                  Theme.of(context).primaryColorLight :
+                                  Theme.of(context).primaryColor,
                                   width: 1.0),
                             ),
                             border: const OutlineInputBorder(),
@@ -178,8 +187,11 @@ class _EventCreationViewState extends State<EventCreationView>
                       DateTimeField(
                         format: _format,
                         decoration: InputDecoration(
-                          enabledBorder: const OutlineInputBorder(
-                            borderSide: const BorderSide(color: primaryColor,
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Theme.of(context).brightness == Brightness.dark ?
+                                Theme.of(context).primaryColorLight :
+                                Theme.of(context).primaryColor,
                                 width: 1.0),
                           ),
                           border: const OutlineInputBorder(),
@@ -231,8 +243,11 @@ class _EventCreationViewState extends State<EventCreationView>
                         autofocus: false,
                         focusNode: FocusNode(canRequestFocus: false),
                         decoration: InputDecoration(
-                          enabledBorder: const OutlineInputBorder(
-                            borderSide: const BorderSide(color: primaryColor,
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Theme.of(context).brightness == Brightness.dark ?
+                                Theme.of(context).primaryColorLight :
+                                Theme.of(context).primaryColor,
                                 width: 1.0),
                           ),
                           border: const OutlineInputBorder(),

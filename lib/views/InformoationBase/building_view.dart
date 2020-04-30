@@ -52,7 +52,7 @@ class _BuildingViewState extends State<BuildingView>
                 pinned: true,
                 title: Text(detailBuilding.name,
                   style: Theme.of(context).textTheme.headline6.copyWith(
-                      color: Theme.of(context).canvasColor
+                      color: Colors.white
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

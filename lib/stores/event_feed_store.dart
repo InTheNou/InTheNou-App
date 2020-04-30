@@ -41,9 +41,7 @@ class EventFeedStore extends flux.Store{
     _getAllEvents(FeedType.GeneralFeed);
     triggerOnAction(searchFeedAction, (MapEntry<FeedType, String> search){
       if (search.key == FeedType.PersonalFeed) {
-        _personalSearch = Future.value(null);
         _personalSearchKeyword = search.value;
-        trigger();
         try{
           _personalSearch = _eventsRepo.searchPerEvents(search.value,0,
               PAGINATION_LENGTH);
@@ -51,9 +49,7 @@ class EventFeedStore extends flux.Store{
           _personalSearch = Future.error(e);
         }
       } else {
-        _generalSearch = Future.value(null);
         _generalSearchKeyword = search.value;
-        trigger();
         try{
           _generalSearch = _eventsRepo.searchGenEvents(search.value,0,
               PAGINATION_LENGTH);
@@ -72,19 +68,12 @@ class EventFeedStore extends flux.Store{
     triggerOnAction(getAllEventsAction, (FeedType feed) {
       _getAllEvents(feed);
     });
-    triggerOnConditionalAction(openEventDetail, (int eventID) async {
+    triggerOnAction(openEventDetail, (int eventID) async {
       var currentEvent = await _eventDetail;
       if (currentEvent == null || currentEvent.UID != eventID) {
-        _eventDetail = Future.value(null);
         trigger();
-        return _eventsRepo.getEvent(eventID).then((event) {
-          _eventDetail =  Future.value(event);
-          return true;
-        }).catchError((e){
-          _eventDetail = Future.error(e);
-        });
+        _eventDetail = _eventsRepo.getEvent(eventID);
       }
-      return false;
     });
     triggerOnAction(clearSearchKeywordAction, (FeedType feed){
       if (feed == FeedType.PersonalFeed) {
@@ -272,25 +261,9 @@ class EventFeedStore extends flux.Store{
 
   Future _getAllEvents(FeedType feed) async{
     if (feed == FeedType.PersonalFeed) {
-      _personalSearch = Future.value(null);
-      trigger();
-      _eventsRepo.getPerEvents(0, PAGINATION_LENGTH).then((value) {
-        _personalSearch = Future.value(value);
-        trigger();
-      }).catchError((e){
-        _personalSearch = Future.error(e);
-        trigger();
-      });
+      _personalSearch = _eventsRepo.getPerEvents(0, PAGINATION_LENGTH);
     } else {
-      _generalSearch = Future.value(null);
-      trigger();
-      _eventsRepo.getGenEvents(0, PAGINATION_LENGTH).then((value) {
-        _generalSearch = Future.value(value);
-        trigger();
-      }).catchError((e){
-        _generalSearch = Future.error(e);
-        trigger();
-      });
+      _generalSearch = _eventsRepo.getGenEvents(0, PAGINATION_LENGTH);
     }
   }
 

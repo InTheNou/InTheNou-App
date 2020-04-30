@@ -38,7 +38,13 @@ class _WebsiteAlertDialogState extends State<WebsiteAlertDialog> {
               TextFormField (
                 decoration: InputDecoration(
                     labelText: "Link Description",
-                    border: OutlineInputBorder()),
+                    enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                            color: Theme.of(context).brightness == Brightness.dark ?
+                            Theme.of(context).primaryColorLight :
+                            Theme.of(context).primaryColor,
+                            width: 1.0))
+                ),
                 autovalidate: _validate,
                 maxLines: null,
                 maxLength: 50,
@@ -52,7 +58,13 @@ class _WebsiteAlertDialogState extends State<WebsiteAlertDialog> {
               TextFormField (
                 decoration: InputDecoration(
                     labelText: "Link URL",
-                    border: OutlineInputBorder()),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                          color: Theme.of(context).brightness == Brightness.dark ?
+                          Theme.of(context).primaryColorLight :
+                          Theme.of(context).primaryColor,
+                          width: 1.0))
+                ),
                 autovalidate: _validate,
                 maxLines: null,
                 maxLength: 400,
@@ -68,16 +80,11 @@ class _WebsiteAlertDialogState extends State<WebsiteAlertDialog> {
       ),
       actions: <Widget>[
         FlatButton(
-          onPressed: (){
-            Navigator.of(context).pop();
-          },
-          textColor: Theme.of(context).primaryColor,
-          child: Text(
-              "CANCEL"
-          ),
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text("CANCEL"),
         ),
         const Padding(padding: EdgeInsets.only(left: 16.0)),
-        RaisedButton(
+        FlatButton(
           onPressed: (){
             if (_formKey.currentState.validate()) {
               _formKey.currentState.save();
@@ -97,11 +104,7 @@ class _WebsiteAlertDialogState extends State<WebsiteAlertDialog> {
               _validate = true;
             });
           },
-          color: Theme.of(context).primaryColor,
-          textColor: Colors.white,
-          child: Text(
-              "SUBMIT"
-          ),
+          child: Text("SUBMIT"),
         )
       ],
     );

@@ -3,10 +3,11 @@ import 'package:InTheNou/background/background_handler.dart';
 import 'package:InTheNou/background/notification_handler.dart';
 import 'package:InTheNou/home_page.dart';
 import 'package:InTheNou/stores/settings_store.dart';
+import 'package:dynamic_theme/dynamic_theme.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 import 'package:geolocator/geolocator.dart';
-
 
 class SettingsView extends StatefulWidget {
 
@@ -93,12 +94,11 @@ class _SettingsViewState extends State<SettingsView>
                           FutureBuilder<bool>(
                               future: _settingsStore.smartNotificationEnabled,
                               initialData: false,
-                              builder: (BuildContext context,
-                                  AsyncSnapshot<bool>toggle) {
+                              builder: (context, AsyncSnapshot<bool> toggle) {
                                 return Padding(
                                   padding: const EdgeInsets.only(top: 4.0, bottom: 4.0,
                                       right: 8.0),
-                                  child: new Switch(
+                                  child: Switch(
                                       value: toggle.data,
                                       onChanged: (value)  async =>
                                           checkPermissionAndUpdate(value)
@@ -106,6 +106,46 @@ class _SettingsViewState extends State<SettingsView>
                                 );
                               }),
                         ],
+                      ),
+                      Card(
+                        child: Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                    "Change Theme",
+                                    style: Theme.of(context).textTheme.subtitle1
+                                ),
+                              ),
+                            ),
+                            DropdownButton<String>(
+                                value: Theme.of(context).brightness ==
+                                    Brightness.light ? "Light" : "Dark",
+                                underline: Container(
+                                  height: 2,
+                                  color: Theme.of(context).accentColor,
+                                ),
+                                items: ["Light", "Dark"]
+                                    .map<DropdownMenuItem<String>>((value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value.toString()),
+                                  );
+                                }).toList(),
+                                onChanged: (newValue) {
+                                  if(newValue == "Dark"){
+                                    DynamicTheme.of(context).setBrightness(
+                                        Brightness.dark);
+                                  } else {
+                                    DynamicTheme.of(context).setBrightness(
+                                        Brightness.light);
+                                  }
+                                }
+                            )
+
+                          ],
+                        ),
                       ),
                     ],
                   ),

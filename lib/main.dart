@@ -6,12 +6,13 @@ import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/dialog_manager.dart';
 import 'package:InTheNou/dialog_service.dart';
 import 'package:InTheNou/start_up_view.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:device_info/device_info.dart';
-
+import 'package:dynamic_theme/dynamic_theme.dart';
 
 DialogService service = DialogService();
 
@@ -87,39 +88,56 @@ class InTheNouApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'IntheNou',
-      theme: ThemeData(
-        primarySwatch: primaryColor,
-        accentColor: secondaryColor,
-        errorColor: errorColor,
-        cardTheme: CardTheme(color: ThemeData.fallback().cardColor,
-            clipBehavior: Clip.antiAlias,
-            elevation: 1.0,
-            margin: const EdgeInsets.all(4.0),
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(radius))
+    return new DynamicTheme(
+        defaultBrightness: Brightness.light,
+        data: (brightness) => ThemeData(
+            brightness: brightness,
+            primarySwatch: primaryColor,
+            primaryColorLight: primaryColorLight,
+            primaryColorBrightness: Brightness.dark,
+            accentColor: secondaryColor,
+            accentColorBrightness: Brightness.dark,
+            errorColor: errorColor,
+            toggleableActiveColor: brightness == Brightness.dark ?
+            secondaryColorDark : secondaryColor,
+            cardTheme: CardTheme(
+                clipBehavior: Clip.antiAlias,
+                elevation: 1.0,
+                margin: const EdgeInsets.all(4.0),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(radius))
+            ),
+            buttonTheme: ButtonThemeData(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(radius),
+              ),
+            ),
+            dialogTheme: DialogTheme(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(radius),
+              ),
+            ),
+            floatingActionButtonTheme: FloatingActionButtonThemeData(
+                backgroundColor: brightness == Brightness.dark ?
+                secondaryColorDark : secondaryColor,
+                foregroundColor: Colors.white
+            )
         ),
-        buttonTheme: ButtonThemeData(
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(radius),
-          ),
-        ),
-        dialogTheme: DialogTheme(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(radius),
-          ),
-        ),
-      ),
-      onGenerateRoute: RouteGenerator.generateRoute,
-      home: DialogManager(child: StartUpView()),
-      builder: (context, widget) {
-        ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
-          _reportError(errorDetails.exception, errorDetails.stack);
-          return buildError(context, errorDetails);
-        };
-        return widget;
-      },
+        themedWidgetBuilder: (context, theme) {
+          return MaterialApp(
+            title: 'IntheNou',
+            theme: theme,
+            onGenerateRoute: RouteGenerator.generateRoute,
+            home: DialogManager(child: StartUpView()),
+            builder: (context, widget) {
+              ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+                _reportError(errorDetails.exception, errorDetails.stack);
+                return buildError(context, errorDetails);
+              };
+              return widget;
+            },
+          );
+        }
     );
   }
 

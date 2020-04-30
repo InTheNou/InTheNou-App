@@ -41,7 +41,7 @@ class ProfileState extends State<ProfileView>
                 pinned: true,
                 title: Text(_userStore.user.firstName+ "'s Profile",
                   style: Theme.of(context).textTheme.headline6.copyWith(
-                      color: Theme.of(context).canvasColor
+                    color: Colors.white
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -70,8 +70,8 @@ class ProfileState extends State<ProfileView>
                       ),
                       child: LoadingImage(
                         imageURL: _userStore.user.photo,
-                        width: null,
-                        height: null,
+                        width: double.infinity,
+                        height: double.infinity,
                       ),
                     )
                 ),
@@ -207,7 +207,6 @@ class ProfileState extends State<ProfileView>
                                 onTap: () {
                                   Navigator.of(context)
                                       .pushNamed("/profile/created_events");
-                                  refreshCreatedAction();
                                 },
                                 child: ListTile(
                                   title: Text("Created Events"),

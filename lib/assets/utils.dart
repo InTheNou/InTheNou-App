@@ -308,7 +308,7 @@ class Utils {
   static String handleDioError(DioError error, String feature) {
     switch (error.type) {
       case DioErrorType.CANCEL:
-        return "$feature Request to API server was cancelled";
+        return "$feature Request to API server was canceled";
         break;
       case DioErrorType.CONNECT_TIMEOUT:
         return "Connection timeout with server"

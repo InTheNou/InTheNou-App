@@ -87,6 +87,9 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
     return FutureBuilder(
       future: dataToShow,
       builder: (BuildContext context, AsyncSnapshot<dynamic> results) {
+        if(results.connectionState == ConnectionState.waiting){
+          return _buildLoadingWidget();
+        }
         if(results.hasData){
           if(results.data.length == 0){
             return _buildNoResultsNotice();
@@ -114,77 +117,87 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
 
   Widget showBuildingsResults(List<Building> buildingsResults){
     return Scrollbar(
-      child: ListView.builder(
-          itemCount: buildingsResults.length,
-          controller: _scrollController,
-          padding:const EdgeInsets.only(top: 8.0),
-          itemBuilder: (context, index){
-            Building building = buildingsResults[index];
-            return Card(
-              clipBehavior: Clip.antiAliasWithSaveLayer,
-              child: InkWell(
-                onTap: () {
-                  Navigator.of(context).pushNamed("/infobase/building");
-                  selectBuildingAction(building);
-                },
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    LoadingImage(
-                        imageURL: building.image,
-                        height: 120.0,
-                        width: 150.0
-                    ),
-                    const Padding(padding: EdgeInsets.only(left: 16.0)),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            building.name,
-                            maxLines: 2,
-                            style: Theme.of(context).textTheme.headline6,
-                            softWrap: true,
-                          ),
-                          const Padding(padding: EdgeInsets.only(top: 8.0)),
-                          Text(
-                            building.commonName,
-                            maxLines: 2,
-                            style: Theme.of(context).textTheme.subtitle1,
-                            softWrap: true,
-                          )
-                        ],
+      child: RefreshIndicator(
+        onRefresh: () => getAllBuildingsAction(),
+        child: ListView.builder(
+            itemCount: buildingsResults.length,
+            controller: _scrollController,
+            padding:const EdgeInsets.only(top: 8.0),
+            itemBuilder: (context, index){
+              Building building = buildingsResults[index];
+              return Card(
+                clipBehavior: Clip.antiAliasWithSaveLayer,
+                child: InkWell(
+                  onTap: () {
+                    Navigator.of(context).pushNamed("/infobase/building");
+                    selectBuildingAction(building);
+                  },
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      LoadingImage(
+                          imageURL: building.image,
+                          height: 120.0,
+                          width: 150.0
                       ),
-                    ),
-                  ],
-                ),
-              )
-            );
-          }),
+                      const Padding(padding: EdgeInsets.only(left: 16.0)),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              building.name,
+                              maxLines: 2,
+                              style: Theme.of(context).textTheme.headline6,
+                              softWrap: true,
+                            ),
+                            const Padding(padding: EdgeInsets.only(top: 8.0)),
+                            Text(
+                              building.commonName,
+                              maxLines: 2,
+                              style: Theme.of(context).textTheme.subtitle1,
+                              softWrap: true,
+                            )
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              );
+            }),
+      ),
     );
   }
 
   Widget showRoomsResults(List<Room> roomsResults){
     return Scrollbar(
-      child: ListView.builder(
-          itemCount: roomsResults.length,
-          controller: _scrollController,
-          itemBuilder: (context, index){
-            Room room = roomsResults[index];
-            return RoomCard(room);
-          }),
+      child: RefreshIndicator(
+        onRefresh: () => reloadSearch(),
+        child: ListView.builder(
+            physics: AlwaysScrollableScrollPhysics(),
+            itemCount: roomsResults.length,
+            controller: _scrollController,
+            itemBuilder: (context, index){
+              Room room = roomsResults[index];
+              return RoomCard(room);
+            }),
+      ),
     );
   }
 
   Widget showServicesResults(List<Service> servicesResults){
     return Scrollbar(
-        child: ListView.builder(
-            itemCount: servicesResults.length,
-            controller: _scrollController,
-            itemBuilder: (context, index){
-              Service service = servicesResults[index];
-              return ServicesCard(service);
-            })
+        child: RefreshIndicator(
+          onRefresh: () => reloadSearch(),
+          child: ListView.builder(
+              itemCount: servicesResults.length,
+              controller: _scrollController,
+              itemBuilder: (context, index){
+                Service service = servicesResults[index];
+                return ServicesCard(service);
+              }),
+        )
     );
   }
 
@@ -273,7 +286,7 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
             _scrollController.animateTo(0.0, curve: Curves.ease,
                 duration: Duration(seconds: 1));
           }
-          searchInfoBaseAction(new MapEntry(widget.searchType, query.trim()));
+          searchInfoBaseAction(MapEntry(widget.searchType, query.trim()));
         }
       },
     );

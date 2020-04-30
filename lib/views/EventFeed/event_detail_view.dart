@@ -1,11 +1,10 @@
 import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
-import 'package:InTheNou/background/notification_handler.dart';
 import 'package:InTheNou/dialog_service.dart';
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/models/website.dart';
 import 'package:InTheNou/stores/event_feed_store.dart';
-import 'package:InTheNou/views/widgets/cancelled_button.dart';
+import 'package:InTheNou/views/widgets/cancel_button.dart';
 import 'package:InTheNou/views/widgets/dismiss_button.dart';
 import 'package:InTheNou/views/widgets/follow_button.dart';
 import 'package:InTheNou/views/widgets/link_with_icon_widget.dart';
@@ -46,6 +45,10 @@ class _EventDetailViewState extends State<EventDetailView>
     return FutureBuilder(
       future: _eventFeedStore.eventDetail,
       builder: (BuildContext context, AsyncSnapshot<Event> eventDetail) {
+
+        if(eventDetail.connectionState == ConnectionState.waiting){
+          return _buildLoading();
+        }
         if(eventDetail.hasData){
           return _buildBody(eventDetail.data);
         } else if(eventDetail.hasError){
@@ -75,9 +78,7 @@ class _EventDetailViewState extends State<EventDetailView>
                 floating: false,
                 pinned: true,
                 title: Text(eventDetail.title,
-                  style: Theme.of(context).textTheme.headline6.copyWith(
-                      color: Theme.of(context).canvasColor
-                  ),
+                  style: Theme.of(context).textTheme.headline6,
                   overflow: TextOverflow.ellipsis,
                 ),
                 flexibleSpace: FlexibleSpaceBar(
@@ -120,7 +121,9 @@ class _EventDetailViewState extends State<EventDetailView>
                           Text(
                             eventDetail.title,
                             style: TextStyle(
-                              color: Theme.of(context).primaryColor,
+                              color: Theme.of(context).brightness == Brightness.dark ?
+                              Theme.of(context).primaryColorLight :
+                              Theme.of(context).primaryColor,
                               fontSize: Theme.of(context).textTheme
                                   .headline5.fontSize,
                               fontWeight: FontWeight.bold,
@@ -168,7 +171,7 @@ class _EventDetailViewState extends State<EventDetailView>
                                   ),
                                   Padding(padding: EdgeInsets.only(
                                       left: 80.0)),
-                                  CancelledButton(eventDetail),
+                                  CancelButton(eventDetail),
                                 ]
                             ),
                           ),
@@ -189,7 +192,9 @@ class _EventDetailViewState extends State<EventDetailView>
                         children: <Widget>[
                           Text("Links",
                             style: TextStyle(
-                              color: Theme.of(context).primaryColor,
+                              color: Theme.of(context).brightness == Brightness.dark ?
+                              Theme.of(context).primaryColorLight :
+                              Theme.of(context).primaryColor,
                               fontSize: Theme.of(context).textTheme
                                   .bodyText1.fontSize,
                               fontWeight: FontWeight.w300,
@@ -231,7 +236,9 @@ class _EventDetailViewState extends State<EventDetailView>
                               Text(
                                 "Reminders",
                                 style: TextStyle(
-                                  color: Theme.of(context).primaryColor,
+                                  color: Theme.of(context).brightness == Brightness.dark ?
+                                  Theme.of(context).primaryColorLight :
+                                  Theme.of(context).primaryColor,
                                   fontSize: Theme.of(context).textTheme
                                       .bodyText1.fontSize,
                                   fontWeight: FontWeight.w300,
@@ -275,7 +282,9 @@ class _EventDetailViewState extends State<EventDetailView>
                               Text(
                                 "Tags",
                                 style: TextStyle(
-                                  color: Theme.of(context).primaryColor,
+                                  color: Theme.of(context).brightness == Brightness.dark ?
+                                  Theme.of(context).primaryColorLight :
+                                  Theme.of(context).primaryColor,
                                   fontSize: Theme.of(context).textTheme
                                       .bodyText1.fontSize,
                                   fontWeight: FontWeight.w300,

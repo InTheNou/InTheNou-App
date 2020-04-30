@@ -59,19 +59,17 @@ class GeneralFeedState extends State<FeedView>
             actions: _buildActions()
         ),
         body: _buildBody(),
-        floatingActionButton: new Visibility(
+        floatingActionButton: Visibility(
           key: ValueKey("EventCreationFAB"),
           visible:
               _userStore.user != null &&
               _userStore.user.userPrivilege != UserPrivilege.User,
-          child: new FloatingActionButton(
+          child: FloatingActionButton(
             onPressed: (){
               Navigator.of(context).pushNamed('/create_event');
             },
             tooltip: 'Open Event Creation',
-            foregroundColor: Theme.of(context).canvasColor,
-            backgroundColor: Theme.of(context).accentColor,
-            child: new Icon(Icons.add),
+            child: Icon(Icons.add),
           ),
         ),
     );
@@ -157,6 +155,9 @@ class GeneralFeedState extends State<FeedView>
           _eventFeedStore.personalSearch : _eventFeedStore.generalSearch,
         builder: (BuildContext context, AsyncSnapshot<List<Event>> events) {
 
+          if(events.connectionState == ConnectionState.waiting){
+            return _buildLoadingWidget();
+          }
           if(events.hasData){
             if(events.data.length == 0 && _eventFeedStore.isSearching(widget.type)){
               return Center(
@@ -174,14 +175,18 @@ class GeneralFeedState extends State<FeedView>
               );
             } else {
               return  Scrollbar(
-                child: ListView.builder(
-                    key: ValueKey(widget.type),
-                    controller: _scrollController,
-                    padding:const EdgeInsets.only(bottom: 100.0),
-                    itemCount: events.data.length,
-                    itemBuilder: (context, index) {
-                      return EventCard(events.data[index], widget.type);
-                    }
+                child: RefreshIndicator(
+                  onRefresh: () => getAllEventsAction(widget.type),
+                  child: ListView.builder(
+                      key: ValueKey(widget.type),
+                      physics: AlwaysScrollableScrollPhysics(),
+                      controller: _scrollController,
+                      padding:const EdgeInsets.only(bottom: 100.0),
+                      itemCount: events.data.length,
+                      itemBuilder: (context, index) {
+                        return EventCard(events.data[index], widget.type);
+                      }
+                  ),
                 ),
               );
             }

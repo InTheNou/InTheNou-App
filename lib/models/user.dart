@@ -14,7 +14,7 @@ class User {
   String photo;
 
   User(this._UID, this._firstName, this._fullName, this._email, this._role,
-      this._tags, this._userPrivilege);
+      this._tags, this._userPrivilege, this.photo);
 
   factory User.fromJson(Map<String,dynamic> json){
     return User(
@@ -24,7 +24,9 @@ class User {
         json["email"],
         Utils.userRoleFromString(json["type"]),
         null,
-        Utils.userPrivilegeFromInt(json["roleid"] as int));
+        Utils.userPrivilegeFromInt(json["roleid"] as int),
+        json["photo"]
+    );
   }
 
   Map<String,dynamic> toJson(){
@@ -35,7 +37,8 @@ class User {
       "email" : _email,
       "type" : Utils.userRoleString(_role),
       "tags" : Tag.toJsonList(_tags),
-      "roleid" : Utils.userPrivilegeKey(_userPrivilege)
+      "roleid" : Utils.userPrivilegeKey(_userPrivilege),
+      "photo" : photo
     };
   }
 
@@ -57,7 +60,7 @@ class User {
 
   @override
   String toString() {
-    return 'User{_UID: $_UID, _firstName: $_firstName, _fullName: $_fullName, _email: $_email, _role: $_role, _tags: $_tags, _userPrivilege: $_userPrivilege}';
+    return 'User{_UID: $_UID, _firstName: $_firstName, _fullName: $_fullName, _email: $_email, _role: $_role, _tags: $_tags, _userPrivilege: $_userPrivilege, photo: $photo}';
   }
 
 

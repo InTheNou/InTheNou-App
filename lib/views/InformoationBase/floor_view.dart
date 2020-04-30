@@ -1,4 +1,3 @@
-import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/room.dart';
 import 'package:InTheNou/stores/infobase_store.dart';
 import 'package:InTheNou/views/InformoationBase/room_card.dart';
@@ -46,17 +45,12 @@ class _FloorViewState extends State<FloorView>
   }
 
   Widget _buildBody(List<Room> roomsInBuilding){
-    return Column(
-      children: <Widget>[
-        Expanded(
-          child: ListView.builder(
-              itemCount: roomsInBuilding.length,
-              itemBuilder: (context, index){
-                Room _room = roomsInBuilding[index];
-                return RoomCard(_room);
-              }),
-        )
-      ],
+    return ListView.builder(
+        itemCount: roomsInBuilding.length,
+        itemBuilder: (context, index){
+          Room _room = roomsInBuilding[index];
+          return RoomCard(_room);
+        }
     );
   }
 

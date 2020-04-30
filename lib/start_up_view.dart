@@ -1,5 +1,5 @@
 import 'dart:io';
-
+import 'package:InTheNou/assets/colors.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/dialog_service.dart';
 import 'package:InTheNou/stores/user_store.dart';
@@ -52,7 +52,7 @@ class _StartUpViewState extends State<StartUpView>
           });
         }
         return Scaffold(
-            backgroundColor: Theme.of(context).primaryColor,
+            backgroundColor: primaryColor,
             body: Center(
               child: Column(
                 children: <Widget>[
