@@ -105,12 +105,11 @@ class EventsRepo {
   /// Database Errors are caught by Dio and throw a [DioError] which is
   /// traduced to a proper error with [Utils.handleDioError].
   Future<List<Event>> getNewEvents(String lastDate) async{
-    DateTime date = DateTime.parse(lastDate);
     try{
       await apiConnection.ensureInitialized();
 
       Response response = await apiConnection.dio.get(
-          "/App/Events/CAT/timestamp=${Utils.formatTimeStamp(date)}");
+          "/App/Events/CAT/timestamp=$lastDate");
       List<Event> eventResults = new List();
 
       if(response.data["events"] != null){
@@ -140,12 +139,11 @@ class EventsRepo {
   /// Database Errors are caught by Dio and throw a [DioError] which is
   /// traduced to a proper error with [Utils.handleDioError].
   Future<List<Event>> getDeletedEvents(String lastDate) async{
-    DateTime date = DateTime.parse(lastDate);
     try{
       await apiConnection.ensureInitialized();
 
       Response response = await apiConnection.dio.get(
-          "/App/Events/Deleted/New/timestamp=${Utils.formatTimeStamp(date)}");
+          "/App/Events/Deleted/New/timestamp=$lastDate");
       List<Event> eventResults = new List();
 
       if(response.data["events"] != null){

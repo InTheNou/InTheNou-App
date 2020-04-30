@@ -13,13 +13,11 @@ class LinkWithIconWidget extends StatelessWidget{
   Widget build(BuildContext context) {
     return  ListTile(
       title: RichText(
-        overflow: TextOverflow.ellipsis,
         text: TextSpan(
           text: _description,
-          style: new TextStyle(
+          style: Theme.of(context).textTheme.subtitle1.copyWith(
               color: Colors.blue,
-              decoration: TextDecoration.underline,
-              fontSize: Theme.of(context).textTheme.subtitle1.fontSize),
+              decoration: TextDecoration.underline),
           recognizer: new TapGestureRecognizer()
             ..onTap = () { _launchURL(_URL);
             },

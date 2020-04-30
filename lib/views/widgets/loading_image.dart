@@ -17,10 +17,18 @@ class LoadingImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: height,
-      width: width,
-      child: CachedNetworkImage(
-        imageUrl: (imageURL !=null && isURL(imageURL)) ? imageURL : "",
+      constraints: BoxConstraints.tightForFinite(width: width, height: height),
+      child: buildImage()
+    );
+  }
+
+  Widget buildImage(){
+    if(imageURL == null || imageURL.isEmpty || !isURL(imageURL)){
+      return Image.asset("lib/assets/placeholder.png", fit: BoxFit.fill);
+    }
+    else {
+      return CachedNetworkImage(
+        imageUrl:imageURL,
         fit: BoxFit.cover,
         placeholder: (context, url) =>
             Image.asset("lib/assets/placeholder.png", fit: BoxFit.fill),
@@ -31,7 +39,8 @@ class LoadingImage extends StatelessWidget {
                     backgroundColor: Colors.transparent,
                     value: downloadProgress.progress)
             ),
-      ),
-    );
+      );
+    }
+
   }
 }

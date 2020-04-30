@@ -100,7 +100,7 @@ class ApiConnection {
       await Future.delayed(Duration(milliseconds: 500));
     }
     if(dio == null || dio.options == null || dio.options.baseUrl == null){
-      init();
+      await init();
     }
   }
 

@@ -194,7 +194,30 @@ class _DebugSettingsViewViewState extends State<DebugSettingsView>
                   ),
                 ),
                 Padding(padding: const EdgeInsets.all(4.0)),
-
+                Card(
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: InkWell(
+                            child: Padding(
+                                padding: const EdgeInsets.only(top:16.0, bottom: 16.0,
+                                    left: 8.0),
+                                child: Text("Clear Smart Notification Data")
+                            ),
+                            onTap: () {
+                              Scaffold.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Deleted Smart Notification '
+                                        'Data'),
+                                  )
+                              );
+                              NotificationHandler.cancelAllSmartNotifications();
+                            }
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 Card(
                   child: Row(
                     children: <Widget>[
@@ -211,7 +234,7 @@ class _DebugSettingsViewViewState extends State<DebugSettingsView>
                                       content: Text('Deleted Notification Data'),
                                     )
                                 );
-                                NotificationHandler.cancelAllSmartNotifications();
+                                NotificationHandler.cancelAllNotifications();
                                 Utils.clearNotificationsPrefs();
                               }
                           ),

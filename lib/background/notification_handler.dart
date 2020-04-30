@@ -1,4 +1,5 @@
 import 'dart:convert' as convert;
+import 'dart:ui';
 import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/dialog_service.dart';
@@ -32,14 +33,6 @@ class NotificationHandler {
     _prefs = await SharedPreferences.getInstance();
 
     try{
-      showAlertNotification(NotificationObject(
-          id: SMART_ALERT_NOTIFICATION_ID,
-          payload: "",
-          time: DateTime.now(),
-          type: NotificationType.Alert
-      ), "Smart Notification", "Trying to Create Smart Notification",
-          "Trying to Create Smart Notification");
-
       // Gets all Smart Notifications that are scheduled already
       List<String> jsonNotifications = _prefs.getStringList
         (SMART_NOTIFICATION_LIST) ?? new List();
@@ -47,6 +40,16 @@ class NotificationHandler {
       event = await eventsRepo.getEvent(event.UID);
       if(_prefs.getBool(SMART_NOTIFICATION_KEY) &&
           event.startDateTime.isAfter(DateTime.now())){
+        if(_prefs.getBool(DEBUG_NOTIFICATION_KEY)){
+          showDebugNotification(NotificationObject(
+              id: SMART_ALERT_NOTIFICATION_ID,
+              payload: "",
+              time: DateTime.now(),
+              type: NotificationType.Debug
+          ), "Smart Notification", "Trying to Create Smart Notification",
+              "Trying to Create Smart Notification");
+        }
+
         jsonNotifications = await NotificationHandler.doSmartNotification(
             [event], jsonNotifications);
 
@@ -103,15 +106,16 @@ class NotificationHandler {
     _prefs.setStringList(SMART_NOTIFICATION_LIST, jsonSmart);
     _prefs.setStringList(DEFAULT_NOTIFICATION_LIST, jsonDefault);
 
-    print("Pending Smart Notifications: ");
+    print("Smart Notifications: ");
     print(jsonSmart);
-    print("Pending Default Notifications: ");
+    print("Default Notifications: ");
     print(jsonDefault);
     var pendingNotificationRequests =
     await flutterLocalNotificationsPlugin.pendingNotificationRequests();
     for (var pendingNotificationRequest in pendingNotificationRequests) {
       debugPrint(
-          'pending notification: [id: ${pendingNotificationRequest.id}, title: ${pendingNotificationRequest.title}]');
+          'Pending notification: [id: ${pendingNotificationRequest.id}, '
+              'title: ${pendingNotificationRequest.title}]');
     }
   }
 
@@ -129,6 +133,13 @@ class NotificationHandler {
       flutterLocalNotificationsPlugin.cancel(notificationMap["id"]);
     });
     _prefs.setStringList(SMART_NOTIFICATION_LIST, null);
+  }
+
+  static void cancelAllNotifications() async{
+    _prefs = await SharedPreferences.getInstance();
+    flutterLocalNotificationsPlugin.cancelAll();
+    _prefs.setStringList(SMART_NOTIFICATION_LIST, null);
+    _prefs.setStringList(DEFAULT_NOTIFICATION_LIST, null);
   }
 
   /// Cleans up old notifications that have been delivered
@@ -183,8 +194,7 @@ class NotificationHandler {
         if(Utils.isEventInTheNextDay(event.startDateTime, timestamp)){
           double timeToWalk = Utils.GPSTimeToWalkCalculation(timeToEvent,
               userCoords, event.room.coordinates);
-          //TODO:Change this back
-          if(Utils.isScheduleSmartNecessary(timeToEvent, timeToWalk) || true){
+          if(Utils.isScheduleSmartNecessary(timeToEvent, timeToWalk)){
             int seconds = ((timeToWalk - timeToWalk.floor()) * 60).ceil();
 
             DateTime scheduleTime;
@@ -214,10 +224,18 @@ class NotificationHandler {
                     "away from the "
                     "event, it will take you ${Utils.toSmartTime(timeToWalk)} to "
                     "walk to the event.",
-                DateTime.now(),
+                scheduleTime,
                 convert.jsonEncode(eventNotification)
             );
-            //TODO:Change this back
+            if(_prefs.getBool(DEBUG_NOTIFICATION_KEY)){
+              showDebugNotification(NotificationObject(
+                  id: SMART_ALERT_NOTIFICATION_ID,
+                  payload: "",
+                  time: DateTime.now(),
+                  type: NotificationType.Debug
+              ), "Smart Notification", "Scheduled",
+                  event.title+ " "+scheduleTime.toIso8601String());
+            }
           }
         }
       });
@@ -266,41 +284,11 @@ class NotificationHandler {
       _prefs.setStringList(DEFAULT_NOTIFICATION_LIST,jsonNotifications);
     }
   }
-//TODO:Remove this
-  static void makeDummy(Event event) async{
-    if(Utils.isScheduleDefaultNecessary(event.startDateTime, DateTime.now())){
-      _prefs = await SharedPreferences.getInstance();
-      int defaultTime = _prefs.getInt(DEFAULT_NOTIFICATION_KEY);
-      int notificationID = _prefs.getInt(NOTIFICATION_ID_KEY);
-      _prefs.setInt(NOTIFICATION_ID_KEY, notificationID+1);
-
-      // Gets all Default Notifications that are scheduled already
-      List<String> jsonNotifications = _prefs.getStringList
-        (DEFAULT_NOTIFICATION_LIST) ?? new List();
-
-      DateTime notificationTime = event.startDateTime
-          .subtract(Duration(minutes: defaultTime));
-      NotificationObject notification = NotificationObject(
-          type: NotificationType.DefaultNotification,
-          id: notificationID, time: DateTime.now(),
-          payload: event.UID.toString());
-
-      DateFormat df = new DateFormat("K:mm a");
-      String startOfEvent = "The event starts at ${df.format(event.startDateTime)}";
-      _scheduleDefaultNotification(notification,
-          event.title, startOfEvent
-      );
-
-      // Update notification list and NotificationID
-      jsonNotifications.add(convert.jsonEncode(notification));
-      _prefs.setStringList(DEFAULT_NOTIFICATION_LIST,jsonNotifications);
-    }
-  }
 
   /// Setup of the notification and schedules it
   static void _scheduleSmartNotification(int id, String title,
       String description, String bigDescription, DateTime scheduledDate,
-      String payload) async {
+      String notifPayload) async {
     var bigTextStyleInformation = BigTextStyleInformation(
         bigDescription,
         htmlFormatBigText: true,
@@ -314,6 +302,11 @@ class NotificationHandler {
         'Smart notifications for Events followed',
         importance: Importance.Max,
         priority: Priority.High,
+        color: Color.fromARGB(256, 78, 104, 160),
+        ledColor: Color.fromARGB(256, 78, 104, 160),
+        enableLights: true,
+        ledOnMs: 100,
+        ledOffMs: 100,
         visibility: NotificationVisibility.Public,
 //        groupKey: SMART_NOTIFICATION_GID,
         icon: "ic_notification",
@@ -321,10 +314,9 @@ class NotificationHandler {
     var platformChannelSpecifics = NotificationDetails(
         androidPlatformChannelSpecifics, null);
 
-    //TODO:Change this back
     await flutterLocalNotificationsPlugin.schedule(
         id, title, description, scheduledDate,
-        platformChannelSpecifics, payload: "");
+        platformChannelSpecifics, payload: notifPayload);
   }
 
   /// Setup of the notification and schedules it
@@ -338,6 +330,11 @@ class NotificationHandler {
         importance: Importance.Max,
         priority: Priority.High,
         icon: "ic_notification",
+        color: Color.fromARGB(256, 78, 104, 160),
+        ledColor: Color.fromARGB(256, 78, 104, 160),
+        enableLights: true,
+        ledOnMs: 100,
+        ledOffMs: 100,
         visibility: NotificationVisibility.Public,
 //        groupKey: DEFAULT_NOTIFICATION_GID,
         styleInformation: defaultStyleInformation);
@@ -367,8 +364,13 @@ class NotificationHandler {
         importance: Importance.Max,
         priority: Priority.High,
         icon: "ic_notification",
+        color: Color.fromARGB(256, 78, 104, 160),
+        ledColor: Color.fromARGB(256, 78, 104, 160),
+        enableLights: true,
+        ledOnMs: 100,
+        ledOffMs: 100,
         visibility: NotificationVisibility.Public,
-        groupKey: RECOMMENDATION_NOTIFICATION_GID,
+//        groupKey: RECOMMENDATION_NOTIFICATION_GID,
         styleInformation: bigTextStyleInformation);
     var platformChannelSpecifics = NotificationDetails(
         androidPlatformChannelSpecifics, null);
@@ -389,26 +391,27 @@ class NotificationHandler {
         htmlFormatContentTitle: true,
         summaryText: '<b>Alert</b>',
         htmlFormatSummaryText: true);
-    //TODO:Change this back
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
         'com.inthenou.app.channel.alert',
         'Alert Notification',
         'Notifications of Alerts or Errors.',
         importance: Importance.Max,
         priority: Priority.High,
-        visibility: NotificationVisibility.Public,
-        groupKey: "test",
         icon: "ic_notification",
-        setAsGroupSummary: true,
+        color: Color.fromARGB(256, 78, 104, 160),
+        ledColor: Color.fromARGB(256, 78, 104, 160),
+        enableLights: true,
+        ledOnMs: 100,
+        ledOffMs: 100,
+        visibility: NotificationVisibility.Public,
         styleInformation: bigTextStyleInformation);
     var platformChannelSpecifics = NotificationDetails(
         androidPlatformChannelSpecifics, null);
 
-    //TODO:Change this back
     await flutterLocalNotificationsPlugin.show(
         notification.id, title, description,
         platformChannelSpecifics,
-        payload: "");
+        payload: convert.jsonEncode(notification));
   }
 
   static void showCancellationNotification(
@@ -428,6 +431,11 @@ class NotificationHandler {
         importance: Importance.Max,
         priority: Priority.High,
         icon: "ic_notification",
+        color: Color.fromARGB(256, 78, 104, 160),
+        ledColor: Color.fromARGB(256, 78, 104, 160),
+        enableLights: true,
+        ledOnMs: 100,
+        ledOffMs: 100,
         visibility: NotificationVisibility.Public,
         groupKey: CANCELLATION_NOTIFICATION_GID,
         styleInformation: bigTextStyleInformation);
@@ -439,16 +447,39 @@ class NotificationHandler {
         platformChannelSpecifics,
         payload: convert.jsonEncode(notification));
   }
-  // Helper Methods
 
-  static String _getTimeToEvent(DateTime eventTime, DateTime notificationTIme){
-    Duration time = eventTime.difference(notificationTIme);
-    if(time.inHours > 1){
-      return "Event starts in ${time.inHours} hrs and "
-          "${time.inMinutes-(time.inHours*60)} min";
-    } else{
-      return "Event starts in ${time.inMinutes} mins";
-    }
+  static void showDebugNotification(
+      NotificationObject notification, String title, String description,
+      String bigDescription) async {
+    var bigTextStyleInformation = BigTextStyleInformation(
+        bigDescription,
+        htmlFormatBigText: true,
+        contentTitle: '<b>$title</b>',
+        htmlFormatContentTitle: true,
+        summaryText: '<b>Debug</b>',
+        htmlFormatSummaryText: true);
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+        'com.inthenou.app.channel.debug',
+        'Debug Notification',
+        'Notifications of Debug Alerts or Errors.',
+        importance: Importance.Low,
+        priority: Priority.Low,
+        playSound: false,
+        color: Color.fromARGB(256, 78, 104, 160),
+        ledColor: Color.fromARGB(256, 78, 104, 160),
+        enableLights: true,
+        ledOnMs: 100,
+        ledOffMs: 100,
+        icon: "ic_notification",
+        visibility: NotificationVisibility.Public,
+        styleInformation: bigTextStyleInformation);
+    var platformChannelSpecifics = NotificationDetails(
+        androidPlatformChannelSpecifics, null);
+
+    await flutterLocalNotificationsPlugin.show(
+        notification.id, title, description,
+        platformChannelSpecifics,
+        payload: convert.jsonEncode(notification));
   }
 
 }

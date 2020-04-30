@@ -86,10 +86,11 @@ class _ServiceViewState extends State<ServiceView>
                                       8.0, 4.0),
                                   child: RichText(
                                     text: TextSpan(
-                                        style: Theme.of(context).textTheme.subtitle1,
                                         children: <TextSpan>[
                                           TextSpan(
-                                              text: "Room: "
+                                            text: "Room: ",
+                                            style: Theme.of(context)
+                                                .textTheme.subtitle1,
                                           ),
                                           TextSpan(
                                               text: detailService.roomCode,

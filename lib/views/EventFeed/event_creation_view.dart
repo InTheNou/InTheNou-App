@@ -293,15 +293,16 @@ class _EventCreationViewState extends State<EventCreationView>
                                     borderSide: BorderSide(
                                         color: Theme.of(context).accentColor))),
                             autovalidate: _autoValidate,
+                            isExpanded: true,
                             hint: Text("Building *"),
                             disabledHint: Text("Building *",
                                 style: Theme.of(context).textTheme.subtitle1
                                     .copyWith(fontWeight: FontWeight.w200)),
                             value: _creationStore.selectedBuilding,
                             items: _creationStore.buildings.map((Building building) {
-                              return new DropdownMenuItem(
+                              return DropdownMenuItem(
                                 value: building,
-                                child: new Text(building.name),
+                                child: Text(building.name),
                               );
                             }).toList(),
                             onChanged: (value) => buildingSelectAction(value),

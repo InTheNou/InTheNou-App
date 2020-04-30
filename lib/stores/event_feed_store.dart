@@ -97,6 +97,15 @@ class EventFeedStore extends flux.Store{
       // Follow locally first just to show the change tot he user
       _modifyFollowStatus(event.value, true);
       trigger();
+      if(event.value.endDateTime.isBefore(DateTime.now())){
+        _dialogService.showDialog(
+            type: DialogType.Alert,
+            title: "Following an event that has ended",
+            description: "The event you are trying to Follow has eneded. You "
+                "can only Follow event that has not ended.",
+            primaryButtonTitle: "OK");
+        return;
+      }
       if(event.value.startDateTime.isBefore(DateTime.now())){
         _dialogService.showDialog(
             type: DialogType.Alert,
@@ -133,6 +142,16 @@ class EventFeedStore extends flux.Store{
       // Unfollow locally first just to show the change tot he user
       _modifyFollowStatus(event.value, false);
       trigger();
+      if(event.value.endDateTime.isBefore(DateTime.now())){
+        _dialogService.showDialog(
+            type: DialogType.Alert,
+            title: "Unfollowing an event that has ended",
+            description: "The event you are trying to Unfollow has eneded. "
+                "You can only Unfollow event that has not ended, as it has "
+                "been moved to your History.",
+            primaryButtonTitle: "OK");
+        return;
+      }
       if(event.value.startDateTime.isBefore(DateTime.now())){
         _dialogService.showDialog(
             type: DialogType.Alert,
@@ -169,6 +188,15 @@ class EventFeedStore extends flux.Store{
       // user to prevent them from dismissing a followed event.
       if(event.followed){
         _showDismissUnableDialog();
+        return;
+      }
+      if(event.endDateTime.isBefore(DateTime.now())){
+        _dialogService.showDialog(
+            type: DialogType.Alert,
+            title: "Dismissing an event that has ended",
+            description: "The event you are trying to Dismiss has eneded. "
+                "You can only Dismiss event that has not ended.",
+            primaryButtonTitle: "OK");
         return;
       }
       // Remove the event from the list of events for the Personal Feed

@@ -113,75 +113,79 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
   }
 
   Widget showBuildingsResults(List<Building> buildingsResults){
-    return ListView.builder(
-        itemCount: buildingsResults.length,
-        controller: _scrollController,
-        padding:const EdgeInsets.only(top: 8.0),
-        itemBuilder: (context, index){
-          Building building = buildingsResults[index];
-          return Card(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0)),
-            clipBehavior: Clip.antiAliasWithSaveLayer,
-            child: InkWell(
-              onTap: () {
-                Navigator.of(context).pushNamed("/infobase/building");
-                selectBuildingAction(building);
-              },
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  LoadingImage(
-                      imageURL: building.image,
-                      height: 120.0,
-                      width: 150.0
-                  ),
-                  const Padding(padding: EdgeInsets.only(left: 16.0)),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          building.commonName,
-                          maxLines: 2,
-                          style: Theme.of(context).textTheme.headline6,
-                          softWrap: true,
-                        ),
-                        const Padding(padding: EdgeInsets.only(top: 8.0)),
-                        Text(
-                          building.name,
-                          maxLines: 2,
-                          style: Theme.of(context).textTheme.subtitle1,
-                          softWrap: true,
-                        )
-                      ],
+    return Scrollbar(
+      child: ListView.builder(
+          itemCount: buildingsResults.length,
+          controller: _scrollController,
+          padding:const EdgeInsets.only(top: 8.0),
+          itemBuilder: (context, index){
+            Building building = buildingsResults[index];
+            return Card(
+              clipBehavior: Clip.antiAliasWithSaveLayer,
+              child: InkWell(
+                onTap: () {
+                  Navigator.of(context).pushNamed("/infobase/building");
+                  selectBuildingAction(building);
+                },
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    LoadingImage(
+                        imageURL: building.image,
+                        height: 120.0,
+                        width: 150.0
                     ),
-                  ),
-                ],
-              ),
-            )
-          );
-        });
+                    const Padding(padding: EdgeInsets.only(left: 16.0)),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            building.name,
+                            maxLines: 2,
+                            style: Theme.of(context).textTheme.headline6,
+                            softWrap: true,
+                          ),
+                          const Padding(padding: EdgeInsets.only(top: 8.0)),
+                          Text(
+                            building.commonName,
+                            maxLines: 2,
+                            style: Theme.of(context).textTheme.subtitle1,
+                            softWrap: true,
+                          )
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            );
+          }),
+    );
   }
 
   Widget showRoomsResults(List<Room> roomsResults){
-    return ListView.builder(
-        itemCount: roomsResults.length,
-        controller: _scrollController,
-        itemBuilder: (context, index){
-          Room room = roomsResults[index];
-          return RoomCard(room);
-        });
+    return Scrollbar(
+      child: ListView.builder(
+          itemCount: roomsResults.length,
+          controller: _scrollController,
+          itemBuilder: (context, index){
+            Room room = roomsResults[index];
+            return RoomCard(room);
+          }),
+    );
   }
 
   Widget showServicesResults(List<Service> servicesResults){
-    return ListView.builder(
-        itemCount: servicesResults.length,
-        controller: _scrollController,
-        itemBuilder: (context, index){
-          Service service = servicesResults[index];
-          return ServicesCard(service);
-        });
+    return Scrollbar(
+        child: ListView.builder(
+            itemCount: servicesResults.length,
+            controller: _scrollController,
+            itemBuilder: (context, index){
+              Service service = servicesResults[index];
+              return ServicesCard(service);
+            })
+    );
   }
 
   Widget _buildErrorWidget(String error){

@@ -3,6 +3,7 @@ import 'package:InTheNou/RouteGenerator.dart';
 import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/colors.dart';
 import 'package:InTheNou/assets/values.dart';
+import 'package:InTheNou/dialog_manager.dart';
 import 'package:InTheNou/dialog_service.dart';
 import 'package:InTheNou/start_up_view.dart';
 import 'package:flutter/material.dart';
@@ -111,7 +112,7 @@ class InTheNouApp extends StatelessWidget {
         ),
       ),
       onGenerateRoute: RouteGenerator.generateRoute,
-      home: StartUpView(),
+      home: DialogManager(child: StartUpView()),
       builder: (context, widget) {
         ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
           _reportError(errorDetails.exception, errorDetails.stack);

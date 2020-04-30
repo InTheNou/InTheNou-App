@@ -5,6 +5,7 @@ import 'package:InTheNou/dialog_service.dart';
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/models/website.dart';
 import 'package:InTheNou/stores/event_feed_store.dart';
+import 'package:InTheNou/views/widgets/cancelled_button.dart';
 import 'package:InTheNou/views/widgets/dismiss_button.dart';
 import 'package:InTheNou/views/widgets/follow_button.dart';
 import 'package:InTheNou/views/widgets/link_with_icon_widget.dart';
@@ -97,29 +98,11 @@ class _EventDetailViewState extends State<EventDetailView>
                       ),
                       child: LoadingImage(
                         imageURL: eventDetail.image,
-                        width: null,
-                        height: null,
+                        width: double.infinity,
+                        height: double.infinity,
                       ),
                     )
                 ),
-                //TODO:Remove this
-                actions: <Widget>[
-                  FlatButton(
-                    child: Text("Smart"),
-                    textColor: Colors.white,
-                    onPressed: (){
-                      NotificationHandler.doSmartNotification([eventDetail],
-                          []);
-                    },
-                  ),
-                  FlatButton(
-                    child: Text("Default"),
-                    textColor: Colors.white,
-                    onPressed: (){
-                      NotificationHandler.makeDummy(eventDetail);
-                    },
-                  )
-                ],
               ),
             ];
           },
@@ -164,10 +147,11 @@ class _EventDetailViewState extends State<EventDetailView>
                           ),
                           const Padding(padding: EdgeInsets.only(bottom: 8.0)),
                           Visibility(
-                            visible: eventDetail.status == "active" &&
-                                !eventDetail.dismissed,
+                            visible: eventDetail.status == "active" 
+                                && !eventDetail.dismissed 
+                                && eventDetail.endDateTime.isAfter(DateTime.now()),
                             child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 children: <Widget>[
                                   DismissButton(eventDetail, FeedType.Detail),
                                   FollowButton(eventDetail, FeedType.Detail),
@@ -177,21 +161,14 @@ class _EventDetailViewState extends State<EventDetailView>
                           Visibility(
                             visible: eventDetail.status != "active",
                             child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 children: <Widget>[
                                   SizedBox(
                                     width: 110,
                                   ),
                                   Padding(padding: EdgeInsets.only(
                                       left: 80.0)),
-                                  SizedBox(
-                                    width: 110,
-                                    child: FlatButton(
-                                        child: Text("CANCELLED"),
-                                        disabledColor: Colors.grey[200],
-                                        onPressed: null
-                                    ),
-                                  )
+                                  CancelledButton(eventDetail),
                                 ]
                             ),
                           ),

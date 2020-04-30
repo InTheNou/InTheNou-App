@@ -39,7 +39,8 @@ enum NotificationType{
   DefaultNotification,
   RecommendationNotification,
   Alert,
-  Cancellation
+  Cancellation,
+  Debug
 }
 
 // Used when converting from json received from database for itype

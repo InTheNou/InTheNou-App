@@ -11,8 +11,10 @@ class FollowButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 150,
+    return ConstrainedBox (
+      constraints: BoxConstraints(
+          minWidth: 150
+      ),
       child: FlatButton(
         child: Text(_event.followed ?
         "FOLLOWING":'FOLLOW'

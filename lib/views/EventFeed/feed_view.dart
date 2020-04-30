@@ -173,14 +173,16 @@ class GeneralFeedState extends State<FeedView>
                     )),
               );
             } else {
-              return  ListView.builder(
-                  key: ValueKey(widget.type),
-                  controller: _scrollController,
-                  padding:const EdgeInsets.only(bottom: 100.0),
-                  itemCount: events.data.length,
-                  itemBuilder: (context, index) {
-                    return EventCard(events.data[index], widget.type);
-                  }
+              return  Scrollbar(
+                child: ListView.builder(
+                    key: ValueKey(widget.type),
+                    controller: _scrollController,
+                    padding:const EdgeInsets.only(bottom: 100.0),
+                    itemCount: events.data.length,
+                    itemBuilder: (context, index) {
+                      return EventCard(events.data[index], widget.type);
+                    }
+                ),
               );
             }
           } else if(events.hasError){

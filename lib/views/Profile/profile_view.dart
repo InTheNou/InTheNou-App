@@ -25,6 +25,7 @@ class ProfileState extends State<ProfileView>
   void initState() {
     super.initState();
     _userStore = listenToStore(UserStore.userStoreToken);
+    refreshUserInfoAction();
   }
 
   @override

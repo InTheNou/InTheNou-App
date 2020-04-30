@@ -8,7 +8,7 @@ class TextWithIcon extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text(_text),
+      title: Text(_text, style: Theme.of(context).textTheme.subtitle1),
       leading: _icon,
       dense: true,
     );

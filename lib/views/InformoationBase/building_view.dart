@@ -50,7 +50,7 @@ class _BuildingViewState extends State<BuildingView>
                 250.0 : 0,
                 floating: true,
                 pinned: true,
-                title: Text(detailBuilding.commonName,
+                title: Text(detailBuilding.name,
                   style: Theme.of(context).textTheme.headline6.copyWith(
                       color: Theme.of(context).canvasColor
                   ),
@@ -75,8 +75,8 @@ class _BuildingViewState extends State<BuildingView>
                       ),
                       child: LoadingImage(
                         imageURL: detailBuilding.image,
-                        width: null,
-                        height: null,
+                        width: double.infinity,
+                        height: double.infinity,
                       ),
                     )
                 ),
@@ -187,10 +187,9 @@ class _BuildingViewState extends State<BuildingView>
                             physics: const NeverScrollableScrollPhysics(),
                             shrinkWrap: true,
                             padding: const EdgeInsets.all((0)),
-                            itemCount: detailBuilding.numFloors,
+                            itemCount: detailBuilding.floors.length,
                             itemBuilder: (context, index){
-                              Floor _floor = detailBuilding
-                                  .floors[index];
+                              Floor _floor = detailBuilding.floors[index];
                               return  InkWell(
                                 onTap: () => {
                                   Navigator.of(context).pushNamed

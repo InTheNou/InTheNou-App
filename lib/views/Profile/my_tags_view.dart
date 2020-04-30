@@ -87,47 +87,49 @@ class _MyTagsViewState extends State<MyTagsView>
   }
 
   Widget _buildResultsWidget(List<Tag> userTags) {
-    return ListView.builder(
-        padding:const EdgeInsets.only(bottom: 75.0),
-        itemCount: userTags.length,
-        itemBuilder: (context, index) {
-          Tag _tag = userTags[index];
-          return Card(
-              key: ValueKey(_tag.UID),
-              margin: EdgeInsets.only(top: 8.0),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    const Padding(padding: EdgeInsets.only(left: 8.0)),
-                    Expanded(
-                      child: Text(
-                        _tag.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Theme.of(context).primaryColor,
-                          fontSize: Theme.of(context).textTheme.headline6.fontSize,
-                          fontWeight: FontWeight.bold,
+    return Scrollbar(
+      child: ListView.builder(
+          padding:const EdgeInsets.only(bottom: 75.0),
+          itemCount: userTags.length,
+          itemBuilder: (context, index) {
+            Tag _tag = userTags[index];
+            return Card(
+                key: ValueKey(_tag.UID),
+                margin: EdgeInsets.only(top: 8.0),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      const Padding(padding: EdgeInsets.only(left: 8.0)),
+                      Expanded(
+                        child: Text(
+                          _tag.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Theme.of(context).primaryColor,
+                            fontSize: Theme.of(context).textTheme.headline6.fontSize,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                    Text(
-                      "Weight: ${_tag.weight}",
-                      style: Theme.of(context).textTheme.bodyText1,
-                      textAlign: TextAlign.start,
-                    ),
-                    const Padding(padding: EdgeInsets.only(left: 16.0)),
-                    IconButton(
-                      icon: Icon(Icons.delete),
-                      onPressed: () => removeTagAction(_tag),
-                    )
-                  ],
-                ),
-              )
-          );
-        });
+                      Text(
+                        "Weight: ${_tag.weight}",
+                        style: Theme.of(context).textTheme.bodyText1,
+                        textAlign: TextAlign.start,
+                      ),
+                      const Padding(padding: EdgeInsets.only(left: 16.0)),
+                      IconButton(
+                        icon: Icon(Icons.delete),
+                        onPressed: () => removeTagAction(_tag),
+                      )
+                    ],
+                  ),
+                )
+            );
+          }),
+    );
   }
 
   void _showAddTagDialog(){

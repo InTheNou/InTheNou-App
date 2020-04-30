@@ -71,6 +71,12 @@ class UserStore extends flux.Store{
 //           description: null);
 //     });
 
+    triggerOnAction(refreshUserInfoAction, (_){
+      _userRepo.getUserInfo(_user.UID).then((user) {
+        _user = user;
+      });
+      _account = _userRepo.getGoogleAccount();
+    });
     triggerOnAction(refreshFollowedAction, (_){
       _followedEvents = _userRepo.getFollowedEvents(0, PAGINATION_LENGTH);
     });
@@ -91,13 +97,15 @@ class UserStore extends flux.Store{
               "can't be undone.",
           primaryButtonTitle: "CONFIRM");
       if(response.result){
-        _eventRepo.cancelEvent(event).catchError((e){
+        var result = await _eventRepo.cancelEvent(event).catchError((e){
           _dialogService.showDialog(
               type: DialogType.Error,
               title: "Unable to Cancel Event",
               description: e.toString());
         });
-        refreshCreatedAction();
+        if(result){
+          refreshCreatedAction();
+        }
       }
     });
 
@@ -397,6 +405,7 @@ class UserStore extends flux.Store{
 
 }
 //Profile Actions
+final flux.Action refreshUserInfoAction = new flux.Action();
 final flux.Action refreshFollowedAction = new flux.Action();
 final flux.Action refreshHistoryAction = new flux.Action();
 final flux.Action refreshDismissedAction = new flux.Action();

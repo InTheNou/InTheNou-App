@@ -10,9 +10,9 @@ class MultiTextWithIcon extends StatelessWidget{
   Widget build(BuildContext context) {
     return Row(
       children: <Widget>[
-        const Padding(padding: EdgeInsets.only(left: 8.0)),
-        Icon(_icon),
         const Padding(padding: EdgeInsets.only(left: 16.0)),
+        Icon(_icon),
+        const Padding(padding: EdgeInsets.only(left: 32.0)),
         RichText(
           text: TextSpan(
             style: Theme.of(context).textTheme.subtitle1,

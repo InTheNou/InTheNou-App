@@ -237,22 +237,20 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
   Future onSelectNotification(String payload) async {
     notificationAppLaunchDetails =
     await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
-    if(notificationAppLaunchDetails.didNotificationLaunchApp){
-      NotificationObject notification =
-      NotificationObject.fromJson(jsonDecode(payload));
-      if (notification.type == NotificationType.SmartNotification) {
-        Navigator.of(context).pushNamed("/eventdetail",
-            arguments: int.parse(notification.payload));
-        return;
-      } else if (notification.type == NotificationType.DefaultNotification) {
-        Navigator.of(context).pushNamed("/eventdetail",
-            arguments: int.parse(notification.payload));
-        return;
-      } else if (notification.type == NotificationType.Cancellation) {
-        Navigator.of(context).pushNamed("/eventdetail",
-            arguments: int.parse(notification.payload));
-        return;
-      }
+    NotificationObject notification =
+    NotificationObject.fromJson(jsonDecode(payload));
+    if (notification.type == NotificationType.SmartNotification) {
+      Navigator.of(context).pushNamed("/eventdetail",
+          arguments: int.parse(notification.payload));
+      return;
+    } else if (notification.type == NotificationType.DefaultNotification) {
+      Navigator.of(context).pushNamed("/eventdetail",
+          arguments: int.parse(notification.payload));
+      return;
+    } else if (notification.type == NotificationType.Cancellation) {
+      Navigator.of(context).pushNamed("/eventdetail",
+          arguments: int.parse(notification.payload));
+      return;
     }
   }
 }

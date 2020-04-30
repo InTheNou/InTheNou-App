@@ -164,11 +164,8 @@ class Event {
   }
 
   /// Factory constructor to create Building entities from [json] object
-  /// from the API, to be used for the Recommendation functionality. The
-  /// [isFollowed] parameter is to bypass the 'itype' returned from the API
-  /// call.
-  factory Event.recommendationFromJson(Map<String, dynamic> json,
-      {bool isFollowed = false}) {
+  /// from the API, to be used for the Recommendation functionality.
+  factory Event.recommendationFromJson(Map<String, dynamic> json) {
     return Event.result(
         UID: json['eid'],
         tags: Tag.fromJsonToList(json["tags"])

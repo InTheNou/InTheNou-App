@@ -103,10 +103,10 @@ class BackgroundHandler {
 
     switch (taskId){
       case "flutter_background_fetch":
-        if(_prefs.getBool(SMART_NOTIFICATION_KEY)){
-          _prepareForSmartNotification();
-        }
-        break;
+//        if(_prefs.getBool(SMART_NOTIFICATION_KEY)){
+//          _prepareForSmartNotification();
+//        }
+//        break;
       case "com.inthenou.app.smart":
         if(_prefs.getBool(SMART_NOTIFICATION_KEY)){
           _prepareForSmartNotification();
@@ -154,6 +154,15 @@ class BackgroundHandler {
       return;
     });
     try{
+      if(_prefs.getBool(DEBUG_NOTIFICATION_KEY)){
+        NotificationHandler.showDebugNotification(NotificationObject(
+            id: SMART_ALERT_NOTIFICATION_ID,
+            payload: "",
+            time: DateTime.now(),
+            type: NotificationType.Debug
+        ), "Smart Notification", "Trying to check for smart notifications",
+            "");
+      }
       _prefs = await SharedPreferences.getInstance();
 
       // Gets all Smart Notifications that are scheduled already
@@ -162,15 +171,6 @@ class BackgroundHandler {
 
       // Calls the database to get all the events followed by the uer
       List<Event> _events = await _userRepo.getFollowedEvents(0,100000);
-      if(_prefs.getBool(DEBUG_NOTIFICATION_KEY)){
-        NotificationHandler.showAlertNotification(NotificationObject(
-            id: SMART_ALERT_NOTIFICATION_ID,
-            payload: "",
-            time: DateTime.now(),
-            type: NotificationType.Alert
-        ), "Smart Notification ", "Trying to Schedule Smart Notification "
-            "in background", "");
-      }
 
       // Decodes the json strings into a map with the NotificationObject fields
       // Also removes the followed events that have been scheduled already
@@ -213,16 +213,27 @@ class BackgroundHandler {
     _prefs = await SharedPreferences.getInstance();
 
     try{
+      if(_prefs.getBool(DEBUG_NOTIFICATION_KEY)){
+        NotificationHandler.showDebugNotification(NotificationObject(
+            id: CANCELLATION_ALERT_NOTIFICATION_ID,
+            payload: "",
+            time: DateTime.now(),
+            type: NotificationType.Debug
+        ), "Trying Cancellation", "Trying to check for cancelled events",
+            "");
+      }
       String lastDate = _prefs.getString(LAST_CANCELLATION_DATE_KEY);
       List<Event> cancelledEvents = await _eventRepo.getDeletedEvents(lastDate);
+      List<Event> followedEvents = List();
       if(cancelledEvents.length > 0){
-        List<Event> followedEvents = await _userRepo.getFollowedEvents(0,100000);
+        followedEvents = await _userRepo.getFollowedEvents(0,PAGINATION_LENGTH);
         followedEvents.retainWhere((fEvent) {
           return cancelledEvents.contains(fEvent);
         });
 
         int notificationID = _prefs.getInt(NOTIFICATION_ID_KEY);
         followedEvents.forEach((cancelled) {
+          NotificationHandler.cancelNotification(cancelled);
           NotificationHandler.showCancellationNotification(NotificationObject(
               id: notificationID,
               payload: cancelled.UID.toString(),
@@ -235,17 +246,19 @@ class BackgroundHandler {
         });
         _prefs.setInt(NOTIFICATION_ID_KEY, notificationID + followedEvents.length);
         _prefs.setString(LAST_CANCELLATION_DATE_KEY,
-            Utils.formatTimeStamp(DateTime.now()));
-      }
-      if(_prefs.getBool(DEBUG_NOTIFICATION_KEY)){
-        NotificationHandler.showAlertNotification(NotificationObject(
-            id: CANCELLATION_ALERT_NOTIFICATION_ID,
-            payload: "",
-            time: DateTime.now(),
-            type: NotificationType.Alert
-        ), "Trying Cancellation", "Cancellation results.",
-            cancelledEvents.isEmpty ? "No Events to cancel" :
-            cancelledEvents);
+            Utils.formatTimeStamp(DateTime.now().toUtc()));
+        if(followedEvents.length == 0){
+          if(_prefs.getBool(DEBUG_NOTIFICATION_KEY)){
+            NotificationHandler.showDebugNotification(NotificationObject(
+                id: CANCELLATION_ALERT_NOTIFICATION_ID,
+                payload: "",
+                time: DateTime.now(),
+                type: NotificationType.Debug
+            ), "Cancellation", "Cancellation results.",
+                "${cancelledEvents.length} cancelled events "
+                    "${followedEvents.length} were followed");
+          }
+        }
       }
     } catch(e){
       NotificationHandler.showAlertNotification(NotificationObject(
@@ -270,7 +283,6 @@ class BackgroundHandler {
 
     try{
       String lastDate = _prefs.getString(LAST_RECOMMENDATION_DATE_KEY);
-
       List<Event> newEvents = await _eventRepo.getNewEvents(lastDate);
       List<Tag> userTags = await _userRepo.getUserTags();
       List<Event> recommendedEvents = new List();
@@ -298,13 +310,14 @@ class BackgroundHandler {
         rec = rec + "eid= ${event.UID}, weight= $weight rec?= ${event.recommended}\n";
       });
       if(_prefs.getBool(DEBUG_NOTIFICATION_KEY)){
-        NotificationHandler.showAlertNotification(NotificationObject(
+        NotificationHandler.showDebugNotification(NotificationObject(
             id: RECOMMENDATION_NOTIFICATION_ID,
             payload: "",
             time: DateTime.now(),
-            type: NotificationType.Alert
+            type: NotificationType.Debug
         ), "Trying Recommendation", "Reccomendation results.",
-            rec.isEmpty ? "No Events to recommend" : rec);
+            "Reccomendation results: " +
+                (rec.isEmpty ? "No Events to recommend" : rec));
       }
 
       _eventRepo.requestRecommendation(newEvents);
@@ -321,8 +334,8 @@ class BackgroundHandler {
       }
 
       _prefs.setString(LAST_RECOMMENDATION_DATE_KEY,
-          Utils.formatTimeStamp(DateTime.now()));
-    } catch (e){
+          Utils.formatTimeStamp(DateTime.now().toUtc()));
+    } catch (e, stacktrace){
       NotificationHandler.showAlertNotification(NotificationObject(
           id: SMART_ALERT_NOTIFICATION_ID,
           payload: "",

@@ -16,8 +16,10 @@ class DismissButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Builder(
       builder: (BuildContext context) {
-        return SizedBox(
-          width: 110,
+        return ConstrainedBox (
+          constraints: BoxConstraints(
+            minWidth: 110
+          ),
           child: FlatButton(
             child: const Text('DISMISS'),
             textColor: Theme.of(context).errorColor,
@@ -36,7 +38,6 @@ class DismissButton extends StatelessWidget {
           ),
         );
       },
-
     );
   }
   void _showDismissDialog(Event eventDetail){
