@@ -1,3 +1,4 @@
+import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/models/building.dart';
 import 'package:InTheNou/models/coordinate.dart';
 import 'package:InTheNou/models/service.dart';
@@ -26,8 +27,8 @@ class Room {
         _createAbbreviation(b.abbreviation, json['rcode']),
         b.name,
         json['rfloor'],
-        json['rdescription'],
-        json['rdept'],
+        Utils.fixCapitalization(json['rdescription']),
+        Utils.fixCapitalization(json['rdept']),
         json['roccupancy'],
         json['rcustodian'],
         Coordinate.fromHJson(json)

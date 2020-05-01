@@ -79,16 +79,16 @@ class UserStore extends flux.Store{
       _account = _userRepo.getGoogleAccount();
     });
     triggerOnAction(refreshFollowedAction, (_){
-      _followedEvents = _userRepo.getFollowedEvents(0, PAGINATION_LENGTH);
+      _followedEvents = _userRepo.getFollowedEvents(0, PAGINATION_GET_ALL);
     });
     triggerOnAction(refreshHistoryAction, (_){
-      _historyEvents = _userRepo.getFEventsHistory(0, PAGINATION_LENGTH);
+      _historyEvents = _userRepo.getFEventsHistory(0, PAGINATION_GET_ALL);
     });
     triggerOnAction(refreshDismissedAction, (_){
-      _dismissedEvents = _userRepo.getDismissedEvents(0, PAGINATION_LENGTH);
+      _dismissedEvents = _userRepo.getDismissedEvents(0, PAGINATION_GET_ALL);
     });
     triggerOnAction(refreshCreatedAction, (_){
-      _createdEvents = _userRepo.getCreatedEvents(0, PAGINATION_LENGTH);
+      _createdEvents = _userRepo.getCreatedEvents(0, PAGINATION_GET_ALL);
     });
     triggerOnAction(cancelEventAction, (Event event) async{
       DialogResponse response = await _dialogService.showDialog(

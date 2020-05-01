@@ -226,7 +226,7 @@ class BackgroundHandler {
       List<Event> canceledEvents = await _eventRepo.getDeletedEvents(lastDate);
       List<Event> followedEvents = List();
       if(canceledEvents.length > 0){
-        followedEvents = await _userRepo.getFollowedEvents(0,PAGINATION_LENGTH);
+        followedEvents = await _userRepo.getFollowedEvents(0,PAGINATION_GET_ALL);
         followedEvents.retainWhere((fEvent) {
           return canceledEvents.contains(fEvent);
         });

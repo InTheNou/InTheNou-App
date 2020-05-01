@@ -1,3 +1,4 @@
+import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/models/floor.dart';
 import 'package:InTheNou/models/room.dart';
 
@@ -62,8 +63,8 @@ class Building {
     return Building(
       json['bid'],
       json['babbrev'],
-      json['bname'].trim(),
-      json['bcommonname'],
+      Utils.fixCapitalization(json['bname']),
+      Utils.fixCapitalization(json['bcommonname']),
       json['numfloors'],
       Floor.fromJsonToList(json['distinctfloors']),
       json['btype'],
@@ -77,8 +78,8 @@ class Building {
     return Building.result(
       UID: json['bid'],
       abbreviation: json['babbrev'],
-      name: json['bname'],
-      commonName: json['bcommonname'],
+      name: Utils.fixCapitalization(json['bname']),
+      commonName: Utils.fixCapitalization(json['bcommonname']),
       image: json['photourl'],
     );
   }

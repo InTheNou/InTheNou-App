@@ -359,6 +359,25 @@ class Utils {
 
   }
 
+  static String fixCapitalization(String input){
+    if(input ==  null){
+      return "";
+    }
+    String output = "";
+    List<String> words = input.trim().split(" ");
+    if(words.length>0){
+      words.forEach((element) {
+        if(element.length == 1){
+          output =  output + element.toLowerCase() + " ";
+        } else{
+          output = output + element.substring(0,1).toUpperCase() +
+              element.substring(1).toLowerCase() + " ";
+        }
+      });
+    }
+    return output;
+  }
+
   static void clearCache() async{
     final Directory tempDir = await getTemporaryDirectory();
 

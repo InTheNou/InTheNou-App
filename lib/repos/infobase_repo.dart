@@ -22,9 +22,10 @@ class InfoBaseRepo {
   ///
   /// Database Errors are caught by Dio and throw a [DioError] which is
   /// traduced to a proper error with [Utils.handleDioError].
-  Future<List<Building>> getAllBuildings() async{
+  Future<List<Building>> getAllBuildings(int skipBuildings, int numBuildings) async{
     try{
-      Response response = await apiConnection.dio.get("/App/Buildings/offset=0/limit=1000");
+      Response response = await apiConnection.dio.get
+        ("/App/Buildings/offset=$skipBuildings/limit=$numBuildings");
       List<Building> buildingResults = new List();
 
       if(response.data != null){

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 class RoomCard extends StatelessWidget {
 
   final Room _room;
-  RoomCard(this._room);
+  RoomCard(this._room): super(key: ValueKey(_room));
 
   @override
   Widget build(BuildContext context) {
@@ -29,15 +29,17 @@ class RoomCard extends StatelessWidget {
                       fontWeight: FontWeight.bold
                     ),
                   ),
-                  const Padding(padding: EdgeInsets.only(top: 4.0)),
+                  const Padding(padding: EdgeInsets.only(top: 8.0)),
                   Text(
                     _room.code,
                     style: Theme.of(context).textTheme.headline6,
                   ),
-                  const Padding(padding: EdgeInsets.only(top: 8.0)),
+                  const Padding(padding: EdgeInsets.only(top: 16.0)),
                   Text(
                     _room.description,
                     style: Theme.of(context).textTheme.subtitle1,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
                   )
                 ],
               ),

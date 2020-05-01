@@ -111,7 +111,7 @@ class EventCreationStore extends flux.Store {
       }
     });
     triggerOnAction(getBuildingsAction, (_) async{
-      _infoBaseRepo.getAllBuildings().then((buildings){
+      _infoBaseRepo.getAllBuildings(0, PAGINATION_GET_ALL).then((buildings){
         _buildings = buildings;
         trigger();
       }).catchError((e){

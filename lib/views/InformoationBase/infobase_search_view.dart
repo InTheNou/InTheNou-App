@@ -87,7 +87,8 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
     return FutureBuilder(
       future: dataToShow,
       builder: (BuildContext context, AsyncSnapshot<dynamic> results) {
-        if(results.connectionState == ConnectionState.waiting){
+        if(!_infoBaseStore.isRoomPaginating &&
+            results.connectionState == ConnectionState.waiting){
           return _buildLoadingWidget();
         }
         if(results.hasData){
@@ -173,15 +174,54 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
   Widget showRoomsResults(List<Room> roomsResults){
     return Scrollbar(
       child: RefreshIndicator(
-        onRefresh: () => reloadSearch(),
-        child: ListView.builder(
-            physics: AlwaysScrollableScrollPhysics(),
-            itemCount: roomsResults.length,
-            controller: _scrollController,
-            itemBuilder: (context, index){
-              Room room = roomsResults[index];
-              return RoomCard(room);
-            }),
+        onRefresh: () => reloadSearchAction(InfoBaseType.Room),
+        child: NotificationListener<ScrollNotification>(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Flexible(
+                  child: ListView.custom(
+                    key: ValueKey(InfoBaseType.Room),
+                    controller: _scrollController,
+                    shrinkWrap: true,
+                    padding: EdgeInsets.only(bottom: 75),
+                    childrenDelegate:
+                    SliverChildBuilderDelegate((BuildContext context, int index) {
+                      Room room = roomsResults[index];
+                      return RoomCard(room);
+                    },
+                        childCount: roomsResults.length,
+                        findChildIndexCallback: (Key key) {
+                          final ValueKey valueKey = key;
+                          final Room data = valueKey.value;
+                          return roomsResults.indexOf(data);
+                        }
+                    ),
+                  ),
+                ),
+                Container(
+                  height: _infoBaseStore.isRoomPaginating ? 75 : 0,
+                  color: Colors.transparent,
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              ],
+            ),
+          ),
+          onNotification: (ScrollNotification scrollInfo) {
+            if (!_infoBaseStore.isRoomPaginating &&
+                roomsResults.length % PAGINATION_LENGTH == 0 &&
+                scrollInfo.metrics.pixels >
+                    scrollInfo.metrics.maxScrollExtent-150) {
+              _infoBaseStore.isRoomPaginating = true;
+              paginateInfoBaseAction(widget.searchType);
+              return true;
+            }
+            return false;
+          },
+        )
       ),
     );
   }
@@ -189,7 +229,7 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
   Widget showServicesResults(List<Service> servicesResults){
     return Scrollbar(
         child: RefreshIndicator(
-          onRefresh: () => reloadSearch(),
+          onRefresh: () => reloadSearchAction(),
           child: ListView.builder(
               itemCount: servicesResults.length,
               controller: _scrollController,

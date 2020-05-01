@@ -1,4 +1,5 @@
 import 'package:InTheNou/assets/values.dart';
+import 'package:InTheNou/dialog_service.dart';
 import 'package:InTheNou/models/building.dart';
 import 'package:InTheNou/models/floor.dart';
 import 'package:InTheNou/models/room.dart';
@@ -28,11 +29,17 @@ class InfoBaseStore extends flux.Store{
   bool _isRoomSearching = false;
   bool _isServiceSearching = false;
 
+  bool isBuildingPaginating = false;
+  bool isRoomPaginating = false;
+  bool isServicePaginating = false;
+
   String _buildingSearchKeyword;
   String _roomSearchKeyword;
   String _serviceSearchKeyword;
 
   InfoBaseRepo _infoBaseRepo = new InfoBaseRepo();
+
+  DialogService _dialogService = DialogService();
 
   InfoBaseStore() {
     triggerOnAction(searchInfoBaseAction, (MapEntry<InfoBaseType, String> search) {
@@ -43,7 +50,7 @@ class InfoBaseStore extends flux.Store{
           break;
         case InfoBaseType.Room:
           _roomSearchKeyword = search.value;
-          _searchRooms(search.value);
+          _roomsResults = _searchRooms(search.value,0,PAGINATION_LENGTH);
           break;
         case InfoBaseType.Service:
           _serviceSearchKeyword = search.value;
@@ -64,21 +71,74 @@ class InfoBaseStore extends flux.Store{
           break;
       }
     });
-    triggerOnAction(reloadSearch, (InfoBaseType type) {
+    triggerOnAction(reloadSearchAction, (InfoBaseType type) {
       switch (type) {
         case InfoBaseType.Building:
           _buildingsResults = _infoBaseRepo.searchBuildings(
               _buildingSearchKeyword,0, PAGINATION_LENGTH);
           break;
         case InfoBaseType.Room:
-          _searchRooms(_roomSearchKeyword);
+          if(_roomSearchKeyword != null && _roomSearchKeyword.isNotEmpty){
+            isRoomPaginating = false;
+            _roomsResults = _searchRooms(_roomSearchKeyword,0,PAGINATION_LENGTH);
+          }
           break;
         case InfoBaseType.Service:
-          _servicesResults = _infoBaseRepo.searchServices(
-              _serviceSearchKeyword, 0, PAGINATION_LENGTH);
+          if(_serviceSearchKeyword != null && _serviceSearchKeyword.isNotEmpty){
+            _servicesResults = _infoBaseRepo.searchServices(
+                _serviceSearchKeyword, 0, PAGINATION_LENGTH);
+          }
           break;
       }
     });
+    triggerOnAction(paginateInfoBaseAction, (InfoBaseType type) async{
+      try{
+        switch (type) {
+          case InfoBaseType.Building:
+            List<Building> buildings = await _buildingsResults;
+            if(_buildingSearchKeyword == null || _buildingSearchKeyword.isEmpty){
+              _infoBaseRepo.getAllBuildings(buildings.length, PAGINATION_LENGTH)
+                  .then((newBuildings) {
+                buildings.addAll(newBuildings);
+                _buildingsResults = Future.value(buildings);
+              });
+            } else {
+              _infoBaseRepo.searchBuildings(_buildingSearchKeyword,
+                  buildings.length, PAGINATION_LENGTH).then((newBuildings) {
+                buildings.addAll(newBuildings);
+                _buildingsResults = Future.value(buildings);
+              });
+            }
+            break;
+          case InfoBaseType.Room:
+            var rooms = await _roomsResults;
+            _searchRooms(_roomSearchKeyword, rooms.length, PAGINATION_LENGTH)
+                .then((newRooms) {
+              trigger();
+              rooms.addAll(newRooms);
+              _roomsResults = Future.value(rooms);
+              Future.delayed(Duration(milliseconds: 100)).then((_){
+                isRoomPaginating = false;
+              });
+            });
+            break;
+          case InfoBaseType.Service:
+            var services = await _servicesResults;
+            _infoBaseRepo.searchServices(_serviceSearchKeyword, services.length,
+                PAGINATION_LENGTH).then((newServices) {
+              services.addAll(newServices);
+              _servicesResults = Future.value(services);
+            });
+            break;
+        }
+      } catch (e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Getting more Results ",
+            description: e.toString());
+      }
+    });
+
     triggerOnAction(clearInfoBaseKeywordAction, (InfoBaseType searching) {
       switch (searching) {
         case InfoBaseType.Building:
@@ -93,7 +153,7 @@ class InfoBaseStore extends flux.Store{
       }
     });
     triggerOnAction(getAllBuildingsAction, (_) {
-      _buildingsResults = _infoBaseRepo.getAllBuildings();
+      _buildingsResults = _infoBaseRepo.getAllBuildings(0, PAGINATION_LENGTH);
     });
 
     triggerOnAction(selectBuildingAction, (Building building) async {
@@ -152,17 +212,18 @@ class InfoBaseStore extends flux.Store{
     });
   }
 
-  void _searchRooms(String code){
+  Future<List<Room>> _searchRooms(String code, int skipRooms, int numRooms){
     if(code.contains(RegExp(r"^\b[a-zA-Z]{1,2}-\d{1,3}[a-zA-Z]?$"))){
       var codeQuery = RegExp(
           r"(?<abrev>\b[a-zA-Z]{1,2})(?<dash>-)(?<code>\d{1,3}[a-zA-Z]?)")
           .firstMatch(code);
       String abrev = codeQuery.namedGroup("abrev");
       String rCode = codeQuery.namedGroup("code");
-      _roomsResults = _infoBaseRepo.searchRoomsByCode(abrev, rCode, 0, PAGINATION_LENGTH);
+      return _infoBaseRepo.searchRoomsByCode(abrev, rCode, skipRooms, numRooms);
     }
     else{
-      _roomsResults = _infoBaseRepo.searchRoomsByKeyword(code, 0, PAGINATION_LENGTH);
+      return _roomsResults = _infoBaseRepo.searchRoomsByKeyword(code,
+          skipRooms, numRooms);
     }
   }
 
@@ -207,7 +268,9 @@ final flux.Action<MapEntry<InfoBaseType, String>> searchInfoBaseAction = new
   flux.Action();
 final flux.Action<MapEntry<InfoBaseType, bool>> setSearchingAction = new
   flux.Action();
-final flux.Action<InfoBaseType> reloadSearch = new flux.Action();
+final flux.Action<InfoBaseType> reloadSearchAction = new flux.Action();
+final flux.Action<InfoBaseType> paginateInfoBaseAction = new flux.Action();
+
 final flux.Action<InfoBaseType> clearInfoBaseKeywordAction = new flux.Action();
 final flux.Action getAllBuildingsAction = new flux.Action();
 final flux.Action<Building> selectBuildingAction = new flux.Action();

@@ -33,16 +33,17 @@ class ServicesCard extends StatelessWidget {
                         fontWeight: FontWeight.bold
                     ),
                   ),
-                  const Padding(padding: EdgeInsets.only(top: 4.0)),
+                  const Padding(padding: EdgeInsets.only(top: 8.0)),
                   Text(
                     _service.name,
                     style: Theme.of(context).textTheme.headline6,
                   ),
-                  const Padding(padding: EdgeInsets.only(top: 8.0)),
+                  const Padding(padding: EdgeInsets.only(top: 16.0)),
                   Text(
                     _service.description,
                     style: Theme.of(context).textTheme.subtitle2,
                     overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
                   )
                 ],
               ),

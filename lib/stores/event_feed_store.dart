@@ -44,7 +44,7 @@ class EventFeedStore extends flux.Store{
         _personalSearchKeyword = search.value;
         try{
           _personalSearch = _eventsRepo.searchPerEvents(search.value,0,
-              PAGINATION_LENGTH);
+              PAGINATION_GET_ALL);
         } catch(e){
           _personalSearch = Future.error(e);
         }
@@ -52,7 +52,7 @@ class EventFeedStore extends flux.Store{
         _generalSearchKeyword = search.value;
         try{
           _generalSearch = _eventsRepo.searchGenEvents(search.value,0,
-              PAGINATION_LENGTH);
+              PAGINATION_GET_ALL);
         } catch(e){
           _generalSearch = Future.error(e);
         }
@@ -261,9 +261,9 @@ class EventFeedStore extends flux.Store{
 
   Future _getAllEvents(FeedType feed) async{
     if (feed == FeedType.PersonalFeed) {
-      _personalSearch = _eventsRepo.getPerEvents(0, PAGINATION_LENGTH);
+      _personalSearch = _eventsRepo.getPerEvents(0, PAGINATION_GET_ALL);
     } else {
-      _generalSearch = _eventsRepo.getGenEvents(0, PAGINATION_LENGTH);
+      _generalSearch = _eventsRepo.getGenEvents(0, PAGINATION_GET_ALL);
     }
   }
 

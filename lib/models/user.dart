@@ -62,6 +62,4 @@ class User {
   String toString() {
     return 'User{_UID: $_UID, _firstName: $_firstName, _fullName: $_fullName, _email: $_email, _role: $_role, _tags: $_tags, _userPrivilege: $_userPrivilege, photo: $photo}';
   }
-
-
 }
