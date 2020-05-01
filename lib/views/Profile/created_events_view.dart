@@ -1,7 +1,6 @@
-import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/event.dart';
-import 'package:InTheNou/stores/event_feed_store.dart';
 import 'package:InTheNou/stores/user_store.dart';
+import 'package:InTheNou/views/widgets/cancel_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
@@ -22,6 +21,7 @@ class _CreatedEventsViewState extends State<CreatedEventsView>
   void initState() {
     super.initState();
     _userStore = listenToStore(UserStore.userStoreToken);
+    refreshCreatedAction();
   }
 
   @override
@@ -29,142 +29,132 @@ class _CreatedEventsViewState extends State<CreatedEventsView>
     return Scaffold(
       appBar: AppBar(
         title: Text("Created Events"),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => refreshCreatedAction(),
+          ),
+        ],
       ),
-      body: buildBody(),
+        body:  FutureBuilder(
+          future: _userStore.createdEvents,
+          builder: (context, AsyncSnapshot<List<Event>> createdEvents) {
+
+            if(createdEvents.connectionState == ConnectionState.waiting){
+              return _buildLoadingWidget();
+            }
+            if(createdEvents.hasError){
+              return _buildErrorWidget(createdEvents.error);
+            } else if (createdEvents.hasData){
+              return _buildResultsWidget(createdEvents.data);
+            } else {
+              return _buildLoadingWidget();
+            }
+          },
+        )
     );
   }
 
-  Widget buildBody(){
-    if(_userStore.isCreatedLoading){
-      return Center(
-        child: CircularProgressIndicator(),
-      );
-    } else {
-      if(_userStore.createdEventError !=null){
-        showErrorDialog(_userStore.createdEventError);
-      }
-      return ListView.builder(
-          itemCount: _userStore.createdEvents.length,
-          itemBuilder: (context, index){
-            Event _event = _userStore.createdEvents[index];
-            return Card(
-                key: ValueKey(_event.UID+10),
-                margin: EdgeInsets.only(top: 8.0),
-                child: InkWell(
-                  onTap: () {
-                    Navigator.of(context).pushNamed(
-                        '/eventdetail',
-                        arguments: _event.UID
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 16.0, bottom: 8.0, left:
-                    8.0, right: 8.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Expanded(
-                          flex: 2,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                _event.title,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: Theme.of(context).primaryColor,
-                                  fontSize: Theme.of(context).textTheme.headline6.fontSize,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const Padding(padding: EdgeInsets.only(bottom: 4.0)),
-                              Text(
-                                  _event.getDurationString(),
-                                  style: Theme.of(context).textTheme.bodyText1
-                              ),
-                              const Padding(padding: EdgeInsets.only(bottom: 8.0)),
-                              Text(
-                                  _event.description,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context).textTheme.subtitle2
-                              ),
-                              const Padding(padding: EdgeInsets.only(bottom: 8.0)),
-                              Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: <Widget>[
-                                    ButtonTheme(
-                                        minWidth: 120.0,
-                                        child: RaisedButton(
-                                            child: Text("CANCEL"),
-                                            color: Theme.of(context).accentColor,
-                                            textColor: Theme.of(context).canvasColor,
-                                            onPressed: () =>
-                                                showCancelConfirmation(context,
-                                                    _event)
-                                        )
-                                    )
-                                  ]
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-            );
-          });
-    }
-  }
-
-  Future showErrorDialog(String errorText) async {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await showDialog<String>(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-          title: const Text('Error'),
-          content: Text(errorText),
-          actions: <Widget>[
-            FlatButton(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                clearErrorAction(FeedType.PersonalFeed);
-              },
+  Widget _buildErrorWidget(String error) {
+    return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(error,
+                  style: Theme.of(context).textTheme.headline5
+              ),
             ),
           ],
-        ),
-      );
-    });
+        ));
   }
 
-  void showCancelConfirmation(BuildContext context, Event _event){
-    showDialog(context: context,
-      barrierDismissible: true,
-      builder: (_){
-        return AlertDialog(
-          title: Text(
-              "Event Cancellation"
-          ),
-          content: Text(
-            "Are you sure you want to cancel this event? \nThis action "
-                "can't be undone."
-          ),
-          actions: <Widget>[
-            FlatButton(
-              child: Text("CONFIRM"),
-              textColor: Theme.of(context).accentColor,
-              onPressed: () {
-                Navigator.of(context).pop();
-                cancelEventAction(_event);
-                refreshCreatedAction();
-              },
-            )
+  Widget _buildLoadingWidget() {
+    return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+                width: 100,
+                height: 100,
+                child: CircularProgressIndicator()),
           ],
-        );
-      }
+        ));
+  }
+
+  Widget _buildResultsWidget(List<Event> createdEvents) {
+    return Scrollbar(
+      child: RefreshIndicator(
+        onRefresh: () => refreshCreatedAction(),
+        child: ListView.builder(
+            itemCount: createdEvents.length,
+            itemBuilder: (context, index){
+              Event _event = createdEvents[index];
+              return Card(
+                  key: ValueKey(_event.UID),
+                  margin: EdgeInsets.only(top: 8.0),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.of(context).pushNamed('/eventdetail',
+                          arguments: _event.UID
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 16.0, bottom: 8.0, left:
+                      8.0, right: 8.0),
+                      child: Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  _event.title,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context).textTheme.headline6.copyWith(
+                                    color: Theme.of(context).brightness == Brightness.dark ?
+                                      Theme.of(context).primaryColorLight :
+                                      Theme.of(context).primaryColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const Padding(padding: EdgeInsets.only(bottom: 4.0)),
+                                Text(
+                                    _event.getDurationString(),
+                                    style: Theme.of(context).textTheme.bodyText1
+                                ),
+                                const Padding(padding: EdgeInsets.only(bottom: 8.0)),
+                                Text(
+                                    _event.description,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: Theme.of(context).textTheme.subtitle2
+                                ),
+                                const Padding(padding: EdgeInsets.only(bottom: 8.0)),
+                                Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: <Widget>[
+                                      Visibility(
+                                          visible:
+                                          (_event.endDateTime.isAfter(DateTime.now())
+                                              && _event.status == "active") ||
+                                              _event.status == "deleted",
+                                          child: CancelButton(_event),
+                                      ),
+                                    ]
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+              );
+            }),
+      ),
     );
   }
 

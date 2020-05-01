@@ -25,21 +25,59 @@ class _FloorViewState extends State<FloorView>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_infoBaseStore.selectedFloor.floorName + " Floor"),
-      ),
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            child: ListView.builder(
-                itemCount: _infoBaseStore.roomsInBuilding.length,
-                itemBuilder: (context, index){
-                  Room _room = _infoBaseStore.roomsInBuilding[index];
-                  return RoomCard(_room);
-                }),
-          )
-        ],
-      )
+        appBar: AppBar(
+          title: Text(_infoBaseStore.selectedFloor.floorName),
+        ),
+        body: FutureBuilder(
+          future: _infoBaseStore.roomsInBuilding,
+          builder: (BuildContext context, AsyncSnapshot<dynamic> roomsInBuilding) {
+            if(roomsInBuilding.hasData){
+              return _buildBody(roomsInBuilding.data);
+            }
+            else if(roomsInBuilding.hasError){
+              return _buildErrorWidget(roomsInBuilding.error.toString());
+            }
+            return _buildLoadingWidget();
+          },
+        )
+    );
+
+  }
+
+  Widget _buildBody(List<Room> roomsInBuilding){
+    return ListView.builder(
+        itemCount: roomsInBuilding.length,
+        itemBuilder: (context, index){
+          Room _room = roomsInBuilding[index];
+          return RoomCard(_room);
+        }
     );
   }
+
+  Widget _buildErrorWidget(String error) {
+    return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(error,
+                  style: Theme.of(context).textTheme.headline5
+              ),
+            ),
+          ],
+        )
+    );
+  }
+
+  Widget _buildLoadingWidget(){
+    return Center(
+      child: Container(
+        height: 100,
+        width: 100,
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+
 }

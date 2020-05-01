@@ -27,7 +27,10 @@ class ServicesCard extends StatelessWidget {
                   Text(
                     _service.roomCode,
                     style: Theme.of(context).textTheme.bodyText2.copyWith(
-                        color: Theme.of(context).accentColor
+                        color: Theme.of(context).brightness == Brightness.dark ?
+                          Theme.of(context).primaryColorLight :
+                          Theme.of(context).primaryColor,
+                        fontWeight: FontWeight.bold
                     ),
                   ),
                   const Padding(padding: EdgeInsets.only(top: 4.0)),
@@ -45,7 +48,7 @@ class ServicesCard extends StatelessWidget {
               ),
             )
         )
-    );;
+    );
   }
 
 }

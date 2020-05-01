@@ -1,43 +1,77 @@
+import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/coordinate.dart';
 import 'package:InTheNou/models/floor.dart';
+import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Utils {
 
   static String feedTypeString(FeedType feedType) =>
-      feedType == FeedType.PersonalFeed ? "PersonalFeed" : "GeneralFeed";
+      feedType == FeedType.PersonalFeed ? "Personal Feed" : "General Feed";
 
-  static String infoBaseSearchString(InfoBaseSearchType type) =>
-      type == InfoBaseSearchType.Building ? "Buildings Search" :
-      type == InfoBaseSearchType.Room ? "Rooms Search" : "Services Search";
+  static String infoBaseSearchString(InfoBaseType type) =>
+      type == InfoBaseType.Building ? "Buildings Search" :
+      type == InfoBaseType.Room ? "Rooms Search" : "Services Search";
 
   static String telephoneTypeString(PhoneType telephoneType) =>
       telephoneType == PhoneType.E ? "E" :
       telephoneType == PhoneType.F ? "F" :
       telephoneType == PhoneType.L ? "L" : "M";
+  static PhoneType telephoneTypeFromString(String privilege) =>
+      privilege == "E" ? PhoneType.E :
+      privilege == "F" ? PhoneType.F:
+      privilege == "L" ? PhoneType.L:
+      PhoneType.M;
 
   static String userPrivilegeString(UserPrivilege type) =>
       type == UserPrivilege.User ? "User" :
       type == UserPrivilege.EventCreator ? "Event Creator" :
       type == UserPrivilege.Moderator ? "Moderator" : "Administrator";
+  static int userPrivilegeKey(UserPrivilege type) =>
+      type == UserPrivilege.User ? 1 :
+      type == UserPrivilege.EventCreator ? 2 :
+      type == UserPrivilege.Moderator ? 3 : 4;
+  static UserPrivilege userPrivilegeFromInt(int privilege) =>
+      privilege == 1 ? UserPrivilege.User :
+      privilege == 2 ? UserPrivilege.EventCreator:
+      privilege == 3 ? UserPrivilege.Moderator:
+      UserPrivilege.Administrator;
 
   static String userRoleString(UserRole type) =>
       type == UserRole.Student ? "Student" :
       type == UserRole.TeachingPersonnel ? "Teaching Personnel" :
       "Non Teaching Personnel";
+  static UserRole userRoleFromString(String role) =>
+      role ==  "Student" ? UserRole.Student :
+      role == "Teaching Personnel" ? UserRole.TeachingPersonnel:
+      UserRole.NonTeachingPersonnel;
 
   static String notificationTypeString(NotificationType type) =>
       type == NotificationType.SmartNotification ? "SmartNotification" :
       type == NotificationType.DefaultNotification ? "DefaultNotification" :
-      "RecommendationNotification";
+      type == NotificationType.RecommendationNotification ?
+      "RecommendationNotification" : "Cancellation";
 
   static NotificationType notificationTypeFromString(String type) =>
       type == "SmartNotification" ? NotificationType.SmartNotification :
       type == "DefaultNotification" ? NotificationType.DefaultNotification :
-      NotificationType.RecommendationNotification;
+      type == "RecommendationNotification" ?
+      NotificationType.RecommendationNotification :
+      NotificationType.Cancellation;
+
+  static String interactionTypeToString(InteractionType type) =>
+      type == InteractionType.Following  ? "following" :
+      type == InteractionType.unfollowed  ? "unfollowed" :
+      "dismissed";
+
+  static String recommendationTypeFromString(RecommendationType type) =>
+      type == RecommendationType.R  ? "R" : "N";
 
   ///  Check if shared preferences has been setup, if not then set the default
   /// values
@@ -59,18 +93,37 @@ class Utils {
       prefs.setString(LAST_RECOMMENDATION_DATE_KEY,
           formatTimeStamp(DateTime(2020)));
     }
+    if(!prefs.containsKey(LAST_CANCELLATION_DATE_KEY)) {
+      prefs.setString(LAST_CANCELLATION_DATE_KEY,
+          formatTimeStamp(DateTime(2020)));
+    }
+
+    if(!prefs.containsKey(RECOMMENDATION_INTERVAL_KEY)){
+      prefs.setInt(RECOMMENDATION_INTERVAL_KEY, 120);
+    }
+    if(!prefs.containsKey(CANCELLATION_INTERVAL_KEY)){
+      prefs.setInt(CANCELLATION_INTERVAL_KEY, 120);
+    }
+    if(!prefs.containsKey(SMART_INTERVAL_KEY)){
+      prefs.setInt(SMART_INTERVAL_KEY, 15);
+    }
+    if(!prefs.containsKey(DEBUG_NOTIFICATION_KEY)){
+      prefs.setBool(DEBUG_NOTIFICATION_KEY, false);
+    }
   }
 
   static void clearNotificationsPrefs() async{
     SharedPreferences _prefs = await SharedPreferences.getInstance();
-    _prefs = await SharedPreferences.getInstance();
     _prefs.setStringList(SMART_NOTIFICATION_LIST, null);
     _prefs.setStringList(DEFAULT_NOTIFICATION_LIST, null);
+    _prefs.setString(LAST_RECOMMENDATION_DATE_KEY,
+        formatTimeStamp(DateTime(2020)));
+    _prefs.setString(LAST_CANCELLATION_DATE_KEY,
+        formatTimeStamp(DateTime(2020)));
   }
 
   static void clearAllPreferences() async{
     SharedPreferences _prefs = await SharedPreferences.getInstance();
-    _prefs = await SharedPreferences.getInstance();
     _prefs.remove(DEFAULT_NOTIFICATION_KEY);
     _prefs.remove(SMART_NOTIFICATION_KEY);
     _prefs.remove(USER_SESSION_KEY);
@@ -79,6 +132,11 @@ class Utils {
     _prefs.remove(DEFAULT_NOTIFICATION_LIST);
     _prefs.remove(NOTIFICATION_ID_KEY);
     _prefs.remove(LAST_RECOMMENDATION_DATE_KEY);
+    _prefs.remove(LAST_CANCELLATION_DATE_KEY);
+    _prefs.remove(USER_KEY);
+    _prefs.remove(RECOMMENDATION_INTERVAL_KEY);
+    _prefs.remove(CANCELLATION_INTERVAL_KEY);
+
   }
 
   ///
@@ -95,7 +153,7 @@ class Utils {
     String suffix = ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)];
     if (11 <= (n % 100) && (n % 100) <= 13)
       suffix = 'th';
-    return new Floor(n.toString() + suffix, n);
+    return new Floor(n.toString() + suffix + " Floor", n);
   }
 
   ///
@@ -139,8 +197,56 @@ class Utils {
     return (distance/AVERAGE_WALKING_SPEED)*60;
   }
 
+  static double distanceToTravel(double time){
+    return (time/60)*AVERAGE_WALKING_SPEED;
+  }
+
   static double toRadians(double val){
     return val*pi/180;
+  }
+
+  static String toSmartTime(double min){
+    NumberFormat nf = NumberFormat("##", "en_US");
+    Duration timeToWalk = Duration(minutes: min.floor(),
+        seconds: ((min - min.floor()) * 60).ceil());
+    if(timeToWalk.inMinutes <1){
+      return timeToWalk.inSeconds.toString() + " seconds ";
+    } else if(timeToWalk.inMinutes < 60){
+      return timeToWalk.inMinutes.toString() + " minutes and "+
+          nf.format(timeToWalk.inSeconds.remainder(60))+ " seconds ";
+    } else if(timeToWalk.inHours < 2){
+      return "1 hour and"+
+          nf.format(timeToWalk.inMinutes.remainder(60))+ " minutes and "+
+          nf.format(timeToWalk.inSeconds.remainder(60))+ " seconds";
+    } else if(timeToWalk.inHours < 24){
+      return timeToWalk.inHours.toString() + " hours,"+
+          nf.format(timeToWalk.inMinutes.remainder(60))+ " minutes and "+
+          nf.format(timeToWalk.inSeconds.remainder(60))+ " seconds";
+    } else if(timeToWalk.inDays < 7){
+      return timeToWalk.inDays.toString() + " days,"+
+          nf.format(timeToWalk.inHours.remainder(24))+ " hours, "+
+          nf.format(timeToWalk.inMinutes.remainder(60))+ " minutes and "+
+          nf.format(timeToWalk.inSeconds.remainder(60))+ " seconds";
+    } else if(timeToWalk.inDays < 30){
+      return nf.format(timeToWalk.inDays/7) + " weeks,"+
+          nf.format(timeToWalk.inDays.remainder(7))+ " days,"+
+          nf.format(timeToWalk.inHours.remainder(24))+ " hours,"+
+          nf.format(timeToWalk.inMinutes.remainder(60))+ " minutes and "+
+          nf.format(timeToWalk.inSeconds.remainder(60))+ " seconds";
+    } else if((timeToWalk.inDays/7).remainder(4) < 1){
+      return nf.format(timeToWalk.inDays/30) + " months, "+
+          nf.format(timeToWalk.inDays.remainder(7))+ " days, "+
+          nf.format(timeToWalk.inHours.remainder(24))+ " hours, "+
+          nf.format(timeToWalk.inMinutes.remainder(60))+ " minutes and "+
+          nf.format(timeToWalk.inSeconds.remainder(60))+ " seconds";
+    } else {
+      return nf.format(timeToWalk.inDays/30) + " months, "+
+          nf.format((timeToWalk.inDays/7).remainder(4))+ " weeks, "+
+          nf.format(timeToWalk.inDays.remainder(7))+ " days, "+
+          nf.format(timeToWalk.inHours.remainder(24))+ " hours, "+
+          nf.format(timeToWalk.inMinutes.remainder(60))+ " minutes and "+
+          nf.format(timeToWalk.inSeconds.remainder(60))+ " seconds";
+    }
   }
 
   static bool isEventInTheNextDay(DateTime eventStartDate, DateTime timestamp){
@@ -183,7 +289,7 @@ class Utils {
   }
 
   static String formatTimeStamp(DateTime dateTime){
-    return  DateFormat("yyyy-MM-dd hh:mm:ss").format(dateTime);
+    return  DateFormat("yyyy-MM-dd HH:mm:ss").format(dateTime.toUtc());
   }
 
   static List<int> getRandomNumberList(int length, int min, int max){
@@ -197,6 +303,69 @@ class Utils {
       num = rand.nextInt(max - min) + min;
     }
     return randomList;
+  }
+
+  static String handleDioError(DioError error, String feature) {
+    switch (error.type) {
+      case DioErrorType.CANCEL:
+        return "$feature Request to API server was canceled";
+        break;
+      case DioErrorType.CONNECT_TIMEOUT:
+        return "Connection timeout with server"
+            + "${error.message.toString()}";
+        break;
+      case DioErrorType.DEFAULT:
+        return "Connection to API server failed due to internet "
+            "unavailability "+ "${error.message.toString()}";
+        break;
+      case DioErrorType.RECEIVE_TIMEOUT:
+        print(error.error.toString());
+        print(error.message.toString());
+        return "$feature Recieve timeout with server "
+            "${error.message.toString()}";
+        break;
+      case DioErrorType.RESPONSE:
+        return _responseString(feature, error.response.statusCode,
+            error.response.data.toString());
+        break;
+      case DioErrorType.SEND_TIMEOUT:
+        return "$feature Send timeout in connection with API server";
+        break;
+      default:
+        return "$feature Request failed with unknown network error.";
+        break;
+    }
+  }
+
+  static String _responseString(String feature, int status,
+      String statusString){
+    switch(status){
+      case HttpStatus.badRequest: //400
+        return "$feature Request failed with error: $status \n$statusString";
+        break;
+      case HttpStatus.notFound:   //404
+        return "$feature Request failed with error: $status \n$statusString";
+        break;
+      case HttpStatus.internalServerError:   //500
+        return "$feature Request failed with error: $status \n"
+            "$statusString \n\n"
+            "Please contact the development team to let them know what "
+            "happened and what you were doing at the time.";
+        break;
+      default:
+        return "$feature Request failed with unexpected error code $status";
+        break;
+    }
+
+  }
+
+  static void clearCache() async{
+    final Directory tempDir = await getTemporaryDirectory();
+
+    final Directory libCacheDir = new Directory(path.join(tempDir.path,'libCachedImageData'));
+    if(await libCacheDir.exists()){
+      await libCacheDir.delete(recursive: true);
+    }
   }
 
 }

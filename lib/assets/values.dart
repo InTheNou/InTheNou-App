@@ -8,7 +8,7 @@ enum FeedType{
   Detail
 }
 
-enum InfoBaseSearchType{
+enum InfoBaseType{
   Building,
   Room,
   Service
@@ -38,11 +38,33 @@ enum NotificationType{
   SmartNotification,
   DefaultNotification,
   RecommendationNotification,
-  Alert
+  Alert,
+  Cancellation,
+  Debug
+}
+
+// Used when converting from json received from database for itype
+enum InteractionType{
+  Following,
+  unfollowed,
+  dismissed
+}
+// Used when converting from json received from database for reccomendstatus
+enum RecommendationType{
+  R,
+  N
+}
+
+enum DialogType{
+  Loading,
+  FullScreenLoading,
+  Alert,
+  ImportantAlert,
+  Error
 }
 
 //Constants
-const EVENTS_TO_FETCH = 20;
+const PAGINATION_LENGTH = 100000;
 const DEFAULT_NOTIFICATION_TIME = 5;
 const SMART_NOTIFICATION_STATE = false;
 const AVERAGE_WALKING_SPEED = 3.0;
@@ -52,15 +74,23 @@ const WEIGHTED_SUM_THRESHOLD = 20;
 const RELEVANCE_VALUE_FACTOR = 100;
 
 const RECOMMENDATION_NOTIFICATION_ID = 0;
-const ALERT_NOTIFICATION_ID = 1;
+const LOCATION_ALERT_NOTIFICATION_ID = 1;
+const SMART_ALERT_NOTIFICATION_ID = 2;
+const CANCELLATION_ALERT_NOTIFICATION_ID = 3;
+
 
 const NOTIFICATION_ID_START = 20;
 
 const INITIAL_TAG_WEIGHT = 50;
 
 const List<int> defaultNotificationTimes = [
-  5, 10, 15, 20, 30
+  1, 5, 10, 15, 20, 30, 60, 120
 ];
+
+const API_URL = "https://inthenou.uprm.edu/API";
+
+// UI Constants
+const radius = 12.0;
 
 //Shared Preferences Keys
 const DEFAULT_NOTIFICATION_KEY = "defaultNotificationTime";
@@ -71,10 +101,17 @@ const SMART_NOTIFICATION_LIST = "smartNotificationList";
 const DEFAULT_NOTIFICATION_LIST = "defaultNotificationList";
 const NOTIFICATION_ID_KEY = "notificationId";
 const LAST_RECOMMENDATION_DATE_KEY = "lastRecommendationDate";
+const LAST_CANCELLATION_DATE_KEY = "lastCancellationDate";
+const USER_KEY = "useraccount";
 
 // Notification group IDs
 const SMART_NOTIFICATION_GID = "smartNotificationList";
-const DEFAULT_NOTIFICATION_GID = "smartNotificationList";
-const RECOMMENDATION_NOTIFICATION_GID = "smartNotificationList";
+const DEFAULT_NOTIFICATION_GID = "defaultNotificationList";
+const RECOMMENDATION_NOTIFICATION_GID = "recommendationNotificationList";
+const CANCELLATION_NOTIFICATION_GID = "cancellationNotificationList";
 
 
+const RECOMMENDATION_INTERVAL_KEY = "recomendationInterval";
+const DEBUG_NOTIFICATION_KEY = "debugNotification";
+const SMART_INTERVAL_KEY = "smartinterval";
+const CANCELLATION_INTERVAL_KEY = "cancellationInterval";

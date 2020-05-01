@@ -6,13 +6,14 @@ import 'package:InTheNou/models/service.dart';
 import 'package:InTheNou/stores/infobase_store.dart';
 import 'package:InTheNou/views/InformoationBase/room_card.dart';
 import 'package:InTheNou/views/InformoationBase/services_card.dart';
+import 'package:InTheNou/views/widgets/loading_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
 class InfoBaseSearchView extends StatefulWidget {
 
-  final InfoBaseSearchType searchType;
+  final InfoBaseType searchType;
 
   InfoBaseSearchView(this.searchType);
 
@@ -25,6 +26,7 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
   with flux.StoreWatcherMixin<InfoBaseSearchView>{
 
   TextEditingController _searchQueryController;
+  FocusNode _searchFocus;
   ScrollController _scrollController;
   InfoBaseStore _infoBaseStore;
 
@@ -36,117 +38,212 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
     getAllBuildingsAction(widget.searchType);
     _searchQueryController = TextEditingController(
       text: _infoBaseStore.getSearchKeyword(widget.searchType));
+    _searchFocus = FocusNode();
   }
 
   @override
   void dispose() {
     _searchQueryController.dispose();
+    _searchFocus.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: _infoBaseStore.getIsSearching(widget.searchType) ? _buildSearchField() :
-          Text(Utils.infoBaseSearchString(widget.searchType)),
-        actions: _buildActions(),
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: <Widget>[
-          Expanded(
-            child: showCorrectList(),
-          )
-        ],
+    return GestureDetector(
+      onTap: () {
+        FocusScopeNode currentFocus = FocusScope.of(context);
+        if (!currentFocus.hasPrimaryFocus) {
+          currentFocus.unfocus();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: _infoBaseStore.getIsSearching(widget.searchType) ? _buildSearchField() :
+            Text(Utils.infoBaseSearchString(widget.searchType)),
+          actions: _buildActions(),
+        ),
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Expanded(
+              child: _buildBody(),
+            )
+          ],
+        ),
       ),
     );
   }
 
-  Widget showCorrectList(){
-    switch (widget.searchType){
-      case InfoBaseSearchType.Building:
-        return showBuildingsResults();
-        break;
-      case InfoBaseSearchType.Room:
-        return showRoomsResults();
-        break;
-      case InfoBaseSearchType.Service:
-        return showServicesResults();
-        break;
+  Widget _buildBody(){
+    Future dataToShow;
+    if(widget.searchType == InfoBaseType.Building){
+      dataToShow = _infoBaseStore.buildingsResults;
+    } else if (widget.searchType == InfoBaseType.Room){
+      dataToShow = _infoBaseStore.roomsResults;
+    } else {
+      dataToShow = _infoBaseStore.servicesResults;
     }
+    return FutureBuilder(
+      future: dataToShow,
+      builder: (BuildContext context, AsyncSnapshot<dynamic> results) {
+        if(results.connectionState == ConnectionState.waiting){
+          return _buildLoadingWidget();
+        }
+        if(results.hasData){
+          if(results.data.length == 0){
+            return _buildNoResultsNotice();
+          } else if(widget.searchType == InfoBaseType.Building){
+            return showBuildingsResults(results.data);
+          } else if (widget.searchType == InfoBaseType.Room){
+            return showRoomsResults(results.data);
+          } else {
+            return showServicesResults(results.data);
+          }
+        }
+        else if(results.hasError){
+          return _buildErrorWidget(results.error.toString());
+        }
+        if(widget.searchType == InfoBaseType.Building){
+          return _buildLoadingWidget();
+        } else if (widget.searchType == InfoBaseType.Room){
+          return _buildSearchNotice();
+        } else {
+          return _buildSearchNotice();
+        }
+      },
+    );
   }
 
-  Widget showBuildingsResults(){
-    return ListView.builder(
-        itemCount: _infoBaseStore.buildingsResults.length,
-        controller: _scrollController,
-        padding:const EdgeInsets.only(top: 8.0),
-        itemBuilder: (context, index){
-          Building building = _infoBaseStore.buildingsResults[index];
-          return Card(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0)),
-            clipBehavior: Clip.antiAliasWithSaveLayer,
-            child: InkWell(
-              onTap: () {
-                Navigator.of(context).pushNamed("/infobase/building");
-                selectBuildingAction(building);
-              },
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  FadeInImage.assetNetwork(
-                    fit: BoxFit.cover,
-                    placeholder: "lib/assets/placeholder.png",
-                    height: 120.0,
-                    width: 150.0,
-                    image: building.image,
-                  ),
-                  const Padding(padding: EdgeInsets.only(left: 16.0)),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+  Widget showBuildingsResults(List<Building> buildingsResults){
+    return Scrollbar(
+      child: RefreshIndicator(
+        onRefresh: () => getAllBuildingsAction(),
+        child: ListView.builder(
+            itemCount: buildingsResults.length,
+            controller: _scrollController,
+            padding:const EdgeInsets.only(top: 8.0),
+            itemBuilder: (context, index){
+              Building building = buildingsResults[index];
+              return Card(
+                clipBehavior: Clip.antiAliasWithSaveLayer,
+                child: InkWell(
+                  onTap: () {
+                    Navigator.of(context).pushNamed("/infobase/building");
+                    selectBuildingAction(building);
+                  },
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
-                      Text(
-                        building.name,
-                        style: Theme.of(context).textTheme.headline6,
+                      LoadingImage(
+                          imageURL: building.image,
+                          height: 120.0,
+                          width: 150.0
                       ),
-                      Padding(padding: EdgeInsets.only(top: 8.0,
-                          left: 8.0),
-                          child: Text(
-                            building.commonName,
-                            style: Theme.of(context).textTheme.subtitle1,
-                          )
+                      const Padding(padding: EdgeInsets.only(left: 16.0)),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              building.name,
+                              maxLines: 2,
+                              style: Theme.of(context).textTheme.headline6,
+                              softWrap: true,
+                            ),
+                            const Padding(padding: EdgeInsets.only(top: 8.0)),
+                            Text(
+                              building.commonName,
+                              maxLines: 2,
+                              style: Theme.of(context).textTheme.subtitle1,
+                              softWrap: true,
+                            )
+                          ],
+                        ),
                       ),
                     ],
-                  )
-                ],
+                  ),
+                )
+              );
+            }),
+      ),
+    );
+  }
+
+  Widget showRoomsResults(List<Room> roomsResults){
+    return Scrollbar(
+      child: RefreshIndicator(
+        onRefresh: () => reloadSearch(),
+        child: ListView.builder(
+            physics: AlwaysScrollableScrollPhysics(),
+            itemCount: roomsResults.length,
+            controller: _scrollController,
+            itemBuilder: (context, index){
+              Room room = roomsResults[index];
+              return RoomCard(room);
+            }),
+      ),
+    );
+  }
+
+  Widget showServicesResults(List<Service> servicesResults){
+    return Scrollbar(
+        child: RefreshIndicator(
+          onRefresh: () => reloadSearch(),
+          child: ListView.builder(
+              itemCount: servicesResults.length,
+              controller: _scrollController,
+              itemBuilder: (context, index){
+                Service service = servicesResults[index];
+                return ServicesCard(service);
+              }),
+        )
+    );
+  }
+
+  Widget _buildErrorWidget(String error){
+    return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(error,
+                  style: Theme.of(context).textTheme.headline5
               ),
-            )
-          );
-        });
+            ),
+          ],
+        )
+    );
   }
 
-  Widget showRoomsResults(){
-    return ListView.builder(
-        itemCount: _infoBaseStore.roomsResults.length,
-        controller: _scrollController,
-        itemBuilder: (context, index){
-          Room room = _infoBaseStore.roomsResults[index];
-          return RoomCard(room);
-        });
+  Widget _buildLoadingWidget(){
+    return Center(
+      child: Container(
+        height: 100,
+        width: 100,
+        child: CircularProgressIndicator(),
+      ),
+    );
   }
 
-  Widget showServicesResults(){
-    return ListView.builder(
-        itemCount: _infoBaseStore.servicesResults.length,
-        controller: _scrollController,
-        itemBuilder: (context, index){
-          Service service = _infoBaseStore.servicesResults[index];
-          return ServicesCard(service);
-        });
+  Widget _buildSearchNotice(){
+    return Center(
+      child: Text("Initiate a Search",
+          style: Theme.of(context).textTheme.headline5.copyWith(
+              fontWeight: FontWeight.w200
+          )),
+    );
   }
 
+  Widget _buildNoResultsNotice(){
+    return Center(
+      child: Text("No Results",
+          style: Theme.of(context).textTheme.headline5.copyWith(
+              fontWeight: FontWeight.w200
+          )),
+    );
+  }
 
   List<Widget> _buildActions() {
     if (_infoBaseStore.getIsSearching(widget.searchType)) {
@@ -175,33 +272,51 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
   Widget _buildSearchField() {
     return TextField(
       controller: _searchQueryController,
-      autofocus: true,
+      autofocus: false,
+      focusNode: _searchFocus,
       decoration: InputDecoration(
-        hintText: "Search Events...",
+        hintText: _buildHint(widget.searchType),
         border: InputBorder.none,
-        hintStyle: TextStyle(color: Colors.white30),
+        hintStyle: TextStyle(color: Colors.white70),
       ),
       style: TextStyle(color: Colors.white, fontSize: 16.0),
       onSubmitted: (query) {
-        _scrollController.animateTo(0.0,
-            curve: Curves.ease, duration: Duration(seconds: 1));
-        searchInfoBaseAction(new MapEntry(widget.searchType, query));
+        if(query.trim().length > 0){
+          if(_scrollController.hasClients){
+            _scrollController.animateTo(0.0, curve: Curves.ease,
+                duration: Duration(seconds: 1));
+          }
+          searchInfoBaseAction(MapEntry(widget.searchType, query.trim()));
+        }
       },
     );
   }
 
+  String _buildHint(InfoBaseType type){
+    if(type == InfoBaseType.Building){
+      return "Search: Stefani";
+    } else if (type == InfoBaseType.Room){
+      return "Search: S-100, Salon";
+    } else {
+      return "Search: Office";
+    }
+  }
+
   void _startSearch() {
+    _searchFocus.requestFocus();
     ModalRoute.of(context)
         .addLocalHistoryEntry(LocalHistoryEntry(onRemove: _stopSearching));
     setSearchingAction(new MapEntry(widget.searchType, true));
   }
 
   void _stopSearching() {
-    _scrollController.animateTo(0.0,
-        curve: Curves.ease, duration: Duration(seconds: 2));
-    _clearSearchKeyword();
+    if(_scrollController.hasClients){
+      _scrollController.animateTo(0.0,
+          curve: Curves.ease, duration: Duration(seconds: 2));
+    }
+//    _clearSearchKeyword();
     setSearchingAction(new MapEntry(widget.searchType, false));
-    if(widget.searchType == InfoBaseSearchType.Building) {
+    if(widget.searchType == InfoBaseType.Building) {
       getAllBuildingsAction();
     }
   }
@@ -210,4 +325,5 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
     _searchQueryController.clear();
     clearInfoBaseKeywordAction(widget.searchType);
   }
+
 }

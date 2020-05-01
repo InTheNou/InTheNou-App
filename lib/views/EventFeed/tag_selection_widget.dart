@@ -19,6 +19,7 @@ class _TagSelectionWidgetState extends State<TagSelectionWidget>
   void initState() {
     super.initState();
     _creationStore = listenToStore(EventCreationStore.eventCreationStoreToken);
+    getAllTagsAction();
   }
 
   @override
@@ -38,7 +39,7 @@ class _TagSelectionWidgetState extends State<TagSelectionWidget>
               Expanded(
                 child: TextField(
                   decoration: InputDecoration.collapsed(
-                      hintText:  "Serach Tags",),
+                      hintText:  "Search Tags",),
                   onChanged: (String value) => searchedTagAction(value)
                 ),
               ),

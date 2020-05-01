@@ -1,5 +1,6 @@
 import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
+import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/stores/event_feed_store.dart';
 import 'package:InTheNou/stores/user_store.dart';
 import 'package:InTheNou/views/widgets/event_card.dart';
@@ -9,7 +10,7 @@ import 'package:flutter_flux/flutter_flux.dart' as flux;
 class FeedView extends StatefulWidget{
 
   final FeedType type;
-  FeedView({this.type}) : super(key: ValueKey(Utils.feedTypeString(type)));
+  FeedView({this.type}) : super(key: PageStorageKey(Utils.feedTypeString(type)));
 
   @override
   GeneralFeedState createState() => GeneralFeedState();
@@ -21,6 +22,7 @@ class GeneralFeedState extends State<FeedView>
   EventFeedStore _eventFeedStore;
   UserStore _userStore;
   TextEditingController _searchQueryController;
+  FocusNode _searchFocus;
   ScrollController _scrollController;
 
   @override
@@ -29,11 +31,7 @@ class GeneralFeedState extends State<FeedView>
 
     /// if it's the first time the feed is loaded, get all the Events
     _eventFeedStore = listenToStore(EventFeedStore.eventFeedToken);
-    _userStore = UserStore();
-    if (_eventFeedStore.eventCount(widget.type) == 0 &&
-        !_eventFeedStore.isSearching(widget.type)){
-      getAllEventsAction(widget.type);
-    }
+    _userStore = listenToStore(UserStore.userStoreToken);
     /// Save the scroll position the uer is in to recall if the screen is
     /// switched
     _scrollController = ScrollController(
@@ -43,11 +41,13 @@ class GeneralFeedState extends State<FeedView>
     });
     _searchQueryController =TextEditingController(
         text:_eventFeedStore.searchKeyword(widget.type));
+    _searchFocus = FocusNode();
   }
 
   @override
   void dispose() {
     _searchQueryController.dispose();
+    _searchFocus.dispose();
     super.dispose();
   }
 
@@ -58,78 +58,21 @@ class GeneralFeedState extends State<FeedView>
             title: _buildTitle(),
             actions: _buildActions()
         ),
-        body: buildBody(),
-        floatingActionButton: new Visibility(
+        body: _buildBody(),
+        floatingActionButton: Visibility(
           key: ValueKey("EventCreationFAB"),
-          visible: widget.type == FeedType.PersonalFeed &&
+          visible:
+              _userStore.user != null &&
               _userStore.user.userPrivilege != UserPrivilege.User,
-          child: new FloatingActionButton(
+          child: FloatingActionButton(
             onPressed: (){
               Navigator.of(context).pushNamed('/create_event');
             },
             tooltip: 'Open Event Creation',
-            child: new Icon(Icons.add),
+            child: Icon(Icons.add),
           ),
         ),
     );
-  }
-
-  Widget buildBody(){
-    if(_eventFeedStore.isFeedLoading(widget.type)){
-      return Center(
-        child: CircularProgressIndicator(),
-      );
-    } else {
-      if(_eventFeedStore.getError(widget.type) !=null){
-        showErrorDialog(_eventFeedStore.getError(widget.type));
-      }
-      if(_eventFeedStore.isSearching(widget.type)
-          && _eventFeedStore.eventCount(widget.type) == 0){
-        return Center(
-          child: Text("No resulsts Found",
-              style: Theme.of(context).textTheme.headline5.copyWith(
-                  fontWeight: FontWeight.w200
-              )),
-        );
-      } else if(_eventFeedStore.eventCount(widget.type) == 0){
-        return Center(
-          child: Text("No Events at this time",
-              style: Theme.of(context).textTheme.headline5.copyWith(
-                  fontWeight: FontWeight.w200
-              )),
-        );
-      }
-      return  ListView.builder(
-          key: ValueKey(widget.type),
-          controller: _scrollController,
-          itemCount: _eventFeedStore.eventCount(widget.type),
-          itemBuilder: (context, index) {
-            return EventCard(_eventFeedStore.feedEvent(widget.type, index),
-                widget.type);
-          }
-      );
-    }
-  }
-
-  Future showErrorDialog(String errorText) async {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await showDialog<String>(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-          title: const Text('Error'),
-          content: Text(errorText),
-          actions: <Widget>[
-            FlatButton(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                clearErrorAction(widget.type);
-              },
-            ),
-          ],
-        ),
-      );
-    });
   }
 
   /// Builds the Title child of the AppBar
@@ -139,26 +82,27 @@ class GeneralFeedState extends State<FeedView>
   /// the Search bar button will be drawn. If not then the Title will.
   Widget _buildTitle() {
     if(_eventFeedStore.isSearching(widget.type)){
-      _searchQueryController.text = _eventFeedStore
-          .searchKeyword(widget.type);
       return TextField(
         controller: _searchQueryController,
-        autofocus: true,
+        autofocus: false,
+        focusNode: _searchFocus,
         decoration: InputDecoration(
           hintText: "Search Events...",
           border: InputBorder.none,
-          filled: true,
-          fillColor: Colors.white,
+          hintStyle: TextStyle(color: Colors.white70),
         ),
+        style: TextStyle(color: Colors.white, fontSize: 16.0),
         onSubmitted: (query) {
-          if(_scrollController.hasClients){
-            _scrollController.animateTo(0.0,
-                curve: Curves.ease, duration: Duration(seconds: 1))
-                .then((value){
-              searchFeedAction(new MapEntry(widget.type, query));
-            });
-          } else {
-            searchFeedAction(new MapEntry(widget.type, query));
+          if(query.trim().length > 0){
+            if(_scrollController.hasClients){
+              _scrollController.animateTo(0.0,
+                  curve: Curves.ease, duration: Duration(seconds: 1))
+                  .then((value){
+                searchFeedAction(new MapEntry(widget.type, query.trim()));
+              });
+            } else {
+              searchFeedAction(new MapEntry(widget.type, query.trim()));
+            }
           }
         },
       );
@@ -176,6 +120,7 @@ class GeneralFeedState extends State<FeedView>
       return <Widget>[
         IconButton(
             icon: const Icon(Icons.clear),
+            tooltip: "Clear and Close",
             onPressed: () => _clearSearchKeyword()
         ),
       ];
@@ -183,13 +128,100 @@ class GeneralFeedState extends State<FeedView>
     return <Widget>[
       IconButton(
         icon: const Icon(Icons.refresh),
-        onPressed: _refresh,
+        tooltip: "Refresh Feed",
+        onPressed: () => _refresh(),
       ),
       IconButton(
         icon: const Icon(Icons.search),
-        onPressed: () => setFeedSearching(new MapEntry(widget.type, true)),
+        tooltip: "Search Feed",
+        onPressed: () {
+          setFeedSearching(new MapEntry(widget.type, true));
+          _searchFocus.requestFocus();
+        },
       ),
     ];
+  }
+
+  Widget _buildBody(){
+    return GestureDetector(
+      onTap: () {
+        FocusScopeNode currentFocus = FocusScope.of(context);
+        if (!currentFocus.hasPrimaryFocus) {
+          currentFocus.unfocus();
+        }
+      },
+      child: FutureBuilder(
+        future: widget.type == FeedType.PersonalFeed ?
+          _eventFeedStore.personalSearch : _eventFeedStore.generalSearch,
+        builder: (BuildContext context, AsyncSnapshot<List<Event>> events) {
+
+          if(events.connectionState == ConnectionState.waiting){
+            return _buildLoadingWidget();
+          }
+          if(events.hasData){
+            if(events.data.length == 0 && _eventFeedStore.isSearching(widget.type)){
+              return Center(
+                child: Text("No resulsts Found",
+                    style: Theme.of(context).textTheme.headline5.copyWith(
+                        fontWeight: FontWeight.w200
+                    )),
+              );
+            } else if(events.data.length == 0){
+              return Center(
+                child: Text("No Events at this time",
+                    style: Theme.of(context).textTheme.headline5.copyWith(
+                        fontWeight: FontWeight.w200
+                    )),
+              );
+            } else {
+              return  Scrollbar(
+                child: RefreshIndicator(
+                  onRefresh: () => getAllEventsAction(widget.type),
+                  child: ListView.builder(
+                      key: ValueKey(widget.type),
+                      physics: AlwaysScrollableScrollPhysics(),
+                      controller: _scrollController,
+                      padding:const EdgeInsets.only(bottom: 100.0),
+                      itemCount: events.data.length,
+                      itemBuilder: (context, index) {
+                        return EventCard(events.data[index], widget.type);
+                      }
+                  ),
+                ),
+              );
+            }
+          } else if(events.hasError){
+            return _buildErrorWidget(events.error.toString());
+          }
+          return _buildLoadingWidget();
+        },
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget(String error) {
+    return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(error,
+                  style: Theme.of(context).textTheme.headline5
+              ),
+            ),
+          ],
+        ));
+  }
+
+  Widget _buildLoadingWidget(){
+    return Center(
+      child: Container(
+        height: 100,
+        width: 100,
+        child: CircularProgressIndicator(),
+      ),
+    );
   }
 
   /// Gets all the events from the database calling [getAllEventsAction] and

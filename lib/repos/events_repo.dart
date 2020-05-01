@@ -1,16 +1,19 @@
-import 'dart:math';
-
+import 'dart:convert' as convert;
 import 'package:InTheNou/assets/utils.dart';
-import 'package:InTheNou/models/coordinate.dart';
+import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/event.dart';
-import 'package:InTheNou/models/room.dart';
-import 'package:InTheNou/models/tag.dart';
-import 'package:InTheNou/models/website.dart';
+import 'package:InTheNou/models/user.dart';
+import 'package:InTheNou/repos/api_connection.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+/// {@category Repo}
 class EventsRepo {
 
   static final EventsRepo _instance = EventsRepo._internal();
-  Random rand = Random();
+  final ApiConnection apiConnection = ApiConnection();
+  Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
   factory EventsRepo() {
     return _instance;
@@ -18,50 +21,147 @@ class EventsRepo {
 
   EventsRepo._internal();
 
-  /// Calls teh back-end to get the Events for the General Feed
+  /// Calls the back-end to get the Events for the General Feed
   ///
   /// The method returns all active and non-dismissed Events in the system. The
   /// parameter [skipEvents] can be supplied to let the back-end know the
   /// first event that needs to be returned, this along with [numEvents]
   /// permits performing pagination and only showing a few Events at a time.
-  /// To get all the Events at once just supply a very bit number to [numEvents]
+  /// To get all the Events at once just supply a very big number to
+  /// [numEvents].
+  ///
+  /// Database Errors are caught by Dio and throw a [DioError] which is
+  /// traduced to a proper error with [Utils.handleDioError].
   Future<List<Event>> getGenEvents (int skipEvents, int numEvents) async{
-    return Future.delayed(Duration(seconds: 2)).then((onValue) {
-//      if(rand.nextBool()){
-//        return Future.error("Error happened!");
-//      }
-      return new List.from(dummyEvents);
-    });
+    try{
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.get(
+          "/App/Events/General/offset=$skipEvents"
+              "/limit=$numEvents");
+      List<Event> eventResults = new List();
+
+      if(response.data["events"] != null){
+        response.data["events"].forEach((element) {
+          eventResults.add(Event.resultFromJson(element));
+        });
+      }
+      return eventResults;
+    } catch(error,stacktrace){
+      if (error is DioError) {
+        debugPrint("Exception: $error");
+        return Future.error(Utils.handleDioError(error, "Getting General "
+            "Events") );
+      } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        return Future.error("Internal app error Getting General Events");
+      }
+    }
   }
 
-  /// Calls teh back-end to get the Events for the Personal Feed.
+  /// Calls the back-end to get the Events for the Personal Feed.
   ///
   /// The method returns all active Recommended and non-dismissed [Event]s in
   /// the system. The parameter [skipEvents] can be supplied to let the
   /// back-end know the first event that needs to be returned, this along
   /// with [numEvents] permits performing pagination and only showing a few
-  /// Events at a time.
-  /// To get all the Events at once just supply a very bit number to
-  /// [numEvents].
+  /// Events at a time. To get all the Events at once just supply a very big
+  /// number to [numEvents].
+  ///
+  /// Database Errors are caught by Dio and throw a [DioError] which is
+  /// traduced to a proper error with [Utils.handleDioError].
   Future<List<Event>> getPerEvents(int skipEvents, int numEvents) async{
-    return Future.delayed(Duration(seconds: 2)).then((onValue) {
-//      if(rand.nextBool()){
-//        return Future.error("Error happened!");
-//      }
-      return new List.from(dummyEvents.where((event) =>
-        event.recommended != null && event.recommended));
-    });
+    try{
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.get(
+          "/App/Events/Recommended/offset=$skipEvents/"
+              "limit=$numEvents");
+      List<Event> eventResults = new List();
+
+      if(response.data["events"] != null){
+        response.data["events"].forEach((element) {
+          eventResults.add(Event.resultFromJson(element));
+        });
+      }
+      return eventResults;
+    } catch(error,stacktrace){
+      if (error is DioError) {
+        return Future.error(Utils.handleDioError(error, "Getting Personal "
+            "Events"));
+      } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        return Future.error("Internal app error Getting Personal Events");
+      }
+    }
   }
 
-  /// Contacts the back-end to get [Event]s created after [lastDate].
+  /// Calls the back-end to get [Event]s created after [lastDate].
   ///
   /// The parameter [lastDate] is a DateTime object in String form, with the
   /// format yyyy-MM-dd hh:mm:ss.
   /// This method is used in the Recommendation Feature.
+  ///
+  /// Database Errors are caught by Dio and throw a [DioError] which is
+  /// traduced to a proper error with [Utils.handleDioError].
   Future<List<Event>> getNewEvents(String lastDate) async{
-    DateTime date = DateTime.parse(lastDate);
-    return new List.from(dummyEvents.where((event) =>
-        event.startDateTime.isAfter(date)));
+    try{
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.get(
+          "/App/Events/CAT/timestamp=$lastDate");
+      List<Event> eventResults = new List();
+
+      if(response.data["events"] != null){
+        response.data["events"].forEach((element) {
+          eventResults.add(Event.recommendationFromJson(element));
+        });
+      }
+      return eventResults;
+    } catch(error,stacktrace){
+      if (error is DioError) {
+        debugPrint("Exception: $error");
+        return Future.error(Utils.handleDioError(error, "Getting New Events "
+            "Events"));
+      } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        return Future.error("Internal app error Getting New Events");
+      }
+    }
+  }
+
+  /// Calls the back-end to get [Event]s deleted after [lastDate].
+  ///
+  /// The parameter [lastDate] is a DateTime object in String form, with the
+  /// format yyyy-MM-dd hh:mm:ss.
+  /// This method is used in the Cancellation Notification.
+  ///
+  /// Database Errors are caught by Dio and throw a [DioError] which is
+  /// traduced to a proper error with [Utils.handleDioError].
+  Future<List<Event>> getDeletedEvents(String lastDate) async{
+    try{
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.get(
+          "/App/Events/Deleted/New/timestamp=$lastDate");
+      List<Event> eventResults = new List();
+
+      if(response.data["events"] != null){
+        response.data["events"].forEach((element) {
+          eventResults.add(Event.recommendationFromJson(element));
+        });
+      }
+      return eventResults;
+    } catch(error,stacktrace){
+      if (error is DioError) {
+        debugPrint("Exception: $error");
+        return Future.error(Utils.handleDioError(error, "Getting Cancelled "
+            "Events"));
+      } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        return Future.error("Internal app error Getting Cancelled Events");
+      }
+    }
   }
 
   /// Calls the back-end with a search query for the General Feed
@@ -72,14 +172,37 @@ class EventsRepo {
   /// back-end know the first event that needs to be returned, this along
   /// with [numEvents] permits performing pagination and only showing a few
   /// Events at a time.
-  /// To get all the Events at once just supply a very bit number to [numEvents]
+  /// To get all the Events at once just supply a very big number to
+  /// [numEvents].
+  ///
+  /// Database Errors are caught by Dio and throw a [DioError] which is
+  /// traduced to a proper error with [Utils.handleDioError].
   Future<List<Event>> searchGenEvents(String keyword, int skipEvents,
       int numEvents) async{
-    return Future.delayed(Duration(seconds: 2)).then((onValue) {
-      genSearchKeyword = keyword;
-      runLocalSearch();
-      return new List.from(genSearch);
-    });
+    try{
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.get(
+          "/App/Events/General/search=$keyword/offset=$skipEvents/limit=$numEvents");
+      List<Event> eventResults = new List();
+
+      List jsonResponse = response.data["events"];
+      if(jsonResponse != null){
+        jsonResponse.forEach((element) {
+          eventResults.add(Event.resultFromJson(element));
+        });
+      }
+      return eventResults;
+    } catch(error,stacktrace){
+      if (error is DioError) {
+        debugPrint("Exception: $error");
+        return Future.error(Utils.handleDioError(error, "Searching General "
+            "Events"));
+      } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        return Future.error("Internal app error Searching General Events");
+      }
+    }
   }
 
   /// Calls the back-end with a search query for the Personal Feed
@@ -90,60 +213,115 @@ class EventsRepo {
   /// the back-end know the first event that needs to be returned, this along
   /// with [numEvents] permits performing pagination and only showing a few
   /// Events at a time.
-  /// To get all the Events at once just supply a very bit number to [numEvents]
+  /// To get all the Events at once just supply a very big number to
+  /// [numEvents].
+  ///
+  /// Database Errors are caught by Dio and throw a [DioError] which is
+  /// traduced to a proper error with [Utils.handleDioError].
   Future<List<Event>> searchPerEvents(String keyword, int skipEvents,
       int numEvents) async{
-    return Future.delayed(Duration(seconds: 2)).then((onValue) {
-      perSearchKeyword = keyword;
-      runLocalSearch();
-      return new List.from(perSearch);
-    });
+    try{
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.get(
+          "/App/Events/Recommended/search=$keyword/offset=$skipEvents/limit"
+              "=$numEvents");
+      List<Event> eventResults = new List();
+
+      List jsonResponse = response.data["events"];
+      if(jsonResponse != null){
+        jsonResponse.forEach((element) {
+          eventResults.add(Event.resultFromJson(element));
+        });
+      }
+      return eventResults;
+    } catch(error,stacktrace){
+      if (error is DioError) {
+        debugPrint("Exception: $error");
+        return Future.error(Utils.handleDioError(error,
+            "Searching Personal Events"));
+      } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        return Future.error("Internal app error Searching Personal Events");
+      }
+    }
   }
 
   /// Calls the back-end to get all the information on a specific [Event].
   ///
   /// Given the [Event._UID] through the [eventUID] parameter, the back-end
   /// will return detailed information about the [Event] that matches the UID.
+  ///
+  /// Database Errors are caught by Dio and throw a [DioError] which is
+  /// traduced to a proper error with [Utils.handleDioError].
   Future<Event> getEvent(int eventUID) async{
     try{
-      return dummyEvents.firstWhere((element) =>
-        element.UID == eventUID);
-    } catch (e){
-      return Future.error("The Selected Event has been deleted.");
-    }
+      await apiConnection.ensureInitialized();
 
+      Response response = await apiConnection.dio.get("/App/Events/eid=$eventUID/Interaction");
+
+      return Event.fromJson(response.data);
+    } catch(error,stacktrace){
+      if (error is DioError) {
+        debugPrint("Exception: $error");
+        return Future.error(Utils.handleDioError(error, "Getting Event"));
+      } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        return Future.error("Internal app error while Getting Event");
+      }
+    }
   }
 
   /// Requests for an [Event] to be marked as Followed in the back-end.
   ///
   /// Given the [Event._UID] through the [eventUID] parameter, the back-end
-  /// marks it as being Followed by this user by setting [Event.followed]
+  /// marks it as being Followed by this user by setting [Event.followed].
+  ///
+  /// Database Errors are caught by Dio and throw a [DioError] which is
+  /// traduced to a proper error with [Utils.handleDioError].
   Future<bool> requestFollowEvent(int eventUID) async{
-    return Future.delayed(Duration(seconds: 1)).then((onValue) {
-//      if(rand.nextBool()){
-//        return Future.error("Internal Error Following Event please try again"
-//            " later.");
-//      }
-      int index = dummyEvents.indexWhere((event) => event.UID == eventUID);
-      dummyEvents[index].followed = true;
-      return true;
-    });
+    try{
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.post("/App/Events/eid=$eventUID/"
+          "/Follow");
+
+      return response.data["event"]["eid"] == eventUID;
+    } catch(error,stacktrace){
+      if (error is DioError) {
+        debugPrint("Exception: $error");
+        return Future.error(Utils.handleDioError(error, "Follow Event"));
+      } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        return Future.error("Internal app error while Follwing Event");
+      }
+    }
   }
 
   /// Requests for an [Event] to be marked as UnFollowed in the back-end.
   ///
   /// Given the [Event._UID] through the [eventUID] parameter, the back-end
-  /// marks it as being UnFollowed by this user by setting [Event.followed]
+  /// marks it as being UnFollowed by this user by setting [Event.followed].
+  ///
+  /// Database Errors are caught by Dio and throw a [DioError] which is
+  /// traduced to a proper error with [Utils.handleDioError].
   Future<bool> requestUnFollowEvent(int eventUID) async{
-    return Future.delayed(Duration(seconds: 1)).then((onValue) {
-//      if(rand.nextBool()){
-//        return Future.error("Internal Error UnFollowing Event please try again"
-//            " later.");
-//      }
-      int index = dummyEvents.indexWhere((event) => event.UID == eventUID);
-      dummyEvents[index].followed = false;
-      return true;
-    });
+    try{
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.post("/App/Events/eid=$eventUID/"
+          "Unfollow");
+
+      return response.data["event"]["eid"] == eventUID;
+    } catch(error,stacktrace){
+      if (error is DioError) {
+        debugPrint("Exception: $error");
+        return Future.error(Utils.handleDioError(error, "UnFollow Event"));
+      } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        return Future.error("Internal app error while UnFollwing Event");
+      }
+    }
   }
 
   /// Requests for an [Event] to be marked as Dismissed in the back-end.
@@ -151,15 +329,26 @@ class EventsRepo {
   /// Given the [Event._UID] through the [eventUID] parameter, the back-end
   /// marks it as being Dismissed by this user. Events marked with being
   /// Dismissed will not be returned by other queries.
+  ///
+  /// Database Errors are caught by Dio and throw a [DioError] which is
+  /// traduced to a proper error with [Utils.handleDioError].
   Future<bool> requestDismissEvent(int eventUID) async{
-    return Future.delayed(Duration(seconds: 2)).then((onValue) {
-//      if(rand.nextBool()){
-//        return Future.error("Error Dismissing Event please try again later.");
-//      }
-      int index = dummyEvents.indexWhere((event) => event.UID == eventUID);
-      dummyEvents.removeAt(index);
-      return true;
-    });
+    try{
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.post("/App/Events/eid=$eventUID/"
+          "Dismiss");
+
+      return response.data["event"]["eid"] == eventUID;
+    } catch(error,stacktrace){
+      if (error is DioError) {
+        debugPrint("Exception: $error");
+        return Future.error(Utils.handleDioError(error, "Dismiss Event"));
+      } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        return Future.error("Internal app error while Dismissing Event");
+      }
+    }
   }
 
   /// Requests for an [Event] to be marked as Recommended in the back-end.
@@ -168,13 +357,32 @@ class EventsRepo {
   /// marks them as being Recommended to this user, setting
   /// [Event.recommended]. Events marked as such will show up in the Personal
   /// Feed.
-  Future<bool> requestRecommendation(List<Event> events) async{
-    int index;
-    events.forEach((event) {
-      index = dummyEvents.indexOf(event);
-      dummyEvents[index] = event;
-    });
-    return true;
+  ///
+  /// Database Errors are caught by Dio and throw a [DioError] which is
+  /// traduced to a proper error with [Utils.handleDioError].
+  Future<List<bool>> requestRecommendation(List<Event> events) async{
+    Future<List<bool>> result;
+    result = Future.wait<bool>(events.map((event) async{
+      try{
+        await apiConnection.ensureInitialized();
+
+        Response response = await apiConnection.dio.post(
+            "/App/Events/eid=${event.UID}/"
+                "recommendstatus=${event.recommended}");
+
+        return response.data["eid"] == event.UID;
+      } catch(error,stacktrace){
+        if (error is DioError) {
+          debugPrint("Exception: $error");
+          return Future.error(Utils.handleDioError(error, "Recommendation "
+              "Event"));
+        } else {
+          debugPrint("Exception: $error stackTrace: $stacktrace");
+          return Future.error("Internal app error while Recommending Event");
+        }
+      }
+    }));
+    return result;
   }
 
   /// Requests for an [Event] to be created in the system.
@@ -184,80 +392,64 @@ class EventsRepo {
   /// [Event._creator].
   /// An Event created this way will show up in the General Feed, and the
   /// Personal Feed if recommended to a user.
+  ///
+  /// Database Errors are caught by Dio and throw a [DioError] which is
+  /// traduced to a proper error with [Utils.handleDioError].
   Future<bool> createEvent(Event event) async{
-    dummyEvents.add(event);
-    runLocalSearch();
-    return true;
-  }
+    SharedPreferences prefs = await _prefs;
+    User user = User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
+    try{
+      await apiConnection.ensureInitialized();
 
-  //---------------------- DEBUGGING STUFF ----------------------
-  String perSearchKeyword = "";
-  String genSearchKeyword = "";
+      Map<String, dynamic> eventJson = event.toJson();
+      eventJson["ecreator"] = user.UID;
+      Response response = await apiConnection.dio.post("/App/Events/Create",
+        data: convert.jsonEncode(eventJson));
 
-  List<Event> dummyEvents = List<Event>.generate(
-      10,
-          (i) {
-            List<int> randList = Utils.getRandomNumberList(10, 0,
-                eventTags.length);
-        return Event(i, "Event $i", "This is a very long "
-          "description fo the event currantly displayed. This is to test "
-          "out how good it looks when it cuts off.", "alguien.importante1@upr"
-            ".edu",
-          "https://images.pexels.com/photos/256541/pexels-photo-256541.jpeg",
-          DateTime.now().add(new Duration(minutes: i*2+5)),
-          DateTime.now().add(new Duration(minutes: i*20)),
-          DateTime.now(),
-          new Room(0, "S-200", "Stefani", 2, "Stefani is Cool", 20,
-            "Alguien.importante@upr.edu", new Coordinate(18.209641, -67.139923)
-          ),
-          new List.generate(3, (i) => Website(
-            "https://portal.upr.edu/rum/portal.php?a=rea_login",
-            "link $i")
-          ),
-            new List.generate(
-            Random().nextInt(7) + 3,
-            (i) => eventTags[randList[i]]
-            ),
-          false, null
-          );
-        }
-  );
-
-  List<Event> genSearch = new List();
-  List<Event> perSearch = new List();
-
-  void clearPerSearch() => perSearchKeyword = "";
-  void clearGenSearch() => genSearchKeyword = "";
-  void runLocalSearch(){
-    if (perSearchKeyword.isNotEmpty) {
-      perSearch.clear();
-      dummyEvents.forEach((element) {
-        if (element.title.contains(perSearchKeyword)){
-          perSearch.add(element);
-        } else if (element.description.contains(perSearchKeyword)){
-          perSearch.add(element);
-        }
-      });
-    }
-    if(genSearchKeyword.isNotEmpty) {
-      genSearch.clear();
-      dummyEvents.forEach((element) {
-        if (element.title.contains(genSearchKeyword)){
-          genSearch.add(element);
-        } else if (element.description.contains(genSearchKeyword)){
-          genSearch.add(element);
-        }
-      });
+      if(response.data["eid"] == null){
+        return Future.error("We were unable to create the Event, please try "
+            "again.");
+      }
+      return true;
+    } catch(error,stacktrace){
+      if (error is DioError) {
+        debugPrint("Exception: $error");
+        return Future.error(Utils.handleDioError(error, "Create Event"));
+      } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        return Future.error("Internal app error while Createing Event");
+      }
     }
   }
 
-  void deleteEvent(Event event){
-    dummyEvents.remove(event);
+  /// Requests for an [Event] to be cancelled in the system.
+  ///
+  /// Given an Event through the [event] parameter, the back-end
+  /// marks the Event in the system as deleted.
+  ///
+  /// A cancelled event will disappear from the Feeds and if a user is
+  /// following it, they will receive a notification that it has been cancelled
+  ///
+  /// Database Errors are caught by Dio and throw a [DioError] which is
+  /// traduced to a proper error with [Utils.handleDioError].
+  Future<bool> cancelEvent(Event event) async{
+    try{
+      await apiConnection.ensureInitialized();
+
+      Response response = await apiConnection.dio.post("/App/Events/eid=${event.UID}"
+          "/estatus=deleted");
+
+      return response.data["eid"] == event.UID;
+    } catch(error,stacktrace){
+      if (error is DioError) {
+        debugPrint("Exception: $error");
+        return Future.error(Utils.handleDioError(error, "Cancel Event"));
+      } else {
+        debugPrint("Exception: $error stackTrace: $stacktrace");
+        return Future.error("Internal app error while Cancelling Event");
+      }
+    }
   }
 
-  static List<Tag> eventTags = [Tag("ADMI",0), Tag("ADOF",0), Tag("AGRO",0), Tag
-    ("ALEM",0), Tag("ANTR",0), Tag("ARTE",0), Tag("ASTR",0), Tag("BIND",0),
-    Tag("BIOL",0), Tag("BOTA",0), Tag("CFIT",0), Tag("CHIN",0), Tag("CIAN",0)
-    , Tag("CIBI",0), Tag("CIFI",0), Tag("CIIC",0), Tag("CIMA",0)];
 }
 

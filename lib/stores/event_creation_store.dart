@@ -1,6 +1,8 @@
 import 'dart:math';
 
-import 'package:InTheNou/assets/utils.dart';
+import 'package:InTheNou/assets/values.dart';
+import 'package:InTheNou/dialog_manager.dart';
+import 'package:InTheNou/dialog_service.dart';
 import 'package:InTheNou/models/building.dart';
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/models/floor.dart';
@@ -23,6 +25,10 @@ class EventCreationStore extends flux.Store {
 
   Random rand = Random();
 
+  Future<bool> creationResult = Future.value(false);
+
+  DialogService _dialogService = DialogService();
+
   Event _newEvent;
   String _title;
   String _description;
@@ -38,35 +44,99 @@ class EventCreationStore extends flux.Store {
   Room _selectedRoom;
   List<Website> _websites = new List();
 
-  List<Tag> _allTagsFromRepo = new List();
   Map<Tag,bool> _allTags = new Map();
   Map<Tag,bool> _searchTags = new Map();
   List<Tag> _selectedTags = new List();
 
   EventCreationStore() {
-    triggerOnAction(submitEventAction, (_){
-      _newEvent = new Event(rand.nextInt(100)+30,_title, _description,
-          "alguien.importante@upr.edu", _image, _startDateTime,
-          _endDateTime,DateTime.now(), _selectedRoom, _websites,
-        _selectedTags, false, null);
-      _eventsRepo.createEvent(_newEvent);
-      reset();
+    triggerOnAction(submitEventAction, (_) async{
+      DialogResponse confirmation = await _dialogService.showDialog(
+          type: DialogType.ImportantAlert,
+          title: "Confirm Event",
+          description: "Are you sure you want to submit this event? \nNo further "
+              "changes can be made to the event, except for canceling.",
+          primaryButtonTitle: "CONFIRM",
+          secondaryButtonTitle: "CANCEL",
+          dismissible: false);
+      if(!confirmation.result){
+        return;
+      }
+
+      _dialogService.showLoadingDialog(
+          title: "Creating Event");
+
+      _newEvent = new Event(0,_title, _description, "",
+          _image == null ? null : _image.isEmpty ? null : _image,
+          _startDateTime, _endDateTime, DateTime.now(), _selectedRoom,
+          _websites, _selectedTags, false, false, null, "active");
+
+      _eventsRepo.createEvent(_newEvent).then((result) async{
+        _dialogService.dialogComplete(DialogResponse(result: true));
+        if(result){
+          await _dialogService.showDialog(
+              type: DialogType.Alert,
+              title: "Creation Success",
+              description: "The Event has been Created.",
+              dismissible: false
+          );
+          creationResult = Future.value(result);
+          trigger();
+          reset();
+        } else {
+          _dialogService.showDialog(
+              type: DialogType.Error,
+              title: "Creation Failed",
+              description: "The Event was not able to be Created please try "
+                  "again.");
+        }
+      }).catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Creation Failed",
+            description: e.toString());
+      });
     });
-    triggerOnAction(discardEventAction, (_){
-      reset();
+    triggerOnAction(discardEventAction, (_) async{
+      DialogResponse response = await _dialogService.showDialog(
+          type: DialogType.Alert,
+          title: "You have made some changes",
+          description: 'Would you like to save your progress in the '
+              'Event Creation temporerally?. \nIt will be discarted '
+              'upon restart of the application.',
+          primaryButtonTitle: "SAVE",
+          secondaryButtonTitle: "DISCARD",
+          dismissible: false);
+      if(!response.result){
+        reset();
+      }
     });
-    triggerOnAction(getBuildingsAction, (_){
-      _buildings = _infoBaseRepo.dummyBuildings;
+    triggerOnAction(getBuildingsAction, (_) async{
+      _infoBaseRepo.getAllBuildings().then((buildings){
+        _buildings = buildings;
+        trigger();
+      }).catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Unable to get Buildings",
+            description: e.toString());
+      });
     });
     triggerOnAction(getAllTagsAction, (_){
-      _allTagsFromRepo = _tagRepo.getAllTags();
-      _allTags = new Map<Tag,bool>.fromIterable(_allTagsFromRepo,
-          key: (tag) => tag,
-          value: (tag) => false
-      );
-      if(_searchTags.isEmpty){
-        _searchTags = new Map.from(_allTags);
-      }
+      _tagRepo.getAllTags().then((tags) {
+        _allTags = new Map<Tag,bool>.fromIterable(tags,
+            key: (tag) => tag,
+            value: (tag) => false
+        );
+        if(_searchTags.isEmpty){
+          _searchTags = new Map.from(_allTags);
+        }
+        trigger();
+      }).catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Unable to get Tags",
+            description: "Please try again.");
+      });
     });
     triggerOnAction(inputEventTitleAction, (String title){
       _title = title;
@@ -85,17 +155,33 @@ class EventCreationStore extends flux.Store {
       }
     });
     triggerOnAction(buildingSelectAction, (Building building){
-      _selectedBuilding = building;
       _selectedFloor = null;
       _selectedRoom = null;
       _roomsInBuilding = new List();
-      createFloors(building);
+      _infoBaseRepo.getBuilding(building.UID).then((value) {
+        _selectedBuilding = value;
+        _floors = selectedBuilding.floors;
+        trigger();
+      }).catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Unable to get Floors of Building",
+            description: e.toString());
+      });
     });
-    triggerOnAction(floorSelectAction, (Floor floor){
-      _roomsInBuilding = _infoBaseRepo.getRoomsOfFloor(_selectedBuilding.UID,
-          floor.floorNumber);
+    triggerOnAction(floorSelectAction, (Floor floor) async{
       _selectedFloor = floor;
       _selectedRoom = null;
+      _infoBaseRepo.getRoomsOfFloor(_selectedBuilding.UID,
+          floor.floorNumber).then((value){
+        _roomsInBuilding = value;
+        trigger();
+      }).catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Unable to get Rooms of Floor",
+            description: e.toString());
+      });
     });
     triggerOnAction(roomSelectAction, (Room room){
       _selectedRoom = room;
@@ -108,37 +194,41 @@ class EventCreationStore extends flux.Store {
       }
     });
     triggerOnAction(selectedTagAction, (MapEntry<Tag, bool> tag){
+      if (tag.value){
+        if(_selectedTags.length > 9){
+          _dialogService.showDialog(
+              type: DialogType.Alert,
+              title: "Tag Limit Reached",
+              description: "You have reached the limit of 10 Tags for the "
+                  "Event.");
+          return;
+        } else {
+          _selectedTags.add(tag.key);
+        }
+      } else {
+        _selectedTags.remove(tag.key);
+      }
       if(_searchTags.containsKey(tag.key)){
         _searchTags.update(tag.key, (value) => tag.value);
         _allTags.update(tag.key, (value) => tag.value);
-      }
-      if (tag.value){
-        _selectedTags.add(tag.key);
-      } else {
-        _selectedTags.remove(tag.key);
       }
     });
     triggerOnAction(searchedTagAction, (String search){
       _searchTags.clear();
       _allTags.forEach((key, value) {
-        if(key.name.contains(search)){
+        if(key.name.toUpperCase().contains(search.toUpperCase())){
           _searchTags.putIfAbsent(key, () => value);
         }
       });
     });
   }
 
-  void createFloors(Building building){
-    _floors = new List.generate(building.numFloors,
-            (index) => Utils.ordinalNumber(index+1));
-  }
-
   void reset(){
     _title = null;
     _description = null;
+    _image = null;
     _startDateTime = null;
     _endDateTime = null;
-    _buildings = new List();
     _selectedBuilding = null;
     _floors = new List();
     _selectedFloor = null;
@@ -149,9 +239,18 @@ class EventCreationStore extends flux.Store {
     _selectedTags = new List();
   }
 
+  bool hasNoChanges(){
+    return _title == null && _description == null &&
+        (_image == null || _image.isEmpty) && _startDateTime == null &&
+        _endDateTime == null && _selectedBuilding == null &&
+        _selectedFloor == null && _selectedRoom == null &&
+        _websites.length==0 && _selectedTags.length==0;
+  }
+
 
   String get title => _title;
   String get description => _description;
+  String get image => _image;
   DateTime get startDateTime => _startDateTime;
   DateTime get endDateTime => _endDateTime;
   List<Building> get buildings => _buildings;
@@ -162,7 +261,8 @@ class EventCreationStore extends flux.Store {
   Floor get selectedFloor => _selectedFloor;
   List<Website> get websites => _websites;
   List<Tag> get selectedTags => _selectedTags;
-  Map<Tag, bool> get searchTags => _searchTags;}
+  Map<Tag, bool> get searchTags => _searchTags;
+}
 
 final flux.Action submitEventAction = new flux.Action();
 final flux.Action discardEventAction = new flux.Action();

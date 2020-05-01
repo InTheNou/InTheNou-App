@@ -1,4 +1,5 @@
 import 'package:InTheNou/models/phone_number.dart';
+import 'package:InTheNou/models/room.dart';
 import 'package:InTheNou/models/website.dart';
 
 class Service {
@@ -16,6 +17,18 @@ class Service {
 
   Service.name(this._UID, this._name, this._description, this._roomCode);
 
+  factory Service.fromJson(Map<String, dynamic> json, Room room) {
+    return Service(
+      json['sid'],
+      json['sname'],
+      json['sdescription'],
+      room.code,
+      json['sschedule'].toString(),
+      PhoneNumber.jsonToList(json['PNumbers']),
+      Website.jsonToList(json["Websites"]),
+    );
+  }
+
   int get UID => _UID;
   String get name => _name;
   String get description => _description;
@@ -23,5 +36,15 @@ class Service {
   String get schedule => _schedule;
   List<PhoneNumber> get numbers => _numbers;
   List<Website> get websites => _websites;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is Service &&
+              runtimeType == other.runtimeType &&
+              _UID == other._UID;
+
+  @override
+  int get hashCode => _UID.hashCode;
 
 }
