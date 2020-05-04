@@ -24,7 +24,7 @@ class BackgroundHandler {
   /// [onBackgroundFetch]. The SmartNotification functionality gets handled
   /// every time this initiated and it it handled in
   /// [NotificationHandler.doSmartNotification].
-  /// This method  can also schedule any other background tasks needed, be
+  /// This method can also schedule any other background tasks needed, be
   /// it one-hot or recurring. Here the Recommendation feature handled by
   /// the [_doRecommendation] task.
   ///
@@ -195,8 +195,7 @@ class BackgroundHandler {
           time: DateTime.now(),
           type: NotificationType.Alert
       ), "Smart Notification Error", "Unable to Schedule Smart Notification "
-          "in background",
-          e.toString());
+          "in background", "");
     }
   }
 
@@ -244,7 +243,11 @@ class BackgroundHandler {
                   "cancelled.");
           notificationID ++;
         });
+
+        // Update NotificationID so that the next notification does override
+        // this one
         _prefs.setInt(NOTIFICATION_ID_KEY, notificationID + followedEvents.length);
+        // Update the date to show that we checked at this time
         _prefs.setString(LAST_CANCELLATION_DATE_KEY,
             Utils.formatTimeStamp(DateTime.now().toUtc()));
         if(followedEvents.length == 0){
@@ -267,7 +270,7 @@ class BackgroundHandler {
           time: DateTime.now(),
           type: NotificationType.Alert
       ), "Cancel Notification Error", "Unable to Check Cancelled Events ",
-          e.toString());
+          "");
     }
   }
 
@@ -333,6 +336,7 @@ class BackgroundHandler {
                 "based on your interests. Check em out!");
       }
 
+      // Update the date to show that we checked at this time
       _prefs.setString(LAST_RECOMMENDATION_DATE_KEY,
           Utils.formatTimeStamp(DateTime.now().toUtc()));
     } catch (e, stacktrace){
@@ -342,7 +346,7 @@ class BackgroundHandler {
           time: DateTime.now(),
           type: NotificationType.Alert
       ), "Recommendation Notification Error", "Unable to Recommend",
-          e.toString());
+          "");
     }
 
   }
@@ -371,6 +375,7 @@ class BackgroundHandler {
     return sum;
   }
 
+  /// Utility method to turn off or on the background tasks
   static void toggleBackgroundTask(enabled) {
     if (enabled) {
       BackgroundFetch.start().then((int status) {
@@ -385,6 +390,10 @@ class BackgroundHandler {
     }
   }
 
+  /// Utility method to restart the background tasks
+  ///
+  /// This can be used when the timing of the background tasks are changed in
+  /// runtime.
   static void restart() {
     BackgroundFetch.stop().then((int status) {
       print('[BackgroundFetch] stop success: $status');

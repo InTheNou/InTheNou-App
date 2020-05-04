@@ -3,6 +3,9 @@ import 'package:InTheNou/stores/event_creation_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
+/// A custom Widget for selecting Tags
+///
+/// {@category Widget}
 class TagSelectionWidget extends StatefulWidget {
 
   @override

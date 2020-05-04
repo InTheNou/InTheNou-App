@@ -6,6 +6,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
+/// The view for showing detailed information about a selected [Building]
+///
+/// {@category View}
 class BuildingView extends StatefulWidget {
 
   @override

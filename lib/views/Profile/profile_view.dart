@@ -8,6 +8,9 @@ import 'package:flutter_flux/flutter_flux.dart' as flux;
 
 const String PROFILE = "Profile";
 
+/// The view for showing detailed information about the current user
+///
+/// {@category View}
 class ProfileView extends StatefulWidget{
 
   ProfileView({Key key}) : super(key: PageStorageKey(key));

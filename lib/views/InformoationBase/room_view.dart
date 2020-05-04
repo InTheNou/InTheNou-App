@@ -6,6 +6,9 @@ import 'package:InTheNou/views/widgets/link_with_icon_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
+/// The view for showing detailed information about a selected [Room]
+///
+/// {@category View}
 class RoomView extends StatefulWidget {
 
   @override

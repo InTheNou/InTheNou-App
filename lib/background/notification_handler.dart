@@ -135,6 +135,7 @@ class NotificationHandler {
     _prefs.setStringList(SMART_NOTIFICATION_LIST, null);
   }
 
+  /// Utility method to clear out all notifications for Smart and Default
   static void cancelAllNotifications() async{
     _prefs = await SharedPreferences.getInstance();
     flutterLocalNotificationsPlugin.cancelAll();
@@ -285,7 +286,7 @@ class NotificationHandler {
     }
   }
 
-  /// Setup of the notification and schedules it
+  /// Setup of the Smart notification and schedules it
   static void _scheduleSmartNotification(int id, String title,
       String description, String bigDescription, DateTime scheduledDate,
       String notifPayload) async {
@@ -319,7 +320,7 @@ class NotificationHandler {
         platformChannelSpecifics, payload: notifPayload);
   }
 
-  /// Setup of the notification and schedules it
+  /// Setup of the Default notification and schedules it
   static void _scheduleDefaultNotification(NotificationObject notification,
       String title, String description) async {
     var defaultStyleInformation = DefaultStyleInformation(true, true);
@@ -346,7 +347,7 @@ class NotificationHandler {
         platformChannelSpecifics, payload: convert.jsonEncode(notification));
   }
 
-  /// Setup of the notification and schedules it
+  /// Setup of the Recommendation notification and schedules it
   static void scheduleRecommendationNotification(
       NotificationObject notification, String title, String description,
       String bigDescription) async {
@@ -381,6 +382,7 @@ class NotificationHandler {
         payload: convert.jsonEncode(notification));
   }
 
+  /// Setup of the Alert notification and schedules it
   static void showAlertNotification(
       NotificationObject notification, String title, String description,
       String bigDescription) async {
@@ -414,6 +416,7 @@ class NotificationHandler {
         payload: convert.jsonEncode(notification));
   }
 
+  /// Setup of the Cancellation notification and schedules it
   static void showCancellationNotification(
       NotificationObject notification, String title, String description,
       String bigDescription) async {
@@ -448,6 +451,7 @@ class NotificationHandler {
         payload: convert.jsonEncode(notification));
   }
 
+  /// Setup of the Debug notification and schedules it
   static void showDebugNotification(
       NotificationObject notification, String title, String description,
       String bigDescription) async {
@@ -485,6 +489,12 @@ class NotificationHandler {
 }
 
 
+/// Object for Notifications created in the app.
+///
+/// Utility model that is sent with the notification so that they can be
+/// identified when they are received.
+///
+/// {@category Model}
 class NotificationObject {
   final NotificationType type;
   final int id;

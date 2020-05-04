@@ -2,6 +2,9 @@ import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/material.dart';
 
+/// Widget used for Canceling Events or showing Events are canceled
+///
+/// {@category Widget}
 class CancelButton extends StatelessWidget {
 
   final Event _event;

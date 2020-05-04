@@ -19,6 +19,13 @@ import 'background/notification_handler.dart';
 
 NotificationAppLaunchDetails notificationAppLaunchDetails;
 
+/// The main view where the user can navigate to the various functionalities
+/// of the app.
+///
+/// It does the verification of a current session and routes to the
+/// [HomePage] or [LoginView] respectively.
+///
+/// {@category View}
 class HomePage extends StatefulWidget {
   HomePage({Key key, this.title}) : super(key: key);
 

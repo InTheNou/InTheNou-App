@@ -4,9 +4,12 @@ import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/stores/event_feed_store.dart';
 import 'package:flutter/material.dart';
 
+/// Widget used for Dismissing Events
+///
+/// {@category Widget}
 class DismissButton extends StatelessWidget {
 
-  DialogService _dialogService = DialogService();
+  final DialogService _dialogService = DialogService();
   final Event _event;
   final FeedType _feedType;
   DismissButton(this._event, this._feedType):

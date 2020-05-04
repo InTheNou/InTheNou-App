@@ -2,6 +2,12 @@ import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/tag.dart';
 
+/// Object representation of an User in the System
+///
+/// It contains the identifiable and descriptive properties of a User
+/// in our database.
+///
+/// {@category Model}
 class User {
 
   int _UID;
@@ -13,9 +19,17 @@ class User {
   UserPrivilege _userPrivilege;
   String photo;
 
+  /// The Default constructor
   User(this._UID, this._firstName, this._fullName, this._email, this._role,
       this._tags, this._userPrivilege, this.photo);
 
+  /// Factory constructor to create a User  from a [json] object
+  /// from the API.
+  ///
+  /// Users [Utils.userRoleFromString] to translate the role representation
+  /// in the database to a [UserRole]. Also uses [Utils.userPrivilegeFromInt]
+  /// to translate the privilege representation in the database to a
+  /// [UserPrivilege].
   factory User.fromJson(Map<String,dynamic> json){
     return User(
         json["uid"],
@@ -29,6 +43,7 @@ class User {
     );
   }
 
+  /// Utility method to serialize a User to JSON
   Map<String,dynamic> toJson(){
     return {
       "uid" : _UID,
@@ -42,18 +57,36 @@ class User {
     };
   }
 
+  /// Unique identifier of this User in the database.
+  /// It is represented in the API a "uid'.
   int get UID => _UID;
-  String get firstName => _firstName;
-  String get fullName => _fullName;
-  String get email => _email;
-  UserRole get role => _role;
-  List<Tag> get tags => _tags;
-  UserPrivilege get userPrivilege => _userPrivilege;
 
+  /// The first name of this User in the database.
+  /// Is it represented in the API as part of "display_name'.
+  String get firstName => _firstName;
+
+  /// The full name of this User in the database.
+  /// Is it represented in the API as "display_name'.
+  String get fullName => _fullName;
+
+  /// The email associated with this User in the database.
+  /// Is it represented in the API as "email'.
+  String get email => _email;
+
+  /// The assigned [UserRole] to this user.
+  /// Is it represented in the API as "type'.
+  UserRole get role => _role;
+
+  /// The selected and developed interest [Tags]s associated with this User.
+  /// Is it represented in the API as "tags'.
+  List<Tag> get tags => _tags;
   set tags(List<Tag> value) {
     _tags = value;
   }
 
+  /// The email associated with this User in the database.
+  /// Is it represented in the API as part of "roleid'.
+  UserPrivilege get userPrivilege => _userPrivilege;
   set userPrivilege(UserPrivilege value) {
     _userPrivilege = value;
   }

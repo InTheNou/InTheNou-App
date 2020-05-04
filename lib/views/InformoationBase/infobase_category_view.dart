@@ -4,6 +4,13 @@ import 'package:flutter_flux/flutter_flux.dart' as flux;
 
 const String INFORMATION_BASE = "Information Base";
 
+/// The view for showing the Category selection of the Information Base
+///
+/// Currently the categories are Buildings, Rooms and Services. But this can
+/// be expanded in the future to accommodate other times of information to be
+/// made available to the user.
+///
+/// {@category View}
 class InfoBaseCategoryView extends StatefulWidget{
 
   InfoBaseCategoryView({Key key}) : super(key: PageStorageKey(key));

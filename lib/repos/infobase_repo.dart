@@ -176,10 +176,11 @@ class InfoBaseRepo {
       if (error is DioError) {
         debugPrint("Exception: $error");
         return Future.error(Utils.handleDioError(error, "Searching Rooms by "
-            "keyword") );
+            "keyword. kwyword: $keyword skip: $skipRooms limit=$numRooms") );
       } else {
         debugPrint("Exception: $error stackTrace: $stacktrace");
-        return Future.error("Internal app error Searching Rooms by keyword");
+        return Future.error("Internal app error Searching Rooms by keyword. "
+            "kwyword: $keyword skip: $skipRooms limit=$numRooms");
       }
     }
   }

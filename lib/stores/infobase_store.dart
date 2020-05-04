@@ -29,9 +29,13 @@ class InfoBaseStore extends flux.Store{
   bool _isRoomSearching = false;
   bool _isServiceSearching = false;
 
-  bool isBuildingPaginating = false;
-  bool isRoomPaginating = false;
-  bool isServicePaginating = false;
+  bool _isBuildingPaginating = false;
+  bool _isRoomPaginating = false;
+  bool _isServicePaginating = false;
+
+  bool _canBuildingPaginate = false;
+  bool _canRoomPaginate = false;
+  bool _canServicePaginate = false;
 
   String _buildingSearchKeyword;
   String _roomSearchKeyword;
@@ -42,19 +46,20 @@ class InfoBaseStore extends flux.Store{
   DialogService _dialogService = DialogService();
 
   InfoBaseStore() {
-    triggerOnAction(searchInfoBaseAction, (MapEntry<InfoBaseType, String> search) {
+    triggerOnAction(searchInfoBaseAction, (MapEntry<InfoBaseType, String>
+        search) async{
       switch (search.key) {
         case InfoBaseType.Building:
           _buildingSearchKeyword = search.value;
-          _buildingsResults = _infoBaseRepo.searchBuildings(search.value,0, PAGINATION_LENGTH);
+          _buildingsResults = _searchBuildings(_buildingSearchKeyword,0, null);
           break;
         case InfoBaseType.Room:
           _roomSearchKeyword = search.value;
-          _roomsResults = _searchRooms(search.value,0,PAGINATION_LENGTH);
+          _roomsResults = _searchRooms(search.value,0, null);
           break;
         case InfoBaseType.Service:
           _serviceSearchKeyword = search.value;
-          _servicesResults = _infoBaseRepo.searchServices(search.value, 0, PAGINATION_LENGTH);
+          _servicesResults = _searchServices(search.value, 0, null);
           break;
       }
     });
@@ -71,71 +76,54 @@ class InfoBaseStore extends flux.Store{
           break;
       }
     });
-    triggerOnAction(reloadSearchAction, (InfoBaseType type) {
+    triggerOnAction(reloadSearchAction, (InfoBaseType type) async{
       switch (type) {
         case InfoBaseType.Building:
-          _buildingsResults = _infoBaseRepo.searchBuildings(
-              _buildingSearchKeyword,0, PAGINATION_LENGTH);
+          _isBuildingPaginating = false;
+          if(_buildingSearchKeyword == null || _buildingSearchKeyword.isEmpty){
+            _buildingsResults = _getAllBuildings(0, null);
+          } else {
+            _buildingsResults = _searchBuildings(_buildingSearchKeyword,0, null);
+          }
           break;
         case InfoBaseType.Room:
-          if(_roomSearchKeyword != null && _roomSearchKeyword.isNotEmpty){
-            isRoomPaginating = false;
-            _roomsResults = _searchRooms(_roomSearchKeyword,0,PAGINATION_LENGTH);
-          }
+          _isRoomPaginating = false;
+          _roomsResults = _searchRooms(_roomSearchKeyword,0, null);
           break;
         case InfoBaseType.Service:
-          if(_serviceSearchKeyword != null && _serviceSearchKeyword.isNotEmpty){
-            _servicesResults = _infoBaseRepo.searchServices(
-                _serviceSearchKeyword, 0, PAGINATION_LENGTH);
-          }
+          _isServicePaginating = false;
+          _servicesResults = _searchServices(_serviceSearchKeyword, 0, null);
           break;
       }
     });
     triggerOnAction(paginateInfoBaseAction, (InfoBaseType type) async{
-      try{
-        switch (type) {
-          case InfoBaseType.Building:
-            List<Building> buildings = await _buildingsResults;
-            if(_buildingSearchKeyword == null || _buildingSearchKeyword.isEmpty){
-              _infoBaseRepo.getAllBuildings(buildings.length, PAGINATION_LENGTH)
-                  .then((newBuildings) {
-                buildings.addAll(newBuildings);
-                _buildingsResults = Future.value(buildings);
-              });
-            } else {
-              _infoBaseRepo.searchBuildings(_buildingSearchKeyword,
-                  buildings.length, PAGINATION_LENGTH).then((newBuildings) {
-                buildings.addAll(newBuildings);
-                _buildingsResults = Future.value(buildings);
-              });
-            }
-            break;
-          case InfoBaseType.Room:
+      switch (type) {
+        case InfoBaseType.Building:
+          List<Building> buildings = await _buildingsResults;
+          _isBuildingPaginating = true;
+          if(_buildingSearchKeyword == null || _buildingSearchKeyword.isEmpty){
+            _buildingsResults = _getAllBuildings(buildings.length, buildings);
+          } else {
+            _buildingsResults = _searchBuildings(_buildingSearchKeyword,0,
+                buildings);
+          }
+          break;
+        case InfoBaseType.Room:
+          if(_roomSearchKeyword.isNotEmpty){
+            _isRoomPaginating = true;
             var rooms = await _roomsResults;
-            _searchRooms(_roomSearchKeyword, rooms.length, PAGINATION_LENGTH)
-                .then((newRooms) {
-              trigger();
-              rooms.addAll(newRooms);
-              _roomsResults = Future.value(rooms);
-              Future.delayed(Duration(milliseconds: 100)).then((_){
-                isRoomPaginating = false;
-              });
-            });
-            break;
-          case InfoBaseType.Service:
+            _roomsResults = _searchRooms(_roomSearchKeyword, rooms.length,
+                rooms);
+          }
+          break;
+        case InfoBaseType.Service:
+          if(_serviceSearchKeyword.isNotEmpty){
+            _isRoomPaginating = true;
             var services = await _servicesResults;
-            _infoBaseRepo.searchServices(_serviceSearchKeyword, services.length,
-                PAGINATION_LENGTH).then((newServices) {
-              services.addAll(newServices);
-              _servicesResults = Future.value(services);
-            });
-            break;
-        }
-      } catch (e){
-        _dialogService.showDialog(
-            type: DialogType.Error,
-            title: "Getting more Results ",
-            description: e.toString());
+            _servicesResults = _searchServices(_serviceSearchKeyword, services.length,
+                services);
+          }
+          break;
       }
     });
 
@@ -153,7 +141,7 @@ class InfoBaseStore extends flux.Store{
       }
     });
     triggerOnAction(getAllBuildingsAction, (_) {
-      _buildingsResults = _infoBaseRepo.getAllBuildings(0, PAGINATION_LENGTH);
+      _buildingsResults = _getAllBuildings(0, null);
     });
 
     triggerOnAction(selectBuildingAction, (Building building) async {
@@ -212,19 +200,122 @@ class InfoBaseStore extends flux.Store{
     });
   }
 
-  Future<List<Room>> _searchRooms(String code, int skipRooms, int numRooms){
+  Future<List<Building>> _getAllBuildings(int skipBuildings,
+      List<Building> results){
+    _buildingSearchKeyword = "";
+    return _infoBaseRepo.getAllBuildings(skipBuildings,
+        PAGINATION_LENGTH).then((newBuildings) {
+
+      List<Building> buildings = results ?? List();
+      if(buildings.length > 0){
+        buildings.addAll(newBuildings);
+      } else {
+        buildings = newBuildings;
+      }
+      _canBuildingPaginate = newBuildings.length == PAGINATION_LENGTH;
+      _isBuildingPaginating = false;
+      return buildings;
+    }).catchError((e){
+      _dialogService.showDialog(
+          type: DialogType.Error,
+          title: "Getting Results ",
+          description: e.toString());
+      return null;
+    });
+  }
+
+  Future<List<Building>> _searchBuildings(String keyword, int skipBuildings,
+      List<Building> results){
+    return _infoBaseRepo.searchBuildings(keyword, skipBuildings,
+        PAGINATION_LENGTH).then((newBuildings) {
+
+          List<Building> buildings = results ?? List();
+          if(buildings.length > 0){
+            buildings.addAll(newBuildings);
+          } else {
+            buildings = newBuildings;
+          }
+          _canBuildingPaginate = newBuildings.length == PAGINATION_LENGTH;
+          _isBuildingPaginating = false;
+          return buildings;
+    }).catchError((e){
+      _dialogService.showDialog(
+          type: DialogType.Error,
+          title: "Getting Search Results ",
+          description: e.toString());
+      return null;
+    });
+  }
+
+  Future<List<Room>> _searchRooms(String code, int skipRooms, List<Room> results){
     if(code.contains(RegExp(r"^\b[a-zA-Z]{1,2}-\d{1,3}[a-zA-Z]?$"))){
       var codeQuery = RegExp(
           r"(?<abrev>\b[a-zA-Z]{1,2})(?<dash>-)(?<code>\d{1,3}[a-zA-Z]?)")
           .firstMatch(code);
       String abrev = codeQuery.namedGroup("abrev");
       String rCode = codeQuery.namedGroup("code");
-      return _infoBaseRepo.searchRoomsByCode(abrev, rCode, skipRooms, numRooms);
+      return _infoBaseRepo.searchRoomsByCode(abrev, rCode, skipRooms,
+          PAGINATION_LENGTH).then((newRooms) async{
+            List<Room> rooms = results ?? List();
+            if(rooms.length > 0){
+              rooms.addAll(newRooms);
+            } else {
+              rooms = newRooms;
+            }
+            _canRoomPaginate = newRooms.length == PAGINATION_LENGTH;
+            _isRoomPaginating = false;
+            return rooms;
+      }).catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Getting Room Results ",
+            description: e.toString());
+        return null;
+      });
     }
     else{
-      return _roomsResults = _infoBaseRepo.searchRoomsByKeyword(code,
-          skipRooms, numRooms);
+      return _infoBaseRepo.searchRoomsByKeyword(code, skipRooms,
+          PAGINATION_LENGTH).then((newRooms) async{
+        List<Room> rooms = results ?? List();
+        if(rooms.length > 0){
+          rooms.addAll(newRooms);
+        } else {
+          rooms = newRooms;
+        }
+        _canRoomPaginate = newRooms.length == PAGINATION_LENGTH;
+        _isRoomPaginating = false;
+        return rooms;
+      }).catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Getting Room Results ",
+            description: e.toString());
+        return null;
+      });
     }
+  }
+
+  Future<List<Service>> _searchServices(String keyword, int skipServices,
+      List<Service> results){
+    return _infoBaseRepo.searchServices(keyword, skipServices,
+        6).then((newServices) {
+
+      List<Service> services = results ?? List();
+      if(services.length > 0){
+        services.addAll(newServices);
+      } else {
+        services = newServices;
+      }
+      _canServicePaginate = newServices.length == PAGINATION_LENGTH;
+      _isServicePaginating = false;
+      return services;
+    }).catchError((e){
+      _dialogService.showDialog(
+          type: DialogType.Error,
+          title: "Getting Service Results ",
+          description: e.toString());
+      return null;
+    });
   }
 
   Future<List<Building>> get buildingsResults => _buildingsResults;
@@ -247,6 +338,28 @@ class InfoBaseStore extends flux.Store{
         return _isRoomSearching;
       case InfoBaseType.Service:
         return _isServiceSearching;
+    }
+    return false;
+  }
+  bool getIsPaginating(InfoBaseType type){
+    switch(type){
+      case InfoBaseType.Building:
+        return _isBuildingPaginating;
+      case InfoBaseType.Room:
+        return _isRoomPaginating;
+      case InfoBaseType.Service:
+        return _isServicePaginating;
+    }
+    return false;
+  }
+  bool getCanPaginate(InfoBaseType type){
+    switch(type){
+      case InfoBaseType.Building:
+        return _canBuildingPaginate;
+      case InfoBaseType.Room:
+        return _canRoomPaginate;
+      case InfoBaseType.Service:
+        return _canServicePaginate;
     }
     return false;
   }

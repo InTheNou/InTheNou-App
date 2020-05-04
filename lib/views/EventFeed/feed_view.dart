@@ -3,10 +3,15 @@ import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/stores/event_feed_store.dart';
 import 'package:InTheNou/stores/user_store.dart';
-import 'package:InTheNou/views/widgets/event_card.dart';
+import 'package:InTheNou/views/widgets/event_card_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
+/// The view for showing [Event] results
+///
+/// This View is used for both the Personal Feed and the General Feed
+///
+/// {@category View}
 class FeedView extends StatefulWidget{
 
   final FeedType type;
@@ -29,11 +34,11 @@ class GeneralFeedState extends State<FeedView>
   void initState() {
     super.initState();
 
-    /// if it's the first time the feed is loaded, get all the Events
+    // if it's the first time the feed is loaded, get all the Events
     _eventFeedStore = listenToStore(EventFeedStore.eventFeedToken);
     _userStore = listenToStore(UserStore.userStoreToken);
-    /// Save the scroll position the uer is in to recall if the screen is
-    /// switched
+    // Save the scroll position the user is in to recall if the screen is
+    // switched
     _scrollController = ScrollController(
         initialScrollOffset: _eventFeedStore.getScrollPos(widget.type));
     _scrollController.addListener(() {
@@ -184,7 +189,7 @@ class GeneralFeedState extends State<FeedView>
                       padding:const EdgeInsets.only(bottom: 100.0),
                       itemCount: events.data.length,
                       itemBuilder: (context, index) {
-                        return EventCard(events.data[index], widget.type);
+                        return EventCardImage(events.data[index], widget.type);
                       }
                   ),
                 ),

@@ -350,9 +350,8 @@ class UserStore extends flux.Store{
         description: error);
   }
 
+  /// This method calls the cached data to get the information on the user
   ///
-  /// This method calls the backend to get the information on the uer after
-  /// it has logged in with Google.
   /// The [Future] can return a Null if the user is new to the system.
   /// Otherwise it return the full User information
   Future<User> getUser() async{

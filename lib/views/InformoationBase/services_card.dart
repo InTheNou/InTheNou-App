@@ -2,6 +2,9 @@ import 'package:InTheNou/models/service.dart';
 import 'package:InTheNou/stores/infobase_store.dart';
 import 'package:flutter/material.dart';
 
+/// The widget used to show [Service] results
+///
+/// {@category Widget}
 class ServicesCard extends StatelessWidget {
 
   final Service _service;
@@ -15,12 +18,11 @@ class ServicesCard extends StatelessWidget {
         clipBehavior: Clip.antiAliasWithSaveLayer,
         child: InkWell(
             onTap: () {
-              Navigator.of(context).pushNamed("/infobase/service");
               selectServiceAction(_service);
+              Navigator.of(context).pushNamed("/infobase/service");
             },
             child: Padding(
-              padding: const EdgeInsets.only(top: 8.0, bottom: 8.0,
-              left: 16.0, right: 16.0),
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
@@ -30,13 +32,14 @@ class ServicesCard extends StatelessWidget {
                         color: Theme.of(context).brightness == Brightness.dark ?
                           Theme.of(context).primaryColorLight :
                           Theme.of(context).primaryColor,
-                        fontWeight: FontWeight.bold
                     ),
                   ),
                   const Padding(padding: EdgeInsets.only(top: 8.0)),
                   Text(
                     _service.name,
-                    style: Theme.of(context).textTheme.headline6,
+                    style: Theme.of(context).textTheme.headline6.copyWith(
+                        fontWeight: FontWeight.bold
+                    ),
                   ),
                   const Padding(padding: EdgeInsets.only(top: 16.0)),
                   Text(

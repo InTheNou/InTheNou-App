@@ -8,6 +8,9 @@ import 'package:InTheNou/views/widgets/text_with_icon_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
+/// The view for showing detailed information about a selected [Floor]
+///
+/// {@category View}
 class ServiceView extends StatefulWidget {
 
   @override
@@ -67,40 +70,36 @@ class _ServiceViewState extends State<ServiceView>
                               children: <Widget>[
                                 Text(
                                   detailService.name,
-                                  style: Theme.of(context).textTheme.headline5,
+                                  style: Theme.of(context).textTheme.headline5.copyWith(
+                                    fontWeight: FontWeight.bold
+                                  ),
                                   softWrap: true,
                                 ),
                                 const Padding(padding: EdgeInsets.only(bottom:
-                                8.0)),
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(8.0, 4.0,
-                                      8.0, 4.0),
-                                  child: Text(
-                                    detailService.description,
-                                    style: Theme.of(context).textTheme.subtitle1,
-                                    softWrap: true,
+                                16.0)),
+                                RichText(
+                                  text: TextSpan(
+                                      children: <TextSpan>[
+                                        TextSpan(
+                                          text: "Room: ",
+                                          style: Theme.of(context)
+                                              .textTheme.subtitle1,
+                                        ),
+                                        TextSpan(
+                                            text: detailService.roomCode,
+                                            style: Theme.of(context).textTheme
+                                                .subtitle1.copyWith(fontWeight:
+                                            FontWeight.bold)
+                                        )
+                                      ]
                                   ),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(8.0, 4.0,
-                                      8.0, 4.0),
-                                  child: RichText(
-                                    text: TextSpan(
-                                        children: <TextSpan>[
-                                          TextSpan(
-                                            text: "Room: ",
-                                            style: Theme.of(context)
-                                                .textTheme.subtitle1,
-                                          ),
-                                          TextSpan(
-                                              text: detailService.roomCode,
-                                              style: Theme.of(context).textTheme
-                                                  .subtitle1.copyWith(fontWeight:
-                                              FontWeight.bold)
-                                          )
-                                        ]
-                                    ),
-                                  ),
+                                const Padding(padding: EdgeInsets.only(bottom:
+                                8.0)),
+                                Text(
+                                  detailService.description,
+                                  style: Theme.of(context).textTheme.subtitle1,
+                                  softWrap: true,
                                 ),
                               ],
                             ),

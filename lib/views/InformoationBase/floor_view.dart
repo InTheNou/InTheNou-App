@@ -4,7 +4,9 @@ import 'package:InTheNou/views/InformoationBase/room_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
-
+/// The view for showing detailed information about a selected [Floor]
+///
+/// {@category View}
 class FloorView extends StatefulWidget {
 
   @override

@@ -15,6 +15,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
+/// The view for showing detailed information about a selected [Event]
+///
+/// {@category View}
 class EventDetailView extends StatefulWidget {
 
   final int _initialEvent;
@@ -29,7 +32,6 @@ class EventDetailView extends StatefulWidget {
 class _EventDetailViewState extends State<EventDetailView>
     with flux.StoreWatcherMixin<EventDetailView>{
   EventFeedStore _eventFeedStore;
-  DialogService _dialogService = DialogService();
 
   @override
   void initState() {
@@ -60,6 +62,8 @@ class _EventDetailViewState extends State<EventDetailView>
   }
 
   Widget _buildBody(Event eventDetail){
+    // If the user has chosen to dismiss the event then the detailed view
+    // will close
     _eventFeedStore.detailNeedsToClose.then((value){
       if(value){
        WidgetsBinding.instance.addPostFrameCallback((_) async{
@@ -78,7 +82,9 @@ class _EventDetailViewState extends State<EventDetailView>
                 floating: false,
                 pinned: true,
                 title: Text(eventDetail.title,
-                  style: Theme.of(context).textTheme.headline6,
+                  style: Theme.of(context).textTheme.headline6.copyWith(
+                    color: Colors.white
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
                 flexibleSpace: FlexibleSpaceBar(
@@ -140,7 +146,6 @@ class _EventDetailViewState extends State<EventDetailView>
                               Utils.buildGoogleMapsLink(eventDetail
                                   .room.coordinates),
                               Icon(Icons.location_on)),
-                          const Padding(padding: EdgeInsets.only(bottom: 4.0)),
                           TextWithIcon(eventDetail.getDurationString(),
                               Icon(Icons.today)),
                           const Padding(padding: EdgeInsets.only(bottom: 8.0)),

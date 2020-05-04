@@ -194,6 +194,7 @@ class UserRepo {
   /// [getUserInfo] ans is returned as [User] as well as saved locally for
   /// backup.
   Future<User> signUp(List<Tag> tags) async{
+    SharedPreferences prefs = await _prefs;
     try{
       // Prepare the data to create the user account
       var auth = await _userAccount.authentication;
@@ -211,10 +212,15 @@ class UserRepo {
       // Do the signup request
       Response response = await apiConnection.dio.post("/App/signup",
         data: convert.jsonEncode(values));
-
       // Get the complete information of the user given the response UID
       // and save that user to the local storage
-      User newUser = await getUserInfo(response.data["uid"]);
+      User newUser;
+      if(response.data != null){
+        getGoogleAccount();
+        newUser = User.fromJson(response.data);
+        newUser.photo = _userAccount.photoUrl;
+      }
+      prefs.setString(USER_KEY, convert.jsonEncode(newUser.toJson()));
 
       return newUser;
     } catch(error, stacktrace){
@@ -262,10 +268,14 @@ class UserRepo {
       await apiConnection.ensureInitialized();
 
       // Do the logout request
-      Response response = await apiConnection.dio.get("/App/logout");
+      await apiConnection.dio.get("/App/logout")
+          .catchError((e){
+
+      });
 
       final SharedPreferences prefs = await _prefs;
       prefs.setString(USER_SESSION_KEY, null);
+      prefs.setString(USER_KEY, null);
       apiConnection.deleteSession();
       googleSignOut();
       _userID = null;
@@ -274,10 +284,10 @@ class UserRepo {
     } catch(error, stacktrace){
       if (error is DioError) {
         debugPrint("Exception: $error");
-        return Future.error(Utils.handleDioError(error, "Create User") );
+        return Future.error(Utils.handleDioError(error, "Logout User") );
       } else {
         debugPrint("Exception: $error stackTrace: $stacktrace");
-        return Future.error("Internal app error while Creating User");
+        return Future.error("Internal app error while logout");
       }
     }
   }

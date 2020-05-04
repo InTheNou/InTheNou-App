@@ -9,6 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 import 'package:geolocator/geolocator.dart';
 
+/// The view for showing the settings available to the user and the logout
+///
+/// {@category View}
 class SettingsView extends StatefulWidget {
 
   @override

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+/// Utility Widget to show text with an icon and a bold part of the text at the
+/// end
+///
+/// {@category Widget}
 class MultiTextWithIcon extends StatelessWidget{
   final String _boldText;
   final String _normalText;

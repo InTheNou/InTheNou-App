@@ -1,16 +1,19 @@
 import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
-import 'package:InTheNou/models/building.dart';
-import 'package:InTheNou/models/room.dart';
-import 'package:InTheNou/models/service.dart';
 import 'package:InTheNou/stores/infobase_store.dart';
+import 'package:InTheNou/views/InformoationBase/building_card.dart';
 import 'package:InTheNou/views/InformoationBase/room_card.dart';
 import 'package:InTheNou/views/InformoationBase/services_card.dart';
-import 'package:InTheNou/views/widgets/loading_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
+/// The view for searching the information base after selecting a category
+///
+/// This view handles the [Building], [Room] and [Service]  results in one.
+/// It can be expanded in the future to accommodate other types of information.
+///
+/// {@category View}
 class InfoBaseSearchView extends StatefulWidget {
 
   final InfoBaseType searchType;
@@ -35,7 +38,9 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
     super.initState();
     _infoBaseStore = listenToStore(InfoBaseStore.infoBaseToken);
     _scrollController = ScrollController();
-    getAllBuildingsAction(widget.searchType);
+    if(widget.searchType == InfoBaseType.Building){
+      getAllBuildingsAction();
+    }
     _searchQueryController = TextEditingController(
       text: _infoBaseStore.getSearchKeyword(widget.searchType));
     _searchFocus = FocusNode();
@@ -87,19 +92,16 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
     return FutureBuilder(
       future: dataToShow,
       builder: (BuildContext context, AsyncSnapshot<dynamic> results) {
-        if(!_infoBaseStore.isRoomPaginating &&
+
+        if(!_infoBaseStore.getIsPaginating(widget.searchType) &&
             results.connectionState == ConnectionState.waiting){
           return _buildLoadingWidget();
         }
         if(results.hasData){
           if(results.data.length == 0){
             return _buildNoResultsNotice();
-          } else if(widget.searchType == InfoBaseType.Building){
-            return showBuildingsResults(results.data);
-          } else if (widget.searchType == InfoBaseType.Room){
-            return showRoomsResults(results.data);
           } else {
-            return showServicesResults(results.data);
+            return _buildResults(results.data);
           }
         }
         else if(results.hasError){
@@ -116,130 +118,61 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
     );
   }
 
-  Widget showBuildingsResults(List<Building> buildingsResults){
+  Widget _buildResults(List<dynamic> results){
     return Scrollbar(
       child: RefreshIndicator(
-        onRefresh: () => getAllBuildingsAction(),
-        child: ListView.builder(
-            itemCount: buildingsResults.length,
-            controller: _scrollController,
-            padding:const EdgeInsets.only(top: 8.0),
-            itemBuilder: (context, index){
-              Building building = buildingsResults[index];
-              return Card(
-                clipBehavior: Clip.antiAliasWithSaveLayer,
-                child: InkWell(
-                  onTap: () {
-                    Navigator.of(context).pushNamed("/infobase/building");
-                    selectBuildingAction(building);
-                  },
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      LoadingImage(
-                          imageURL: building.image,
-                          height: 120.0,
-                          width: 150.0
-                      ),
-                      const Padding(padding: EdgeInsets.only(left: 16.0)),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              building.name,
-                              maxLines: 2,
-                              style: Theme.of(context).textTheme.headline6,
-                              softWrap: true,
-                            ),
-                            const Padding(padding: EdgeInsets.only(top: 8.0)),
-                            Text(
-                              building.commonName,
-                              maxLines: 2,
-                              style: Theme.of(context).textTheme.subtitle1,
-                              softWrap: true,
-                            )
-                          ],
-                        ),
-                      ),
-                    ],
+          onRefresh: () => reloadSearchAction(widget.searchType),
+          child: NotificationListener<ScrollNotification>(
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Flexible(
+                    child: ListView.builder(
+                        key: ValueKey(widget.searchType),
+                        itemCount: results.length,
+                        controller: _scrollController,
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        padding: EdgeInsets.only(bottom: 75),
+                        itemBuilder: (context, index){
+                          if(widget.searchType == InfoBaseType.Building){
+                            return BuildingCard(results[index]);
+                          } else if (widget.searchType == InfoBaseType.Room){
+                            return RoomCard(results[index]);
+                          } else {
+                            return ServicesCard(results[index]);
+                          }
+                        }),
                   ),
-                )
-              );
-            }),
-      ),
-    );
-  }
-
-  Widget showRoomsResults(List<Room> roomsResults){
-    return Scrollbar(
-      child: RefreshIndicator(
-        onRefresh: () => reloadSearchAction(InfoBaseType.Room),
-        child: NotificationListener<ScrollNotification>(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Flexible(
-                  child: ListView.custom(
-                    key: ValueKey(InfoBaseType.Room),
-                    controller: _scrollController,
-                    shrinkWrap: true,
-                    padding: EdgeInsets.only(bottom: 75),
-                    childrenDelegate:
-                    SliverChildBuilderDelegate((BuildContext context, int index) {
-                      Room room = roomsResults[index];
-                      return RoomCard(room);
-                    },
-                        childCount: roomsResults.length,
-                        findChildIndexCallback: (Key key) {
-                          final ValueKey valueKey = key;
-                          final Room data = valueKey.value;
-                          return roomsResults.indexOf(data);
-                        }
+                  Container(
+                    height: _infoBaseStore.getIsPaginating(widget.searchType) ? 75 : 0,
+                    color: Colors.transparent,
+                    child: Center(
+                      child: CircularProgressIndicator(),
                     ),
-                  ),
-                ),
-                Container(
-                  height: _infoBaseStore.isRoomPaginating ? 75 : 0,
-                  color: Colors.transparent,
-                  child: Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                )
-              ],
+                  )
+                ],
+              ),
             ),
-          ),
-          onNotification: (ScrollNotification scrollInfo) {
-            if (!_infoBaseStore.isRoomPaginating &&
-                roomsResults.length % PAGINATION_LENGTH == 0 &&
-                scrollInfo.metrics.pixels >
-                    scrollInfo.metrics.maxScrollExtent-150) {
-              _infoBaseStore.isRoomPaginating = true;
-              paginateInfoBaseAction(widget.searchType);
-              return true;
-            }
-            return false;
-          },
-        )
+            onNotification: (ScrollNotification scrollInfo) {
+              if (!_infoBaseStore.getIsPaginating(widget.searchType) &&
+                  _infoBaseStore.getCanPaginate(widget.searchType) &&
+                  scrollInfo.metrics.pixels >=
+                      scrollInfo.metrics.maxScrollExtent-250 &&
+                  scrollInfo.metrics.pixels <=
+                      scrollInfo.metrics.maxScrollExtent-25) {
+                paginateInfoBaseAction(widget.searchType);
+                return true;
+              }
+              return false;
+            },
+          )
       ),
     );
   }
 
-  Widget showServicesResults(List<Service> servicesResults){
-    return Scrollbar(
-        child: RefreshIndicator(
-          onRefresh: () => reloadSearchAction(),
-          child: ListView.builder(
-              itemCount: servicesResults.length,
-              controller: _scrollController,
-              itemBuilder: (context, index){
-                Service service = servicesResults[index];
-                return ServicesCard(service);
-              }),
-        )
-    );
-  }
 
   Widget _buildErrorWidget(String error){
     return Center(
@@ -332,6 +265,7 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
     );
   }
 
+  /// Creates the search hint based on the type of information being shown
   String _buildHint(InfoBaseType type){
     if(type == InfoBaseType.Building){
       return "Search: Stefani";
@@ -342,6 +276,7 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
     }
   }
 
+  /// Sets upt the view for searching the selected category
   void _startSearch() {
     _searchFocus.requestFocus();
     ModalRoute.of(context)
@@ -363,7 +298,7 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
 
   void _clearSearchKeyword() {
     _searchQueryController.clear();
-    clearInfoBaseKeywordAction(widget.searchType);
+//    clearInfoBaseKeywordAction(widget.searchType);
   }
 
 }

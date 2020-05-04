@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+/// Utility Widget to show text with an icon
+///
+/// {@category Widget}
 class TextWithIcon extends StatelessWidget{
   final String _text;
   final Widget _icon;

@@ -1,11 +1,14 @@
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/stores/user_store.dart';
-import 'package:InTheNou/views/widgets/event_card.dart';
+import 'package:InTheNou/views/widgets/event_card_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
-
+/// The view for showing a list of [Event]s currently being followed by the
+/// current user
+///
+/// {@category View}
 class FollowedEventsView extends StatefulWidget {
 
   @override
@@ -94,7 +97,7 @@ class _FollowedEventsViewState extends State<FollowedEventsView>
             itemCount: followedEvents.length,
             itemBuilder: (context, index){
               Event _event = followedEvents[index];
-              return EventCard(_event, FeedType.Detail,
+              return EventCardImage(_event, FeedType.Detail,
                 interactionEnabled: false);
             }
         ),

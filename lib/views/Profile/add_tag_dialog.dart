@@ -3,6 +3,12 @@ import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
+
+/// Dialog for adding Tags in the MyTags view
+///
+/// The user can add and remove these Tags
+///
+/// {@category View}
 class AddTagDialog extends StatefulWidget {
 
   @override

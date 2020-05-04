@@ -2,6 +2,9 @@ import 'package:InTheNou/models/room.dart';
 import 'package:InTheNou/stores/infobase_store.dart';
 import 'package:flutter/material.dart';
 
+/// The widget used to show [Room] results
+///
+/// {@category Widget}
 class RoomCard extends StatelessWidget {
 
   final Room _room;
@@ -12,8 +15,8 @@ class RoomCard extends StatelessWidget {
     return Card(
         child: InkWell(
             onTap: () {
-              Navigator.of(context).pushNamed("/infobase/room");
               selectRoomAction(_room);
+              Navigator.of(context).pushNamed("/infobase/room");
             },
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -26,13 +29,14 @@ class RoomCard extends StatelessWidget {
                       color: Theme.of(context).brightness == Brightness.dark ?
                         Theme.of(context).primaryColorLight :
                         Theme.of(context).primaryColor,
-                      fontWeight: FontWeight.bold
                     ),
                   ),
                   const Padding(padding: EdgeInsets.only(top: 8.0)),
                   Text(
                     _room.code,
-                    style: Theme.of(context).textTheme.headline6,
+                    style: Theme.of(context).textTheme.headline6.copyWith(
+                        fontWeight: FontWeight.bold
+                    ),
                   ),
                   const Padding(padding: EdgeInsets.only(top: 16.0)),
                   Text(
