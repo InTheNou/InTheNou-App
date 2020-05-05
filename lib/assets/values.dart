@@ -79,7 +79,6 @@ const LOCATION_ALERT_NOTIFICATION_ID = 1;
 const SMART_ALERT_NOTIFICATION_ID = 2;
 const CANCELLATION_ALERT_NOTIFICATION_ID = 3;
 
-
 const NOTIFICATION_ID_START = 20;
 
 const INITIAL_TAG_WEIGHT = 50;
@@ -104,6 +103,9 @@ const NOTIFICATION_ID_KEY = "notificationId";
 const LAST_RECOMMENDATION_DATE_KEY = "lastRecommendationDate";
 const LAST_CANCELLATION_DATE_KEY = "lastCancellationDate";
 const USER_KEY = "useraccount";
+
+const FIRST_TIME_USER_KEY = "firstTimeUser";
+
 
 // Notification group IDs
 const SMART_NOTIFICATION_GID = "smartNotificationList";

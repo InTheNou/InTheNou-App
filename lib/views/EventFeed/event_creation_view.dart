@@ -326,7 +326,7 @@ class _EventCreationViewState extends State<EventCreationView>
                             }).toList(),
                             onChanged: (value) => buildingSelectAction(value),
                             validator: (value) =>
-                              value == null? "Please choose a Floor" : null,
+                              value == null? "Please choose a Building" : null,
                           ),
                         ),
                       ),
@@ -345,14 +345,14 @@ class _EventCreationViewState extends State<EventCreationView>
                                     .copyWith(fontWeight: FontWeight.w200)),
                             value: _creationStore.selectedFloor,
                             items: _creationStore.floors.map((Floor floor) {
-                              return new DropdownMenuItem(
+                              return DropdownMenuItem(
                                 value: floor,
-                                child: new Text(floor.floorName),
+                                child: Text(floor.floorName),
                               );
                             }).toList(),
                             onChanged: (value) => floorSelectAction(value),
                             validator: (value) =>
-                              value == null? "Please choose a Floor" : null,
+                            value == null? "Please choose a Floor" : null,
                           ),
                         ),
                       ),
@@ -372,9 +372,9 @@ class _EventCreationViewState extends State<EventCreationView>
                               value: _creationStore.selectedRoom,
                               items: _creationStore.roomsInBuilding
                                   .map((Room room) {
-                                return new DropdownMenuItem(
+                                return DropdownMenuItem(
                                   value: room,
-                                  child: new Text(room.code),
+                                  child: Text(room.code),
                                 );
                               }).toList(),
                               onChanged: (value) => roomSelectAction(value),

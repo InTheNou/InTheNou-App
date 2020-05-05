@@ -43,6 +43,12 @@ class Floor {
   /// building
   int get floorNumber => _floorNumber;
 
+
+  @override
+  String toString() {
+    return 'Floor{_floorName: $_floorName, _floorNumber: $_floorNumber}';
+  }
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

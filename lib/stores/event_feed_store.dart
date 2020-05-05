@@ -19,10 +19,14 @@ class EventFeedStore extends flux.Store{
   Future<List<Event>> _personalSearch;
   String _personalSearchKeyword;
   bool _isPerSearching = false;
+  bool _isPerPaginating = false;
+  bool _canPerPaginate = false;
 
   Future<List<Event>> _generalSearch;
   String _generalSearchKeyword;
   bool _isGenSearching = false;
+  bool _isGenPaginating = false;
+  bool _canGenPaginate = false;
 
   Future<Event> _eventDetail;
   Future<bool> _detailNeedsToClose = Future.value(false);
@@ -37,25 +41,18 @@ class EventFeedStore extends flux.Store{
 
   EventFeedStore() {
     SharedPreferences.getInstance().then((value) => _prefs = value);
-    _getAllEvents(FeedType.PersonalFeed);
-    _getAllEvents(FeedType.GeneralFeed);
-    triggerOnAction(searchFeedAction, (MapEntry<FeedType, String> search){
+
+    triggerOnAction(searchFeedAction, (MapEntry<FeedType, String> search) async{
       if (search.key == FeedType.PersonalFeed) {
         _personalSearchKeyword = search.value;
-        try{
-          _personalSearch = _eventsRepo.searchPerEvents(search.value,0,
-              PAGINATION_GET_ALL);
-        } catch(e){
-          _personalSearch = Future.error(e);
-        }
+        _personalSearch = Future.value(null);
+        trigger();
+        _personalSearch = _searchFeed(FeedType.PersonalFeed, search.value, List());
       } else {
         _generalSearchKeyword = search.value;
-        try{
-          _generalSearch = _eventsRepo.searchGenEvents(search.value,0,
-              PAGINATION_GET_ALL);
-        } catch(e){
-          _generalSearch = Future.error(e);
-        }
+        _generalSearch = Future.value(null);
+        trigger();
+        _generalSearch = _searchFeed(FeedType.GeneralFeed, search.value, List());
       }
     });
     triggerOnAction(setFeedSearching, (MapEntry<FeedType, bool> search){
@@ -66,10 +63,58 @@ class EventFeedStore extends flux.Store{
       }
     });
     triggerOnAction(getAllEventsAction, (FeedType feed) {
-      _getAllEvents(feed);
+      if (feed == FeedType.PersonalFeed) {
+        _generalSearch = Future.value(null);
+        trigger();
+        _personalSearch = _getAllEvents(FeedType.PersonalFeed, List());
+      } else {
+        _generalSearch = Future.value(null);
+        trigger();
+        _generalSearch = _getAllEvents(FeedType.GeneralFeed, List());
+      }
+    });
+    triggerOnAction(paginateFeedAction, (FeedType feed) async {
+      List<Event> events;
+      if (feed == FeedType.PersonalFeed) {
+        // Here we just catch the error since it means that _personalSearch is
+        // null or the last time that it was called it was an error
+        try{
+          events = await _personalSearch;
+        } catch(e){}
+        _isPerPaginating = true;
+        if(_personalSearchKeyword == null || _personalSearchKeyword.isEmpty){
+          _personalSearch = _getAllEvents(FeedType.PersonalFeed,
+              events ?? List());
+        }
+        else {
+          _personalSearch = _searchFeed(FeedType.PersonalFeed,
+              _personalSearchKeyword, events ?? List());
+        }
+      } else {
+        // Here we just catch the error since it means that _generalSearch is
+        // null or the last time that it was called it was an error
+        try{
+          events = await _generalSearch;
+        } catch(e){}
+
+        _isGenPaginating = true;
+        if(_generalSearchKeyword == null || _generalSearchKeyword.isEmpty){
+          _generalSearch = _getAllEvents(FeedType.GeneralFeed, events ?? List());
+        }
+        else {
+          _generalSearch = _searchFeed(FeedType.GeneralFeed,
+              _generalSearchKeyword, events ?? List());
+        }
+      }
     });
     triggerOnAction(openEventDetail, (int eventID) async {
-      var currentEvent = await _eventDetail;
+      var currentEvent;
+      // Here we just catch the error sinse it means that the _eventDetail is
+      // null or the last time that it was called it was an error
+      try{
+        currentEvent = await _eventDetail.catchError((e){});
+      } catch(e){}
+
       if (currentEvent == null || currentEvent.UID != eventID) {
         trigger();
         _eventDetail = _eventsRepo.getEvent(eventID);
@@ -254,16 +299,85 @@ class EventFeedStore extends flux.Store{
       });
     });
      triggerOnAction(cancelEventAction, (_){
-       _getAllEvents(FeedType.PersonalFeed);
-       _getAllEvents(FeedType.GeneralFeed);
+       _personalSearch = _getAllEvents(FeedType.PersonalFeed, List());
+       _generalSearch = _getAllEvents(FeedType.GeneralFeed, List());
      });
   }
 
-  Future _getAllEvents(FeedType feed) async{
+  Future<List<Event>> _getAllEvents(FeedType feed, List<Event> results) async{
     if (feed == FeedType.PersonalFeed) {
-      _personalSearch = _eventsRepo.getPerEvents(0, PAGINATION_GET_ALL);
+      return _eventsRepo.getPerEvents(results.length, PAGINATION_LENGTH)
+          .then((newEvents) {
+        if(results.length > 0){
+          results.addAll(newEvents);
+        } else {
+          results = newEvents;
+        }
+        _canPerPaginate = newEvents.length == PAGINATION_LENGTH;
+        _isPerPaginating = false;
+        return results;
+      }).catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Getting Personal Events",
+            description: e.toString());
+      });
     } else {
-      _generalSearch = _eventsRepo.getGenEvents(0, PAGINATION_GET_ALL);
+      return _eventsRepo.getGenEvents(results.length, PAGINATION_LENGTH)
+          .then((newEvents) {
+        if(results.length > 0){
+          results.addAll(newEvents);
+        } else {
+          results = newEvents;
+        }
+        _canGenPaginate = newEvents.length == PAGINATION_LENGTH;
+        _isGenPaginating = false;
+        return results;
+      }).catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Getting General Events",
+            description: e.toString());
+      });
+    }
+  }
+
+  Future<List<Event>> _searchFeed(FeedType feed, String keyword,
+      List<Event> results){
+    if(feed == FeedType.PersonalFeed){
+      return _eventsRepo.searchPerEvents(keyword, results.length,
+          PAGINATION_LENGTH).then((newEvents) {
+        if(results.length > 0){
+          results.addAll(newEvents);
+        } else {
+          results = newEvents;
+        }
+        _canPerPaginate = results.length == PAGINATION_LENGTH;
+        _isPerPaginating = false;
+        return results;
+      }).catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Searching Personal Events",
+            description: e.toString());
+      });
+    } else{
+      return _eventsRepo.searchGenEvents(keyword, results.length,
+          PAGINATION_LENGTH).then((newEvents) {
+        if(results.length > 0){
+          results.addAll(newEvents);
+        } else {
+          results = newEvents;
+        }
+        _canGenPaginate = results.length == PAGINATION_LENGTH;
+        _isGenPaginating = false;
+        return results;
+      }).catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Searching General Events",
+            description: e.toString());
+      });
     }
   }
 
@@ -340,6 +454,31 @@ class EventFeedStore extends flux.Store{
     }
   }
 
+  bool getIsPaginating(FeedType feed){
+    switch(feed){
+      case FeedType.PersonalFeed:
+        return _isPerPaginating;
+        break;
+      case FeedType.GeneralFeed:
+        return _isGenPaginating;
+        break;
+      case FeedType.Detail:
+        break;
+    }
+    return false;
+  }
+  bool getCanPaginate(FeedType feed){
+    switch(feed){
+      case FeedType.PersonalFeed:
+        return _canPerPaginate;
+      case FeedType.GeneralFeed:
+        return _canGenPaginate;
+      case FeedType.Detail:
+        break;
+    }
+    return false;
+  }
+
   double getScrollPos(FeedType type){
     switch (type){
       case FeedType.PersonalFeed:
@@ -352,6 +491,7 @@ class EventFeedStore extends flux.Store{
         return _scrollPosition[2];
         break;
     }
+    return 0;
   }
 
   void setScrollPos(FeedType type, double pos){
@@ -395,6 +535,8 @@ final flux.Action<MapEntry<FeedType, bool>> setFeedSearching = new flux
 final flux.Action<FeedType> clearSearchKeywordAction = new flux
     .Action<FeedType>();
 final flux.Action<FeedType> getAllEventsAction = new flux.Action<FeedType>();
+final flux.Action<FeedType> paginateFeedAction = new flux.Action();
+
 final flux.Action<int> openEventDetail = new flux.Action();
 final flux.Action<MapEntry<FeedType, Event>> followEventAction = new flux.Action();
 final flux.Action<MapEntry<FeedType, Event>> unFollowEventAction = new flux.Action();

@@ -239,7 +239,7 @@ class UserRepo {
     SharedPreferences prefs = await _prefs;
     if(prefs.get(USER_KEY) == null)
       return null;
-    return User.fromJson(convert.jsonDecode(prefs.get(USER_KEY)));
+    return getUserInfo(convert.jsonDecode(prefs.get(USER_KEY))["uid"]);
   }
 
   /// Utility method that provides the [User._UID]

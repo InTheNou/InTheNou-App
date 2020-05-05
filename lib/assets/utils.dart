@@ -98,6 +98,10 @@ class Utils {
           formatTimeStamp(DateTime(2020)));
     }
 
+    if(!prefs.containsKey(FIRST_TIME_USER_KEY)) {
+      prefs.setBool(FIRST_TIME_USER_KEY, true);
+    }
+
     if(!prefs.containsKey(RECOMMENDATION_INTERVAL_KEY)){
       prefs.setInt(RECOMMENDATION_INTERVAL_KEY, 120);
     }
@@ -137,6 +141,7 @@ class Utils {
     _prefs.remove(RECOMMENDATION_INTERVAL_KEY);
     _prefs.remove(CANCELLATION_INTERVAL_KEY);
 
+    _prefs.remove(FIRST_TIME_USER_KEY);
   }
 
   ///

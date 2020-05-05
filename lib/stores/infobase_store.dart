@@ -51,7 +51,7 @@ class InfoBaseStore extends flux.Store{
       switch (search.key) {
         case InfoBaseType.Building:
           _buildingSearchKeyword = search.value;
-          _buildingsResults = _searchBuildings(_buildingSearchKeyword,0, null);
+          _buildingsResults = _searchBuildings(search.value,0, null);
           break;
         case InfoBaseType.Room:
           _roomSearchKeyword = search.value;

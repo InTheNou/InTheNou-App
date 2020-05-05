@@ -83,13 +83,15 @@ class EventCreationStore extends flux.Store {
           trigger();
           reset();
         } else {
+          _dialogService.dialogComplete(DialogResponse(result: true));
           _dialogService.showDialog(
               type: DialogType.Error,
-              title: "Creation Failed",
+              title: "Event Creation Failed",
               description: "The Event was not able to be Created please try "
                   "again.");
         }
       }).catchError((e){
+        _dialogService.dialogComplete(DialogResponse(result: true));
         _dialogService.showDialog(
             type: DialogType.Error,
             title: "Creation Failed",
@@ -154,33 +156,37 @@ class EventCreationStore extends flux.Store {
         _endDateTime = dateTime.value;
       }
     });
-    triggerOnAction(buildingSelectAction, (Building building){
+    triggerOnConditionalAction(buildingSelectAction, (Building building){
       _selectedFloor = null;
       _selectedRoom = null;
       _roomsInBuilding = new List();
-      _infoBaseRepo.getBuilding(building.UID).then((value) {
+      return _infoBaseRepo.getBuilding(building.UID).then((value) {
         _selectedBuilding = value;
+        _selectedFloor = value.floors.first;
         _floors = selectedBuilding.floors;
-        trigger();
+        return true;
       }).catchError((e){
         _dialogService.showDialog(
             type: DialogType.Error,
             title: "Unable to get Floors of Building",
             description: e.toString());
+        return false;
       });
     });
-    triggerOnAction(floorSelectAction, (Floor floor) async{
+    triggerOnConditionalAction(floorSelectAction, (Floor floor) async{
       _selectedFloor = floor;
       _selectedRoom = null;
-      _infoBaseRepo.getRoomsOfFloor(_selectedBuilding.UID,
+      return _infoBaseRepo.getRoomsOfFloor(_selectedBuilding.UID,
           floor.floorNumber).then((value){
         _roomsInBuilding = value;
-        trigger();
+        _selectedRoom = value.first;
+        return false;
       }).catchError((e){
         _dialogService.showDialog(
             type: DialogType.Error,
             title: "Unable to get Rooms of Floor",
             description: e.toString());
+        return false;
       });
     });
     triggerOnAction(roomSelectAction, (Room room){

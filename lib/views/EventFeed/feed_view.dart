@@ -3,7 +3,9 @@ import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/stores/event_feed_store.dart';
 import 'package:InTheNou/stores/user_store.dart';
+import 'package:InTheNou/views/widgets/error_body_widget.dart';
 import 'package:InTheNou/views/widgets/event_card_image.dart';
+import 'package:InTheNou/views/widgets/loading_body_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
@@ -47,6 +49,7 @@ class GeneralFeedState extends State<FeedView>
     _searchQueryController =TextEditingController(
         text:_eventFeedStore.searchKeyword(widget.type));
     _searchFocus = FocusNode();
+    getAllEventsAction(widget.type);
   }
 
   @override
@@ -160,9 +163,6 @@ class GeneralFeedState extends State<FeedView>
           _eventFeedStore.personalSearch : _eventFeedStore.generalSearch,
         builder: (BuildContext context, AsyncSnapshot<List<Event>> events) {
 
-          if(events.connectionState == ConnectionState.waiting){
-            return _buildLoadingWidget();
-          }
           if(events.hasData){
             if(events.data.length == 0 && _eventFeedStore.isSearching(widget.type)){
               return Center(
@@ -179,52 +179,61 @@ class GeneralFeedState extends State<FeedView>
                     )),
               );
             } else {
-              return  Scrollbar(
-                child: RefreshIndicator(
-                  onRefresh: () => getAllEventsAction(widget.type),
-                  child: ListView.builder(
-                      key: ValueKey(widget.type),
-                      physics: AlwaysScrollableScrollPhysics(),
-                      controller: _scrollController,
-                      padding:const EdgeInsets.only(bottom: 100.0),
-                      itemCount: events.data.length,
-                      itemBuilder: (context, index) {
-                        return EventCardImage(events.data[index], widget.type);
-                      }
-                  ),
-                ),
-              );
+              return _buildResults(events.data);
             }
           } else if(events.hasError){
-            return _buildErrorWidget(events.error.toString());
+            return ErrorWBodyWidget(events.error);
           }
-          return _buildLoadingWidget();
+          return LoadingBodyWidget();
         },
       ),
     );
   }
-
-  Widget _buildErrorWidget(String error) {
-    return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(error,
-                  style: Theme.of(context).textTheme.headline5
+  Widget _buildResults(List<Event> results){
+    return Scrollbar(
+      child: RefreshIndicator(
+          onRefresh: () => getAllEventsAction(widget.type),
+          child: NotificationListener<ScrollNotification>(
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Flexible(
+                    child: ListView.builder(
+                        key: ValueKey(widget.type),
+                        itemCount: results.length,
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        padding: EdgeInsets.only(bottom: 75),
+                        itemBuilder: (context, index){
+                          return EventCardImage(results[index], widget.type);
+                        }),
+                  ),
+                  Container(
+                    height: _eventFeedStore.getIsPaginating(widget.type) ? 75 : 0,
+                    color: Colors.transparent,
+                    child: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+                ],
               ),
             ),
-          ],
-        ));
-  }
-
-  Widget _buildLoadingWidget(){
-    return Center(
-      child: Container(
-        height: 100,
-        width: 100,
-        child: CircularProgressIndicator(),
+            onNotification: (ScrollNotification scrollInfo) {
+              if (!_eventFeedStore.getIsPaginating(widget.type) &&
+                  _eventFeedStore.getCanPaginate(widget.type) &&
+                  scrollInfo.metrics.pixels >=
+                      scrollInfo.metrics.maxScrollExtent-250 &&
+                  scrollInfo.metrics.pixels <=
+                      scrollInfo.metrics.maxScrollExtent-25) {
+                paginateFeedAction(widget.type);
+                return true;
+              }
+              return false;
+            },
+          )
       ),
     );
   }

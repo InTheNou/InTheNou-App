@@ -163,13 +163,11 @@ class InfoBaseRepo {
           "offset=$skipRooms/limit=$numRooms");
       List<Room> roomResults = new List();
 
-      if(response.data != null){
-        if(response.data["rooms"] != null){
-          response.data["rooms"].forEach((element) {
-            Building b = Building.resultFromJson(element['building']);
-            roomResults.add(Room.fromJson(element, b));
-          });
-        }
+      if(response.data["rooms"] != null){
+        response.data["rooms"].forEach((element) {
+          Building b = Building.resultFromJson(element['building']);
+          roomResults.add(Room.fromJson(element, b));
+        });
       }
       return roomResults;
     } catch(error,stacktrace){
@@ -205,13 +203,11 @@ class InfoBaseRepo {
           "rcode=$code/offset=$skipRooms/limit=$numRooms");
       List<Room> roomResults = new List();
 
-      if(response.data != null){
-        if(response.data["rooms"] != null){
-          response.data["rooms"].forEach((element) {
-            Building b = Building.resultFromJson(element['building']);
-            roomResults.add(Room.fromJson(element, b));
-          });
-        }
+      if(response.data["rooms"] != null){
+        response.data["rooms"].forEach((element) {
+          Building b = Building.resultFromJson(element['building']);
+          roomResults.add(Room.fromJson(element, b));
+        });
       }
       return roomResults;
     } catch(error,stacktrace){
