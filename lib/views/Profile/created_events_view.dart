@@ -1,10 +1,13 @@
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/stores/user_store.dart';
-import 'package:InTheNou/views/widgets/cancel_button.dart';
+import 'package:InTheNou/views/widgets/created_event_card_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
 
+/// The view for showing a list of [Event]s created by the current user
+///
+/// {@category View}
 class CreatedEventsView extends StatefulWidget {
 
   @override
@@ -91,68 +94,7 @@ class _CreatedEventsViewState extends State<CreatedEventsView>
             itemCount: createdEvents.length,
             itemBuilder: (context, index){
               Event _event = createdEvents[index];
-              return Card(
-                  key: ValueKey(_event.UID),
-                  margin: EdgeInsets.only(top: 8.0),
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.of(context).pushNamed('/eventdetail',
-                          arguments: _event.UID
-                      );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 16.0, bottom: 8.0, left:
-                      8.0, right: 8.0),
-                      child: Row(
-                        children: <Widget>[
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Text(
-                                  _event.title,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context).textTheme.headline6.copyWith(
-                                    color: Theme.of(context).brightness == Brightness.dark ?
-                                      Theme.of(context).primaryColorLight :
-                                      Theme.of(context).primaryColor,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const Padding(padding: EdgeInsets.only(bottom: 4.0)),
-                                Text(
-                                    _event.getDurationString(),
-                                    style: Theme.of(context).textTheme.bodyText1
-                                ),
-                                const Padding(padding: EdgeInsets.only(bottom: 8.0)),
-                                Text(
-                                    _event.description,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: Theme.of(context).textTheme.subtitle2
-                                ),
-                                const Padding(padding: EdgeInsets.only(bottom: 8.0)),
-                                Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: <Widget>[
-                                      Visibility(
-                                          visible:
-                                          (_event.endDateTime.isAfter(DateTime.now())
-                                              && _event.status == "active") ||
-                                              _event.status == "deleted",
-                                          child: CancelButton(_event),
-                                      ),
-                                    ]
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-              );
+              return CreatedEventCardImage(_event);
             }),
       ),
     );

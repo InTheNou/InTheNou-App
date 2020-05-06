@@ -7,7 +7,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:InTheNou/home_page.dart';
+import 'package:InTheNou/views/Account/login_view.dart';
 
+
+/// The initial view whenever the user loads into the app.
+///
+/// It does the verification of a current session and routes to the
+/// [HomePage] or [LoginView] respectively.
+///
+/// {@category View}
 class StartUpView extends StatefulWidget {
 
   @override
@@ -33,13 +42,16 @@ class _StartUpViewState extends State<StartUpView>
       future: _userStore.session,
       builder: (BuildContext context, AsyncSnapshot<Cookie> session) {
         if(session.hasData){
+          // Checks the cached data for a user object
           _userStore.getUser().then((user) {
-            if (user == null) {
-              Navigator.of(context).pushReplacementNamed("/login");
-            } else {
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                "/home", (Route<dynamic> route) => false,
-              );
+            if (user != null) {
+              if(user.fullName == "None"){
+                Navigator.of(context).pushReplacementNamed("/login");
+              } else {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  "/home", (Route<dynamic> route) => false,
+                );
+              }
             }
           }).catchError((e){
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -93,6 +105,9 @@ class _StartUpViewState extends State<StartUpView>
   }
 
   /// Shows the user any errors during startup of the app.
+  ///
+  /// If the error is [GoogleSignIn.kSignInRequiredError] then it routes to
+  /// the [LoginView].
   void _showStartUpError(dynamic e) {
     String error;
     if (e.runtimeType == PlatformException) {

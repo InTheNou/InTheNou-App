@@ -17,21 +17,21 @@ class LoadingImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: BoxConstraints.tightForFinite(width: width, height: height),
+      constraints: BoxConstraints.expand(width: width, height: height),
       child: buildImage()
     );
   }
 
   Widget buildImage(){
     if(imageURL == null || imageURL.isEmpty || !isURL(imageURL)){
-      return Image.asset("lib/assets/placeholder.png", fit: BoxFit.fill);
+      return Image.asset("lib/assets/placeholder.png", fit: BoxFit.cover);
     }
     else {
       return CachedNetworkImage(
         imageUrl:imageURL,
         fit: BoxFit.cover,
         placeholder: (context, url) =>
-            Image.asset("lib/assets/placeholder.png", fit: BoxFit.fill),
+            Image.asset("lib/assets/placeholder.png", fit: BoxFit.cover),
         progressIndicatorBuilder: (context, url, downloadProgress) =>
             Align(
                 alignment: Alignment.bottomCenter,

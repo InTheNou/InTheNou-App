@@ -1,11 +1,16 @@
 import 'package:InTheNou/models/building.dart';
 import 'package:InTheNou/models/floor.dart';
 import 'package:InTheNou/stores/infobase_store.dart';
+import 'package:InTheNou/views/widgets/error_scaffold_view.dart';
 import 'package:InTheNou/views/widgets/loading_image.dart';
+import 'package:InTheNou/views/widgets/loading_scaffold_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
+/// The view for showing detailed information about a selected [Building]
+///
+/// {@category View}
 class BuildingView extends StatefulWidget {
 
   @override
@@ -33,9 +38,9 @@ class _BuildingViewState extends State<BuildingView>
           return _buildBody(detailBuilding.data);
         }
         else if(detailBuilding.hasError){
-          return _buildErrorWidget(detailBuilding.error.toString());
+          return ErrorScaffoldView(detailBuilding.error);
         }
-        return _buildLoadingWidget();
+        return LoadingScaffoldView();
       },
     );
   }
@@ -219,39 +224,4 @@ class _BuildingViewState extends State<BuildingView>
     );
   }
 
-  Widget _buildErrorWidget(String error) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text("Error"),
-        ),
-        body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(error,
-                      style: Theme.of(context).textTheme.headline5
-                  ),
-                ),
-              ],
-            )
-        )
-    );
-  }
-
-  Widget _buildLoadingWidget(){
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Loading"),
-      ),
-      body: Center(
-        child: Container(
-          height: 100,
-          width: 100,
-          child: CircularProgressIndicator(),
-        ),
-      ),
-    );
-  }
 }

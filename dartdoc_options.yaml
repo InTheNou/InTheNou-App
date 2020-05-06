@@ -1,15 +1,15 @@
 dartdoc:
   categories:
     "Stores":
-      name: Stores
+      markdown: stores.md
     "Views":
-      name: Views
+      markdown: views.md
     "Models":
-      name: Models
+      markdown: models.md
     "Repos":
-      name: Repos
+      markdown: repos.md
+  categoryOrder: ["Stores", "Views", "Models", "Repos"]
   showUndocumentedCategories: true
-  errors:
-    - unresolved-doc-reference
   warnings:
     - tool-error
+    - - unresolved-doc-reference

@@ -9,6 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 import 'package:geolocator/geolocator.dart';
 
+/// The view for showing the settings available to the user and the logout
+///
+/// {@category View}
 class SettingsView extends StatefulWidget {
 
   @override
@@ -166,10 +169,10 @@ class _SettingsViewState extends State<SettingsView>
                                 ),
                               ),
                               onTap: () async {
-                                await logoutAction();
                                 // Move the HomePage navigator to the Personal feed for
                                 // the next sign in
                                 navigateToAction(0);
+                                await logoutAction();
                                 // Cancel all Preferences and Notifications of the
                                 // current user
                                 NotificationHandler.cancelAllSmartNotifications();

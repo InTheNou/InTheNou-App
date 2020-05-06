@@ -1,10 +1,10 @@
 import 'package:InTheNou/assets/validators.dart';
 import 'package:InTheNou/assets/values.dart';
+import 'package:InTheNou/dialog_service.dart';
 import 'package:InTheNou/models/website.dart';
 import 'package:InTheNou/stores/event_creation_store.dart';
 import 'package:flutter/material.dart';
 
-import '../../dialog_service.dart';
 
 class WebsiteAlertDialog extends StatefulWidget {
 
@@ -23,7 +23,6 @@ class _WebsiteAlertDialogState extends State<WebsiteAlertDialog> {
   bool _validate = false;
   final _formKey = GlobalKey<FormState>();
   DialogService _dialogService = DialogService();
-
 
   @override
   Widget build(BuildContext context) {

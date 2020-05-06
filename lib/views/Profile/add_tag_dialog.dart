@@ -3,6 +3,12 @@ import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
+
+/// Dialog for adding Tags in the MyTags view
+///
+/// The user can add and remove these Tags
+///
+/// {@category View}
 class AddTagDialog extends StatefulWidget {
 
   @override
@@ -13,7 +19,6 @@ class AddTagDialog extends StatefulWidget {
 class _AddTagDialogState extends State<AddTagDialog>
     with flux.StoreWatcherMixin<AddTagDialog> {
   UserStore _userStore;
-
 
   @override
   void initState() {
@@ -49,8 +54,15 @@ class _AddTagDialogState extends State<AddTagDialog>
                 child: Column(
                   children: <Widget>[
                     TextField(
+                        autofocus: false,
+                        maxLength: 50,
+                        maxLengthEnforced: true,
                         decoration: InputDecoration(
-                          hintText:  "Search Tags",),
+                            hintText: "Search Tags...",
+                            border: InputBorder.none,
+                            counterStyle: TextStyle(height: double.minPositive,),
+                            counterText: ""
+                        ),
                         onChanged: (String value) => filterTagAction(value)
                     ),
                     Padding(

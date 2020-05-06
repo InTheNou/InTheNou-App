@@ -4,6 +4,10 @@ import 'package:InTheNou/views/widgets/dismiss_button.dart';
 import 'package:InTheNou/views/widgets/follow_button.dart';
 import 'package:flutter/material.dart';
 
+
+/// Widget used for showing Event Results without images
+///
+/// {@category Widget}
 class EventCard extends StatelessWidget {
 
   final Event _event;

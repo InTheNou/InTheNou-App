@@ -14,51 +14,18 @@ import 'package:intl/intl.dart';
 /// {@category Model}
 class Event {
 
-  /// Unique identifier of this Event entity
-  /// It is represented in the API a "eid'
+  static DateFormat df = DateFormat("yyyy-MM-dd HH:mm:ss");
+
   int _UID;
-
-  /// The title of the Event entity given by the Event Creator.
-  /// Is it represented in the API as "etitle'
   String _title;
-
-  /// The description of the Event entity given by the Event Creator.
-  /// Is it represented in the API as "edescription'
   String _description;
-
-  /// The name of the Event Creator of the Event entity.
-  /// Is it represented in the API as "ecreator'
   String _creator;
-
-  /// An optional image URL for the Event entity given by the Event Creator.
-  /// Is it represented in the API as "photourl'
   String _image;
-
-  /// The [DateTime] start time and date of the Event entity set by the Event
-  /// Creator.
-  /// Is it represented in the API as "estart'
   DateTime _startDateTime;
-
-  /// The [DateTime] start time and date of the Event entity set by the Event
-  /// Creator.
-  /// Is it represented in the API as "eend'
   DateTime _endDateTime;
-
-  /// The [DateTime] timestamp of when the Event entity was created.
-  /// Is it represented in the API as "eend'
   DateTime _timestamp;
-
-  /// The [Room] of the Event entity set by the Event Creator.
-  /// Is it represented in the API as "room'
   Room _room;
-
-  /// The optional [Website]s associated with the Event entity, set by the
-  /// Event Creator.
-  /// Is it represented in the API as "websites'
   List<Website> _websites;
-
-  /// The [Tag]s of the Event entity set by the Event Creator.
-  /// Is it represented in the API as "tags'
   List<Tag> _tags;
 
   /// The flag used to indicate if the Event entity is being followed by the
@@ -81,9 +48,6 @@ class Event {
   /// Is it represented in the API as "estatus' being equal to "active"
   String status;
 
-  static DateFormat df = DateFormat("yyyy-MM-dd HH:mm:ss");
-
-
   /// Default constructor for any Event entity
   Event(this._UID,this._title, this._description, this._creator, this._image,
       this._startDateTime, this._endDateTime, this._timestamp,
@@ -100,6 +64,7 @@ class Event {
     this._title = title;
     this._description = description;
     this._creator = null;
+    this._image = image;
     this._startDateTime = startDateTime;
     this._endDateTime = endDateTime;
     this._timestamp = timestamp;
@@ -187,18 +152,52 @@ class Event {
         "websites": Website.toJsonList(_websites)
   };
 
+  /// Unique identifier of this Event entity
+  /// It is represented in the API a "eid'
   int get UID => _UID;
-  String get title => _title;
-  String get description => _description;
-  String get creator => _creator;
-  String get image => _image;
-  DateTime get startDateTime => _startDateTime;
-  DateTime get endDateTime => _endDateTime;
-  DateTime get timestamp => _timestamp;
-  Room get room => _room;
-  List<Website> get websites => _websites;
-  List<Tag> get tags => _tags;
 
+  /// The title of the Event entity given by the Event Creator.
+  /// Is it represented in the API as "etitle'
+  String get title => _title;
+
+  /// The description of the Event entity given by the Event Creator.
+  /// Is it represented in the API as "edescription'
+  String get description => _description;
+
+  /// The name of the Event Creator of the Event entity.
+  /// Is it represented in the API as "ecreator'
+  String get creator => _creator;
+
+  /// An optional image URL for the Event entity given by the Event Creator.
+  /// Is it represented in the API as "photourl'
+  String get image => _image;
+
+  /// The [DateTime] start time and date of the Event entity set by the Event
+  /// Creator.
+  /// Is it represented in the API as "estart'
+  DateTime get startDateTime => _startDateTime;
+
+  /// The [DateTime] start time and date of the Event entity set by the Event
+  /// Creator.
+  /// Is it represented in the API as "eend'
+  DateTime get endDateTime => _endDateTime;
+
+  /// The [DateTime] timestamp of when the Event entity was created.
+  /// Is it represented in the API as "eend'
+  DateTime get timestamp => _timestamp;
+
+  /// The [Room] of the Event entity set by the Event Creator.
+  /// Is it represented in the API as "room'
+  Room get room => _room;
+
+  /// The optional [Website]s associated with the Event entity, set by the
+  /// Event Creator.
+  /// Is it represented in the API as "websites'
+  List<Website> get websites => _websites;
+
+  /// The [Tag]s of the Event entity set by the Event Creator.
+  /// Is it represented in the API as "tags'
+  List<Tag> get tags => _tags;
 
   /// Helper method to format the [_startDateTime] as a readable string
   String getStartTimeString() {
@@ -223,7 +222,7 @@ class Event {
   /// Helper method to format the [_startDateTime] and [_endDateTime] into a
   /// readable string
   String getDurationString() {
-    if (_startDateTime.month ==  DateTime.now().month){
+    if (_startDateTime.month == DateTime.now().month){
       if (_startDateTime.day == _endDateTime.day){
         return DateFormat('EEE d: hh:mm aaa - ').format(_startDateTime)
             + DateFormat('hh:mm aaa').format(_endDateTime);
@@ -236,6 +235,10 @@ class Event {
         return DateFormat('EEE, MMM d: hh:mm aaa - ').format(_startDateTime)
             + DateFormat('hh:mm aaa').format(_endDateTime);
       } else {
+        if (_startDateTime.month == _endDateTime.month){
+          return DateFormat('EEE, MMM d: hh:mm aaa - ').format(_startDateTime)
+              + DateFormat('EEE, d: hh:mm aaa').format(_endDateTime);
+        }
         return DateFormat('EEE, MMM d: hh:mm aaa - ').format(_startDateTime)
             + DateFormat('EEE, MMM d: hh:mm aaa').format(_endDateTime);
       }

@@ -4,6 +4,13 @@ import 'package:flutter_flux/flutter_flux.dart' as flux;
 
 const String INFORMATION_BASE = "Information Base";
 
+/// The view for showing the Category selection of the Information Base
+///
+/// Currently the categories are Buildings, Rooms and Services. But this can
+/// be expanded in the future to accommodate other times of information to be
+/// made available to the user.
+///
+/// {@category View}
 class InfoBaseCategoryView extends StatefulWidget{
 
   InfoBaseCategoryView({Key key}) : super(key: PageStorageKey(key));
@@ -32,33 +39,31 @@ class InformationBaseState extends State<InfoBaseCategoryView> with flux.StoreWa
         crossAxisCount: 2,
         children: <Widget>[
           RaisedButton(
-            color: Theme.of(context).primaryColor,
-            padding: EdgeInsets.all(16.0),
+            color: Theme.of(context).cardColor,
+            textColor: Theme.of(context).brightness == Brightness.light ?
+            Theme.of(context).primaryColor : Colors.white,
             child: Text("Buildings",
-                style: Theme.of(context).textTheme.headline5.copyWith(
-                    color: Colors.white
-                )),
+                style: Theme.of(context).textTheme.headline5),
+            padding: EdgeInsets.all(16.0),
             onPressed: () => Navigator.of(context).pushNamed(
                 '/infobase/search', arguments: InfoBaseType.Building),
           ),
           RaisedButton(
-            color: Theme.of(context).primaryColor,
-            textColor: Theme.of(context).canvasColor,
+            color: Theme.of(context).cardColor,
+            textColor: Theme.of(context).brightness == Brightness.light ?
+            Theme.of(context).primaryColor : Colors.white,
             child: Text("Rooms",
-                style: Theme.of(context).textTheme.headline5.copyWith(
-                    color: Colors.white
-                )),
+                style: Theme.of(context).textTheme.headline5),
             padding: EdgeInsets.all(16.0),
             onPressed: () => Navigator.of(context).pushNamed
               ("/infobase/search", arguments: InfoBaseType.Room),
           ),
           RaisedButton(
-            color: Theme.of(context).primaryColor,
-            textColor: Theme.of(context).canvasColor,
+            color: Theme.of(context).cardColor,
+            textColor: Theme.of(context).brightness == Brightness.light ?
+              Theme.of(context).primaryColor : Colors.white,
             child: Text("Services",
-                style: Theme.of(context).textTheme.headline5.copyWith(
-                    color: Colors.white
-                )),
+                style: Theme.of(context).textTheme.headline5),
             padding: EdgeInsets.all(16.0),
             onPressed: () => Navigator.of(context).pushNamed
               ("/infobase/search", arguments: InfoBaseType.Service),

@@ -1,3 +1,4 @@
+import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/models/floor.dart';
 import 'package:InTheNou/models/room.dart';
 
@@ -9,36 +10,13 @@ import 'package:InTheNou/models/room.dart';
 /// {@category Model}
 class Building {
 
-  /// Unique identifier of this Building entity.
-  /// It is represented in the API a "bid'.
   int _UID;
-
-  /// The abbreviation of the building entity used for [Room.code].
-  /// Is it represented in the API as "babbrev'
   String _abbreviation;
-
-  /// The name of the building entity.
-  /// Is it represented in the API as "bname'
   String _name;
-
-  /// A common name used to associate the building entity.
-  /// Is it represented in the API as "bcommonname'
   String _commonName;
-
-  /// The number of floors this building entity has.
-  /// Is it represented in the API as "numfloors'
   int _numFloors;
-
-  /// A list of [Floor]s inside this building entity,
-  /// Is it represented in the API as "distinctfloors'
   List<Floor> _floors;
-
-  /// A descriptive property of this building entity.
-  /// Is it represented in the API as "btype'
   String _type;
-
-  /// An optional image URL associated with this building entity.
-  /// Is it represented in the API as "photourl'
   String _image;
 
   /// Default constructor for any building entity
@@ -62,8 +40,8 @@ class Building {
     return Building(
       json['bid'],
       json['babbrev'],
-      json['bname'].trim(),
-      json['bcommonname'],
+      Utils.fixCapitalization(json['bname']),
+      Utils.fixCapitalization(json['bcommonname']),
       json['numfloors'],
       Floor.fromJsonToList(json['distinctfloors']),
       json['btype'],
@@ -77,20 +55,49 @@ class Building {
     return Building.result(
       UID: json['bid'],
       abbreviation: json['babbrev'],
-      name: json['bname'],
-      commonName: json['bcommonname'],
+      name: Utils.fixCapitalization(json['bname']),
+      commonName: Utils.fixCapitalization(json['bcommonname']),
       image: json['photourl'],
     );
   }
 
+  /// Unique identifier of this Building entity.
+  /// It is represented in the API a "bid'.
   int get UID => _UID;
+
+  /// The abbreviation of the building entity used for [Room.code].
+  /// Is it represented in the API as "babbrev'
   String get abbreviation => _abbreviation;
+
+  /// The name of the building entity.
+  /// Is it represented in the API as "bname'
   String get name => _name;
+
+  /// A common name used to associate the building entity.
+  /// Is it represented in the API as "bcommonname'
   String get commonName => _commonName;
+
+  /// The number of floors this building entity has.
+  /// Is it represented in the API as "numfloors'
   int get numFloors => _numFloors;
+
+  /// A list of [Floor]s inside this building entity,
+  /// Is it represented in the API as "distinctfloors'
   List<Floor> get floors => _floors;
+
+  /// A descriptive property of this building entity.
+  /// Is it represented in the API as "btype'
   String get type => _type;
+
+  /// An optional image URL associated with this building entity.
+  /// Is it represented in the API as "photourl'
   String get image => _image;
+
+
+  @override
+  String toString() {
+    return 'Building{_UID: $_UID, _abbreviation: $_abbreviation, _name: $_name, _commonName: $_commonName, _numFloors: $_numFloors, _floors: $_floors, _type: $_type, _image: $_image}';
+  }
 
   @override
   bool operator ==(Object other) =>

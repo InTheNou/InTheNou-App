@@ -1,10 +1,14 @@
 import 'package:InTheNou/models/room.dart';
 import 'package:InTheNou/stores/infobase_store.dart';
 import 'package:InTheNou/views/InformoationBase/room_card.dart';
+import 'package:InTheNou/views/widgets/error_body_widget.dart';
+import 'package:InTheNou/views/widgets/loading_body_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
-
+/// The view for showing detailed information about a selected [Floor]
+///
+/// {@category View}
 class FloorView extends StatefulWidget {
 
   @override
@@ -35,13 +39,12 @@ class _FloorViewState extends State<FloorView>
               return _buildBody(roomsInBuilding.data);
             }
             else if(roomsInBuilding.hasError){
-              return _buildErrorWidget(roomsInBuilding.error.toString());
+              return ErrorBodyWidget(roomsInBuilding.error);
             }
-            return _buildLoadingWidget();
+            return LoadingBodyWidget();
           },
         )
     );
-
   }
 
   Widget _buildBody(List<Room> roomsInBuilding){
@@ -51,32 +54,6 @@ class _FloorViewState extends State<FloorView>
           Room _room = roomsInBuilding[index];
           return RoomCard(_room);
         }
-    );
-  }
-
-  Widget _buildErrorWidget(String error) {
-    return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(error,
-                  style: Theme.of(context).textTheme.headline5
-              ),
-            ),
-          ],
-        )
-    );
-  }
-
-  Widget _buildLoadingWidget(){
-    return Center(
-      child: Container(
-        height: 100,
-        width: 100,
-        child: CircularProgressIndicator(),
-      ),
     );
   }
 

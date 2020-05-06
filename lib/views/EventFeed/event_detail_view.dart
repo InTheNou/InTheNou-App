@@ -1,20 +1,25 @@
 import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
-import 'package:InTheNou/dialog_service.dart';
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/models/website.dart';
 import 'package:InTheNou/stores/event_feed_store.dart';
 import 'package:InTheNou/views/widgets/cancel_button.dart';
 import 'package:InTheNou/views/widgets/dismiss_button.dart';
+import 'package:InTheNou/views/widgets/error_scaffold_view.dart';
 import 'package:InTheNou/views/widgets/follow_button.dart';
 import 'package:InTheNou/views/widgets/link_with_icon_widget.dart';
 import 'package:InTheNou/views/widgets/loading_image.dart';
+import 'package:InTheNou/views/widgets/loading_scaffold_view.dart';
 import 'package:InTheNou/views/widgets/multi_text_with_icon_widget.dart';
 import 'package:InTheNou/views/widgets/text_with_icon_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
+
+/// The view for showing detailed information about a selected [Event]
+///
+/// {@category View}
 class EventDetailView extends StatefulWidget {
 
   final int _initialEvent;
@@ -29,7 +34,6 @@ class EventDetailView extends StatefulWidget {
 class _EventDetailViewState extends State<EventDetailView>
     with flux.StoreWatcherMixin<EventDetailView>{
   EventFeedStore _eventFeedStore;
-  DialogService _dialogService = DialogService();
 
   @override
   void initState() {
@@ -47,19 +51,21 @@ class _EventDetailViewState extends State<EventDetailView>
       builder: (BuildContext context, AsyncSnapshot<Event> eventDetail) {
 
         if(eventDetail.connectionState == ConnectionState.waiting){
-          return _buildLoading();
+          return LoadingScaffoldView();
         }
         if(eventDetail.hasData){
           return _buildBody(eventDetail.data);
         } else if(eventDetail.hasError){
-          return _buildError(eventDetail.error);
+          return ErrorScaffoldView(eventDetail.error);
         }
-        return _buildLoading();
+        return LoadingScaffoldView();
       },
     );
   }
 
   Widget _buildBody(Event eventDetail){
+    // If the user has chosen to dismiss the event then the detailed view
+    // will close
     _eventFeedStore.detailNeedsToClose.then((value){
       if(value){
        WidgetsBinding.instance.addPostFrameCallback((_) async{
@@ -78,7 +84,9 @@ class _EventDetailViewState extends State<EventDetailView>
                 floating: false,
                 pinned: true,
                 title: Text(eventDetail.title,
-                  style: Theme.of(context).textTheme.headline6,
+                  style: Theme.of(context).textTheme.headline6.copyWith(
+                    color: Colors.white
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
                 flexibleSpace: FlexibleSpaceBar(
@@ -140,7 +148,6 @@ class _EventDetailViewState extends State<EventDetailView>
                               Utils.buildGoogleMapsLink(eventDetail
                                   .room.coordinates),
                               Icon(Icons.location_on)),
-                          const Padding(padding: EdgeInsets.only(bottom: 4.0)),
                           TextWithIcon(eventDetail.getDurationString(),
                               Icon(Icons.today)),
                           const Padding(padding: EdgeInsets.only(bottom: 8.0)),
@@ -313,34 +320,6 @@ class _EventDetailViewState extends State<EventDetailView>
               ],
             ),
           )
-      ),
-    );
-  }
-
-  Widget _buildError(String e){
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Error"),
-      ),
-      body: Center(
-        child: Container(
-          child: Text(e.toString()),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLoading(){
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Loading"),
-      ),
-      body: Center(
-        child: Container(
-          height: 100,
-          width: 100,
-          child: CircularProgressIndicator(),
-        ),
       ),
     );
   }

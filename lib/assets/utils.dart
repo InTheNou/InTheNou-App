@@ -98,6 +98,10 @@ class Utils {
           formatTimeStamp(DateTime(2020)));
     }
 
+    if(!prefs.containsKey(FIRST_TIME_USER_KEY)) {
+      prefs.setBool(FIRST_TIME_USER_KEY, true);
+    }
+
     if(!prefs.containsKey(RECOMMENDATION_INTERVAL_KEY)){
       prefs.setInt(RECOMMENDATION_INTERVAL_KEY, 120);
     }
@@ -137,6 +141,7 @@ class Utils {
     _prefs.remove(RECOMMENDATION_INTERVAL_KEY);
     _prefs.remove(CANCELLATION_INTERVAL_KEY);
 
+    _prefs.remove(FIRST_TIME_USER_KEY);
   }
 
   ///
@@ -311,18 +316,14 @@ class Utils {
         return "$feature Request to API server was canceled";
         break;
       case DioErrorType.CONNECT_TIMEOUT:
-        return "Connection timeout with server"
-            + "${error.message.toString()}";
+        return "Connection timeout with server";
         break;
       case DioErrorType.DEFAULT:
         return "Connection to API server failed due to internet "
-            "unavailability "+ "${error.message.toString()}";
+            "unavailability";
         break;
       case DioErrorType.RECEIVE_TIMEOUT:
-        print(error.error.toString());
-        print(error.message.toString());
-        return "$feature Recieve timeout with server "
-            "${error.message.toString()}";
+        return "$feature Recieve timeout with server ";
         break;
       case DioErrorType.RESPONSE:
         return _responseString(feature, error.response.statusCode,
@@ -357,6 +358,31 @@ class Utils {
         break;
     }
 
+  }
+
+  static String fixCapitalization(String input){
+    try{
+      if(input ==  null){
+        return "";
+      }
+      String output = "";
+      List<String> words = input.trim().split(" ");
+      if(words.length>0){
+        words.forEach((element) {
+          if(element.length ==0){
+
+          } else if(element.length == 1){
+            output =  output + element.toLowerCase() + " ";
+          } else{
+            output = output + element.substring(0,1).toUpperCase() +
+                element.substring(1).toLowerCase() + " ";
+          }
+        });
+      }
+      return output;
+    } catch(e){
+      return input;
+    }
   }
 
   static void clearCache() async{

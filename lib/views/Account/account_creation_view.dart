@@ -6,6 +6,11 @@ import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
+/// The view for creating account for new users
+///
+/// The user selects 5 Tags of interest and then their account can be created.
+///
+/// {@category View}
 class AccountCreationView extends StatefulWidget {
 
   @override
@@ -35,7 +40,7 @@ class _AccountCreationViewState extends State<AccountCreationView>
       if(_userStore.accountCreationFinished != null){
         _userStore.accountCreationFinished.then((finish){
           if(finish){
-            // The backend brought back user info
+            // The backend brought back user info so route to the home screen
             Navigator.of(context).pushNamedAndRemoveUntil(
               "/home", (Route<dynamic> route) => false,
             );
@@ -74,6 +79,9 @@ class _AccountCreationViewState extends State<AccountCreationView>
                       ],
                     ),
                   ),
+                  // The Role selection was removed from the requirements so
+                  // this is left here for future development
+
 //                Padding(
 //                  padding: const EdgeInsets.only(left: 8.0),
 //                  child: Text("Role",
@@ -109,6 +117,13 @@ class _AccountCreationViewState extends State<AccountCreationView>
                             color: Theme.of(context).canvasColor
                         )),
                   ),
+                  Visibility(
+                    visible: _userStore.tagsString.isNotEmpty,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(_userStore.tagsString),
+                    ),
+                  ),
                   Card(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15.0),
@@ -121,8 +136,15 @@ class _AccountCreationViewState extends State<AccountCreationView>
                             left: 16.0)),
                         Expanded(
                           child: TextField(
-                              decoration: InputDecoration.collapsed(
-                                hintText:  "Serach Tags",),
+                              autofocus: false,
+                              maxLength: 50,
+                              maxLengthEnforced: true,
+                              decoration: InputDecoration(
+                                  hintText: "Search Tags...",
+                                  border: InputBorder.none,
+                                  counterStyle: TextStyle(height: double.minPositive,),
+                                  counterText: ""
+                              ),
                               onChanged: (String value) => searchedTagAction(value.trim())
                           ),
                         ),

@@ -22,9 +22,10 @@ class InfoBaseRepo {
   ///
   /// Database Errors are caught by Dio and throw a [DioError] which is
   /// traduced to a proper error with [Utils.handleDioError].
-  Future<List<Building>> getAllBuildings() async{
+  Future<List<Building>> getAllBuildings(int skipBuildings, int numBuildings) async{
     try{
-      Response response = await apiConnection.dio.get("/App/Buildings/offset=0/limit=1000");
+      Response response = await apiConnection.dio.get
+        ("/App/Buildings/offset=$skipBuildings/limit=$numBuildings");
       List<Building> buildingResults = new List();
 
       if(response.data != null){
@@ -162,23 +163,22 @@ class InfoBaseRepo {
           "offset=$skipRooms/limit=$numRooms");
       List<Room> roomResults = new List();
 
-      if(response.data != null){
-        if(response.data["rooms"] != null){
-          response.data["rooms"].forEach((element) {
-            Building b = Building.resultFromJson(element['building']);
-            roomResults.add(Room.fromJson(element, b));
-          });
-        }
+      if(response.data["rooms"] != null){
+        response.data["rooms"].forEach((element) {
+          Building b = Building.resultFromJson(element['building']);
+          roomResults.add(Room.fromJson(element, b));
+        });
       }
       return roomResults;
     } catch(error,stacktrace){
       if (error is DioError) {
         debugPrint("Exception: $error");
         return Future.error(Utils.handleDioError(error, "Searching Rooms by "
-            "keyword") );
+            "keyword. kwyword: $keyword skip: $skipRooms limit=$numRooms") );
       } else {
         debugPrint("Exception: $error stackTrace: $stacktrace");
-        return Future.error("Internal app error Searching Rooms by keyword");
+        return Future.error("Internal app error Searching Rooms by keyword. "
+            "kwyword: $keyword skip: $skipRooms limit=$numRooms");
       }
     }
   }
@@ -203,13 +203,11 @@ class InfoBaseRepo {
           "rcode=$code/offset=$skipRooms/limit=$numRooms");
       List<Room> roomResults = new List();
 
-      if(response.data != null){
-        if(response.data["rooms"] != null){
-          response.data["rooms"].forEach((element) {
-            Building b = Building.resultFromJson(element['building']);
-            roomResults.add(Room.fromJson(element, b));
-          });
-        }
+      if(response.data["rooms"] != null){
+        response.data["rooms"].forEach((element) {
+          Building b = Building.resultFromJson(element['building']);
+          roomResults.add(Room.fromJson(element, b));
+        });
       }
       return roomResults;
     } catch(error,stacktrace){

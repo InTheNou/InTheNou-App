@@ -1,9 +1,15 @@
 import 'package:InTheNou/models/tag.dart';
-import 'file:///E:/Users/Jonathan/AndroidStudioProjects/inthenou/lib/views/Profile/add_tag_dialog.dart';
 import 'package:InTheNou/stores/user_store.dart';
+import 'package:InTheNou/views/Profile/add_tag_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
+/// The view for showing a list of interest [Tag]s associated to the current
+/// user
+///
+/// The user can add and remove these Tags
+///
+/// {@category View}
 class MyTagsView extends StatefulWidget {
 
   @override
@@ -140,7 +146,7 @@ class _MyTagsViewState extends State<MyTagsView>
   }
 
   void _showAddTagDialog(){
-    resetTagsAction();
+    getTagsAction();
     showDialog(
         context: context,
         builder: (_){

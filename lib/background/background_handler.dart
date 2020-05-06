@@ -24,7 +24,7 @@ class BackgroundHandler {
   /// [onBackgroundFetch]. The SmartNotification functionality gets handled
   /// every time this initiated and it it handled in
   /// [NotificationHandler.doSmartNotification].
-  /// This method  can also schedule any other background tasks needed, be
+  /// This method can also schedule any other background tasks needed, be
   /// it one-hot or recurring. Here the Recommendation feature handled by
   /// the [_doRecommendation] task.
   ///
@@ -109,14 +109,25 @@ class BackgroundHandler {
 //        break;
       case "com.inthenou.app.smart":
         if(_prefs.getBool(SMART_NOTIFICATION_KEY)){
-          _prepareForSmartNotification();
+          _prepareForSmartNotification(true);
+        }
+        break;
+      case "com.inthenou.app.smart.retry":
+        if(_prefs.getBool(SMART_NOTIFICATION_KEY)){
+          _prepareForSmartNotification(false);
         }
         break;
       case "com.inthenou.app.reccomendation":
-        _doRecommendation();
+        _doRecommendation(true);
+        break;
+      case "com.inthenou.app.reccomendation.retry":
+        _doRecommendation(false);
         break;
       case "com.inthenou.app.cancellation":
-        _checkCanceledEvents();
+        _checkCanceledEvents(true);
+        break;
+      case "com.inthenou.app.cancellation.retry":
+        _checkCanceledEvents(false);
         break;
       case "com.inthenou.app.cleanup":
         NotificationHandler.cleanupNotifications();
@@ -136,7 +147,7 @@ class BackgroundHandler {
   /// [NotificationObject] and json.
   /// Upon receiving the json list back it removes any that have already
   /// been delivered to the user.
-  static void _prepareForSmartNotification() async{
+  static void _prepareForSmartNotification(bool retry) async{
 
     Geolocator().checkGeolocationPermissionStatus().then((value) {
       if(value == GeolocationStatus.denied ||
@@ -170,7 +181,7 @@ class BackgroundHandler {
         (SMART_NOTIFICATION_LIST) ?? new List();
 
       // Calls the database to get all the events followed by the uer
-      List<Event> _events = await _userRepo.getFollowedEvents(0,100000);
+      List<Event> _events = await _userRepo.getFollowedEvents(0,PAGINATION_GET_ALL);
 
       // Decodes the json strings into a map with the NotificationObject fields
       // Also removes the followed events that have been scheduled already
@@ -195,8 +206,19 @@ class BackgroundHandler {
           time: DateTime.now(),
           type: NotificationType.Alert
       ), "Smart Notification Error", "Unable to Schedule Smart Notification "
-          "in background",
-          e.toString());
+          "in background", "");
+      if(retry){
+        BackgroundFetch.scheduleTask(TaskConfig(
+            taskId: "com.inthenou.app.smart.retry",
+            delay: _prefs.getInt(SMART_INTERVAL_KEY)*60000~/2,
+            periodic: false,
+            forceAlarmManager: true,
+            stopOnTerminate: false,
+            enableHeadless: true
+        )).then((value) {
+          print('[smart-retry] started: $value');
+        });
+      }
     }
   }
 
@@ -209,7 +231,7 @@ class BackgroundHandler {
   /// canceled followed events. A notification is then created for each one
   /// of these events so that the user will be aware that they have been
   /// concealed.
-  static void _checkCanceledEvents() async{
+  static void _checkCanceledEvents(bool retry) async{
     _prefs = await SharedPreferences.getInstance();
 
     try{
@@ -226,7 +248,7 @@ class BackgroundHandler {
       List<Event> canceledEvents = await _eventRepo.getDeletedEvents(lastDate);
       List<Event> followedEvents = List();
       if(canceledEvents.length > 0){
-        followedEvents = await _userRepo.getFollowedEvents(0,PAGINATION_LENGTH);
+        followedEvents = await _userRepo.getFollowedEvents(0,PAGINATION_GET_ALL);
         followedEvents.retainWhere((fEvent) {
           return canceledEvents.contains(fEvent);
         });
@@ -244,7 +266,11 @@ class BackgroundHandler {
                   "cancelled.");
           notificationID ++;
         });
+
+        // Update NotificationID so that the next notification does override
+        // this one
         _prefs.setInt(NOTIFICATION_ID_KEY, notificationID + followedEvents.length);
+        // Update the date to show that we checked at this time
         _prefs.setString(LAST_CANCELLATION_DATE_KEY,
             Utils.formatTimeStamp(DateTime.now().toUtc()));
         if(followedEvents.length == 0){
@@ -267,7 +293,19 @@ class BackgroundHandler {
           time: DateTime.now(),
           type: NotificationType.Alert
       ), "Cancel Notification Error", "Unable to Check Cancelled Events ",
-          e.toString());
+          "");
+      if(retry){
+        BackgroundFetch.scheduleTask(TaskConfig(
+            taskId: "com.inthenou.app.cancellation.retry",
+            delay: _prefs.getInt(CANCELLATION_INTERVAL_KEY)*60000~/2,
+            periodic: false,
+            forceAlarmManager: true,
+            stopOnTerminate: false,
+            enableHeadless: true
+        )).then((value) {
+          print('[cancellation-retry] started: $value');
+        });
+      }
     }
   }
 
@@ -278,7 +316,7 @@ class BackgroundHandler {
   /// passed through the Recommendation algorithm to see which aer of
   /// interest to the user. The user is then sent a Recommendation
   /// Notification saying how many events have been recommended.
-  static void _doRecommendation() async{
+  static void _doRecommendation(bool retry) async{
     _prefs = await SharedPreferences.getInstance();
 
     try{
@@ -333,6 +371,7 @@ class BackgroundHandler {
                 "based on your interests. Check em out!");
       }
 
+      // Update the date to show that we checked at this time
       _prefs.setString(LAST_RECOMMENDATION_DATE_KEY,
           Utils.formatTimeStamp(DateTime.now().toUtc()));
     } catch (e, stacktrace){
@@ -341,8 +380,19 @@ class BackgroundHandler {
           payload: "",
           time: DateTime.now(),
           type: NotificationType.Alert
-      ), "Recommendation Notification Error", "Unable to Recommend",
-          e.toString());
+      ), "Recommendation Notification Error", "Unable to Recommend","");
+      if(retry){
+        BackgroundFetch.scheduleTask(TaskConfig(
+            taskId: "com.inthenou.app.reccomendation.retry",
+            delay: _prefs.getInt(RECOMMENDATION_INTERVAL_KEY)*60000~/2,
+            periodic: false,
+            forceAlarmManager: true,
+            stopOnTerminate: false,
+            enableHeadless: true
+        )).then((value) {
+          print('[reccomendation-retry] started: $value');
+        });
+      }
     }
 
   }
@@ -371,6 +421,7 @@ class BackgroundHandler {
     return sum;
   }
 
+  /// Utility method to turn off or on the background tasks
   static void toggleBackgroundTask(enabled) {
     if (enabled) {
       BackgroundFetch.start().then((int status) {
@@ -385,6 +436,10 @@ class BackgroundHandler {
     }
   }
 
+  /// Utility method to restart the background tasks
+  ///
+  /// This can be used when the timing of the background tasks are changed in
+  /// runtime.
   static void restart() {
     BackgroundFetch.stop().then((int status) {
       print('[BackgroundFetch] stop success: $status');

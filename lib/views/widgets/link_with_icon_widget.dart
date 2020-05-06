@@ -2,6 +2,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+/// Utility Widget to show a clickable link
+///
+/// {@category Widget}
 class LinkWithIconWidget extends StatelessWidget{
   final String _description;
   final String _URL;

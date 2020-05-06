@@ -2,6 +2,10 @@ import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/dialog_service.dart';
 import 'package:flutter/material.dart';
 
+/// Class for that wraps root widget views so that Stores can show dialogs
+///
+/// This widget only needs to wrap around root views, not all views. As long
+/// as a view that has this is still in context, the dialogs can be shown.
 class DialogManager extends StatefulWidget {
   final Widget child;
 
@@ -26,6 +30,10 @@ class _DialogManagerState extends State<DialogManager> {
     return widget.child;
   }
 
+  /// The method that gets called whenever a Dialog is going to be shown.
+  ///
+  /// The parameter [request] contains all the information needed to
+  /// distinguish which type of dialog to show and the information to show.
   void _showDialog(DialogRequest request) {
     switch(request.type){
       case DialogType.Loading:
@@ -46,10 +54,13 @@ class _DialogManagerState extends State<DialogManager> {
     }
   }
 
+  /// Utility method so that Stores can pop the current context without
+  /// actually having the context.
   void _dismissDialog(){
     Navigator.of(context).pop();
   }
 
+  /// Utility method to show a Dialog with a loading bar that is not dismissible
   void _showLoading(DialogRequest request){
     showDialog(
       context: context,
@@ -71,6 +82,9 @@ class _DialogManagerState extends State<DialogManager> {
     );
   }
 
+  /// Utility method to show an Error Dialog.
+  ///
+  /// The parameter [request] can define if it can be dismissible
   void _showErrorDialog(DialogRequest request){
     showDialog(
       context: context,
@@ -95,6 +109,9 @@ class _DialogManagerState extends State<DialogManager> {
     );
   }
 
+  /// Utility method to show an Alert Dialog.
+  ///
+  /// The parameter [request] can define if it can be dismissible
   void _showAlert(DialogRequest request){
     showDialog(
       context: context,
@@ -128,6 +145,10 @@ class _DialogManagerState extends State<DialogManager> {
     );
   }
 
+  /// Utility method to show an Important Alert Dialog.
+  ///
+  /// The parameter [request] can define if it can be dismissible. The
+  /// secondary button will say "CANCEL" by default if not provided one.
   void _showImportantAlert(DialogRequest request){
     showDialog(
       context: context,
@@ -147,7 +168,8 @@ class _DialogManagerState extends State<DialogManager> {
               ),
               Padding(padding: EdgeInsets.only(left: 8.0)),
               FlatButton(
-                textColor: Theme.of(context).primaryColor,
+                textColor: Theme.of(context).brightness == Brightness.dark ?
+                  Theme.of(context).primaryColorLight : Theme.of(context).primaryColor,
                 child: Text(request.primaryButtonTitle),
                 onPressed: () =>
                     _dialogService.dialogComplete(DialogResponse(result: true))
@@ -159,6 +181,9 @@ class _DialogManagerState extends State<DialogManager> {
     );
   }
 
+  /// Utility method to show a Fullscreen Loading Dialog.
+  ///
+  /// This type of Dialog can't be dismissed and has no action buttons.
   void _showFullScreenLoading(DialogRequest request) {
     showGeneralDialog(
         context: context,
@@ -197,6 +222,10 @@ class _DialogManagerState extends State<DialogManager> {
   }
 }
 
+
+/// Utility object for information about hwo to build the Dialog.
+///
+/// {@category Model}
 class DialogRequest {
 
   final DialogType type;
@@ -218,6 +247,9 @@ class DialogRequest {
 }
 
 
+/// Utility object for the result after closing a dialog.
+///
+/// {@category Model}
 class DialogResponse {
   final dynamic result;
 

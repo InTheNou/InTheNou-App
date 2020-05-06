@@ -3,10 +3,17 @@ import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/stores/event_feed_store.dart';
 import 'package:InTheNou/stores/user_store.dart';
-import 'package:InTheNou/views/widgets/event_card.dart';
+import 'package:InTheNou/views/widgets/error_body_widget.dart';
+import 'package:InTheNou/views/widgets/event_card_image.dart';
+import 'package:InTheNou/views/widgets/loading_body_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
+/// The view for showing [Event] results
+///
+/// This View is used for both the Personal Feed and the General Feed
+///
+/// {@category View}
 class FeedView extends StatefulWidget{
 
   final FeedType type;
@@ -29,11 +36,11 @@ class GeneralFeedState extends State<FeedView>
   void initState() {
     super.initState();
 
-    /// if it's the first time the feed is loaded, get all the Events
+    // if it's the first time the feed is loaded, get all the Events
     _eventFeedStore = listenToStore(EventFeedStore.eventFeedToken);
     _userStore = listenToStore(UserStore.userStoreToken);
-    /// Save the scroll position the uer is in to recall if the screen is
-    /// switched
+    // Save the scroll position the user is in to recall if the screen is
+    // switched
     _scrollController = ScrollController(
         initialScrollOffset: _eventFeedStore.getScrollPos(widget.type));
     _scrollController.addListener(() {
@@ -42,6 +49,7 @@ class GeneralFeedState extends State<FeedView>
     _searchQueryController =TextEditingController(
         text:_eventFeedStore.searchKeyword(widget.type));
     _searchFocus = FocusNode();
+    getAllEventsAction(widget.type);
   }
 
   @override
@@ -86,10 +94,14 @@ class GeneralFeedState extends State<FeedView>
         controller: _searchQueryController,
         autofocus: false,
         focusNode: _searchFocus,
+        maxLength: 25,
+        maxLengthEnforced: true,
         decoration: InputDecoration(
-          hintText: "Search Events...",
-          border: InputBorder.none,
-          hintStyle: TextStyle(color: Colors.white70),
+            hintText: "Search Events...",
+            border: InputBorder.none,
+            hintStyle: TextStyle(color: Colors.white70),
+            counterStyle: TextStyle(height: double.minPositive,),
+            counterText: ""
         ),
         style: TextStyle(color: Colors.white, fontSize: 16.0),
         onSubmitted: (query) {
@@ -155,9 +167,6 @@ class GeneralFeedState extends State<FeedView>
           _eventFeedStore.personalSearch : _eventFeedStore.generalSearch,
         builder: (BuildContext context, AsyncSnapshot<List<Event>> events) {
 
-          if(events.connectionState == ConnectionState.waiting){
-            return _buildLoadingWidget();
-          }
           if(events.hasData){
             if(events.data.length == 0 && _eventFeedStore.isSearching(widget.type)){
               return Center(
@@ -174,52 +183,61 @@ class GeneralFeedState extends State<FeedView>
                     )),
               );
             } else {
-              return  Scrollbar(
-                child: RefreshIndicator(
-                  onRefresh: () => getAllEventsAction(widget.type),
-                  child: ListView.builder(
-                      key: ValueKey(widget.type),
-                      physics: AlwaysScrollableScrollPhysics(),
-                      controller: _scrollController,
-                      padding:const EdgeInsets.only(bottom: 100.0),
-                      itemCount: events.data.length,
-                      itemBuilder: (context, index) {
-                        return EventCard(events.data[index], widget.type);
-                      }
-                  ),
-                ),
-              );
+              return _buildResults(events.data);
             }
           } else if(events.hasError){
-            return _buildErrorWidget(events.error.toString());
+            return ErrorBodyWidget(events.error);
           }
-          return _buildLoadingWidget();
+          return LoadingBodyWidget();
         },
       ),
     );
   }
-
-  Widget _buildErrorWidget(String error) {
-    return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(error,
-                  style: Theme.of(context).textTheme.headline5
+  Widget _buildResults(List<Event> results){
+    return Scrollbar(
+      child: RefreshIndicator(
+          onRefresh: () => getAllEventsAction(widget.type),
+          child: NotificationListener<ScrollNotification>(
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Flexible(
+                    child: ListView.builder(
+                        key: ValueKey(widget.type),
+                        itemCount: results.length,
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        padding: EdgeInsets.only(bottom: 75),
+                        itemBuilder: (context, index){
+                          return EventCardImage(results[index], widget.type);
+                        }),
+                  ),
+                  Container(
+                    height: _eventFeedStore.getIsPaginating(widget.type) ? 75 : 0,
+                    color: Colors.transparent,
+                    child: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+                ],
               ),
             ),
-          ],
-        ));
-  }
-
-  Widget _buildLoadingWidget(){
-    return Center(
-      child: Container(
-        height: 100,
-        width: 100,
-        child: CircularProgressIndicator(),
+            onNotification: (ScrollNotification scrollInfo) {
+              if (!_eventFeedStore.getIsPaginating(widget.type) &&
+                  _eventFeedStore.getCanPaginate(widget.type) &&
+                  scrollInfo.metrics.pixels >=
+                      scrollInfo.metrics.maxScrollExtent-250 &&
+                  scrollInfo.metrics.pixels <=
+                      scrollInfo.metrics.maxScrollExtent-25) {
+                paginateFeedAction(widget.type);
+                return true;
+              }
+              return false;
+            },
+          )
       ),
     );
   }

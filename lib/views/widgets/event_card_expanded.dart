@@ -5,11 +5,15 @@ import 'package:InTheNou/views/widgets/follow_button.dart';
 import 'package:InTheNou/views/widgets/loading_image.dart';
 import 'package:flutter/material.dart';
 
+/// Widget to show Event results with a top image
+///
+/// {@category Widget}
 class EventCardExpanded extends StatelessWidget {
 
   final Event _event;
   final FeedType _feedType;
-  EventCardExpanded(this._event, this._feedType);
+  final bool interactionEnabled;
+  EventCardExpanded(this._event, this._feedType, {this.interactionEnabled = true});
 
   @override
   Widget build(BuildContext context) {
@@ -28,10 +32,13 @@ class EventCardExpanded extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    LoadingImage(
-                        imageURL: _event.image,
-                        height: double.infinity,
-                        width: 120),
+                    Visibility(
+                      visible: _event.image != null && _event.image.isNotEmpty,
+                      child: LoadingImage(
+                          imageURL: _event.image,
+                          height: 150,
+                          width: double.infinity),
+                    ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Column(
@@ -64,7 +71,10 @@ class EventCardExpanded extends StatelessWidget {
                       ),
                     ),
                     Visibility(
-                      visible: _event.status == "active",
+                      visible:  interactionEnabled &&
+                          _event.status == "active" &&
+                          !_event.dismissed &&
+                          _event.endDateTime.isAfter(DateTime.now()),
                       child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: <Widget>[

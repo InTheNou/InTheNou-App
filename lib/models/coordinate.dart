@@ -10,16 +10,8 @@ import 'package:InTheNou/models/user.dart';
 /// {@category Model}
 class Coordinate {
 
-  /// Latitude property of the GPS Coordinate.
-  /// It is represented in the API a "rlatitude'.
   double _lat;
-
-  /// Longitude property of the GPS Coordinate.
-  /// It is represented in the API a "rlongitude'.
   double _long;
-
-  /// Altitude property of the GPS Coordinate.
-  /// It is represented in the API a "raltitude'.
   double _alt;
 
   /// Default constructor for GPS Coordinates
@@ -35,8 +27,16 @@ class Coordinate {
     );
   }
 
+  /// Latitude property of the GPS Coordinate.
+  /// It is represented in the API a "rlatitude'.
   double get lat => _lat;
+
+  /// Longitude property of the GPS Coordinate.
+  /// It is represented in the API a "rlongitude'.
   double get long => _long;
+
+  /// Altitude property of the GPS Coordinate.
+  /// It is represented in the API a "raltitude'.
   double get alt => _alt;
 
   @override

@@ -2,10 +2,15 @@ import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/models/room.dart';
 import 'package:InTheNou/models/service.dart';
 import 'package:InTheNou/stores/infobase_store.dart';
+import 'package:InTheNou/views/widgets/error_body_widget.dart';
 import 'package:InTheNou/views/widgets/link_with_icon_widget.dart';
+import 'package:InTheNou/views/widgets/loading_body_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
+/// The view for showing detailed information about a selected [Room]
+///
+/// {@category View}
 class RoomView extends StatefulWidget {
 
   @override
@@ -37,9 +42,9 @@ class _RoomViewState extends State<RoomView>
             return _buildBody(detailRoom.data);
           }
           else if(detailRoom.hasError){
-            return _buildErrorWidget(detailRoom.error.toString());
+            return ErrorBodyWidget(detailRoom.error);
           }
-          return _buildLoadingWidget();
+          return LoadingBodyWidget();
         },
       ),
     );
@@ -64,91 +69,74 @@ class _RoomViewState extends State<RoomView>
                       children: <Widget>[
                         Text(
                           detailRoom.description,
-                          style: Theme.of(context).textTheme.headline5,
+                          style: Theme.of(context).textTheme.headline5.copyWith(
+                              fontWeight: FontWeight.bold),
+                        ),
+                        const Padding(padding: EdgeInsets.only(bottom: 16.0)),
+                        RichText(
+                          text: TextSpan(
+                              style: Theme.of(context).textTheme.subtitle1,
+                              children: <TextSpan>[
+                                TextSpan(text: "Building: "),
+                                TextSpan(
+                                    text: detailRoom.building,
+                                    style: Theme.of(context).textTheme
+                                        .subtitle1.copyWith(
+                                        fontWeight: FontWeight.bold)
+                                )
+                              ]
+                          ),
                         ),
                         const Padding(padding: EdgeInsets.only(bottom: 8.0)),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                              8.0, 4.0, 8.0, 4.0),
-                          child: RichText(
-                            text: TextSpan(
-                                style: Theme.of(context).textTheme.subtitle1,
-                                children: <TextSpan>[
-                                  TextSpan(text: "Building: "),
-                                  TextSpan(
-                                      text: detailRoom.building,
-                                      style: Theme.of(context).textTheme
-                                            .subtitle1.copyWith(
-                                          fontWeight: FontWeight.bold)
-                                  )
-                                ]
-                            ),
+                        RichText(
+                          text: TextSpan(
+                              style: Theme.of(context).textTheme.subtitle1,
+                              children: <TextSpan>[
+                                TextSpan(text: "Floor: "),
+                                TextSpan(
+                                    text: detailRoom.floor.toString(),
+                                    style: Theme.of(context).textTheme
+                                        .subtitle1.copyWith(
+                                        fontWeight: FontWeight.bold)
+                                )
+                              ]
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                              8.0, 4.0, 8.0, 4.0),
-                          child: RichText(
-                            text: TextSpan(
-                                style: Theme.of(context).textTheme.subtitle1,
-                                children: <TextSpan>[
-                                  TextSpan(text: "Floor: "),
-                                  TextSpan(
-                                      text: detailRoom.floor.toString(),
-                                      style: Theme.of(context).textTheme
-                                            .subtitle1.copyWith(
-                                          fontWeight: FontWeight.bold)
-                                  )
-                                ]
-                            ),
+                        const Padding(padding: EdgeInsets.only(bottom: 8.0)),
+                        RichText(
+                          text: TextSpan(
+                              style: Theme.of(context).textTheme.subtitle1,
+                              children: <TextSpan>[
+                                TextSpan(text: "Department: "),
+                                TextSpan(
+                                    text: detailRoom.department,
+                                    style: Theme.of(context).textTheme
+                                        .subtitle1.copyWith(
+                                        fontWeight: FontWeight.bold)
+                                )
+                              ]
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                              8.0, 4.0, 8.0, 4.0),
-                          child: RichText(
-                            text: TextSpan(
-                                style: Theme.of(context).textTheme.subtitle1,
-                                children: <TextSpan>[
-                                  TextSpan(text: "Department: "),
-                                  TextSpan(
-                                      text: detailRoom.department,
-                                      style: Theme.of(context).textTheme
-                                          .subtitle1.copyWith(
-                                          fontWeight: FontWeight.bold)
-                                  )
-                                ]
-                            ),
+                        const Padding(padding: EdgeInsets.only(bottom: 8.0)),
+                        RichText(
+                          text: TextSpan(
+                              style: Theme.of(context).textTheme.subtitle1,
+                              children: <TextSpan>[
+                                TextSpan(text: "Occupancy: "),
+                                TextSpan(
+                                    text: detailRoom.occupancy.toString(),
+                                    style: Theme.of(context).textTheme
+                                        .subtitle1.copyWith(
+                                        fontWeight: FontWeight.bold)
+                                )
+                              ]
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
-                          child: RichText(
-                            text: TextSpan(
-                                style: Theme.of(context).textTheme.subtitle1,
-                                children: <TextSpan>[
-                                  TextSpan(text: "Occupancy: "),
-                                  TextSpan(
-                                      text: detailRoom.occupancy.toString(),
-                                      style: Theme.of(context).textTheme
-                                            .subtitle1.copyWith(
-                                          fontWeight: FontWeight.bold)
-                                  )
-                                ]
-                            ),
-                          ),
-                        ),
-                        Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: LinkWithIconWidget(
-                                  "location",
-                                  Utils.buildGoogleMapsLink(
-                                      detailRoom.coordinates),
-                                  Icon(Icons.location_on)
-                              ),
-                            )
-                          ],
+                        LinkWithIconWidget(
+                            "location",
+                            Utils.buildGoogleMapsLink(
+                                detailRoom.coordinates),
+                            Icon(Icons.location_on)
                         ),
                       ],
                     ),
@@ -157,7 +145,8 @@ class _RoomViewState extends State<RoomView>
                 //
                 // Contact info
                 Visibility(
-                  visible: detailRoom.custodian != null,
+                  visible: detailRoom.custodian != null && detailRoom
+                      .custodian.trim().isNotEmpty,
                   child: Card(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,29 +223,4 @@ class _RoomViewState extends State<RoomView>
     );
   }
 
-  Widget _buildErrorWidget(String error) {
-    return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(error,
-                  style: Theme.of(context).textTheme.headline5
-              ),
-            ),
-          ],
-        )
-    );
-  }
-
-  Widget _buildLoadingWidget(){
-    return Center(
-      child: Container(
-        height: 100,
-        width: 100,
-        child: CircularProgressIndicator(),
-      ),
-    );
-  }
 }

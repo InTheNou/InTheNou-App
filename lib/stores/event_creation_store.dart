@@ -47,6 +47,7 @@ class EventCreationStore extends flux.Store {
   Map<Tag,bool> _allTags = new Map();
   Map<Tag,bool> _searchTags = new Map();
   List<Tag> _selectedTags = new List();
+  String tagsString = "";
 
   EventCreationStore() {
     triggerOnAction(submitEventAction, (_) async{
@@ -83,13 +84,15 @@ class EventCreationStore extends flux.Store {
           trigger();
           reset();
         } else {
+          _dialogService.dialogComplete(DialogResponse(result: true));
           _dialogService.showDialog(
               type: DialogType.Error,
-              title: "Creation Failed",
+              title: "Event Creation Failed",
               description: "The Event was not able to be Created please try "
                   "again.");
         }
       }).catchError((e){
+        _dialogService.dialogComplete(DialogResponse(result: true));
         _dialogService.showDialog(
             type: DialogType.Error,
             title: "Creation Failed",
@@ -111,7 +114,7 @@ class EventCreationStore extends flux.Store {
       }
     });
     triggerOnAction(getBuildingsAction, (_) async{
-      _infoBaseRepo.getAllBuildings().then((buildings){
+      _infoBaseRepo.getAllBuildings(0, PAGINATION_GET_ALL).then((buildings){
         _buildings = buildings;
         trigger();
       }).catchError((e){
@@ -154,33 +157,35 @@ class EventCreationStore extends flux.Store {
         _endDateTime = dateTime.value;
       }
     });
-    triggerOnAction(buildingSelectAction, (Building building){
-      _selectedFloor = null;
+    triggerOnConditionalAction(buildingSelectAction, (Building building){
       _selectedRoom = null;
+      _selectedFloor = null;
       _roomsInBuilding = new List();
-      _infoBaseRepo.getBuilding(building.UID).then((value) {
+      return _infoBaseRepo.getBuilding(building.UID).then((value) {
         _selectedBuilding = value;
         _floors = selectedBuilding.floors;
-        trigger();
+        return true;
       }).catchError((e){
         _dialogService.showDialog(
             type: DialogType.Error,
             title: "Unable to get Floors of Building",
             description: e.toString());
+        return false;
       });
     });
-    triggerOnAction(floorSelectAction, (Floor floor) async{
+    triggerOnConditionalAction(floorSelectAction, (Floor floor) async{
       _selectedFloor = floor;
       _selectedRoom = null;
-      _infoBaseRepo.getRoomsOfFloor(_selectedBuilding.UID,
+      return _infoBaseRepo.getRoomsOfFloor(_selectedBuilding.UID,
           floor.floorNumber).then((value){
         _roomsInBuilding = value;
-        trigger();
+        return true;
       }).catchError((e){
         _dialogService.showDialog(
             type: DialogType.Error,
             title: "Unable to get Rooms of Floor",
             description: e.toString());
+        return false;
       });
     });
     triggerOnAction(roomSelectAction, (Room room){
@@ -200,7 +205,8 @@ class EventCreationStore extends flux.Store {
               type: DialogType.Alert,
               title: "Tag Limit Reached",
               description: "You have reached the limit of 10 Tags for the "
-                  "Event.");
+                  "Event."
+                  "\n\nYou have selected the following: $tagsString");
           return;
         } else {
           _selectedTags.add(tag.key);
@@ -212,6 +218,10 @@ class EventCreationStore extends flux.Store {
         _searchTags.update(tag.key, (value) => tag.value);
         _allTags.update(tag.key, (value) => tag.value);
       }
+      tagsString = "";
+      _selectedTags.forEach((tag) {
+        tagsString = tagsString + tag.name + " ";
+      });
     });
     triggerOnAction(searchedTagAction, (String search){
       _searchTags.clear();
@@ -237,6 +247,7 @@ class EventCreationStore extends flux.Store {
     _websites = new List();
     _searchTags = new Map();
     _selectedTags = new List();
+    tagsString = "";
   }
 
   bool hasNoChanges(){

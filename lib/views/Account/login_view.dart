@@ -5,6 +5,13 @@ import 'package:flutter_auth_buttons/flutter_auth_buttons.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 import 'package:google_sign_in/google_sign_in.dart';
 
+/// The view for logging into the app using a Google account
+///
+/// If a Google account was selected but the login process didn't complete,
+/// the user will be shown the account they are currently signed in with and
+/// they can choose to sign out to use another Google Account.
+///
+/// {@category View}
 class LoginView extends StatefulWidget {
 
   LoginView() : super(key: ValueKey("LoginView"));

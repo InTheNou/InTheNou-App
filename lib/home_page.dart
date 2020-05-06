@@ -3,6 +3,7 @@ import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/background/background_handler.dart';
 import 'package:InTheNou/background/notification_handler.dart';
+import 'package:InTheNou/dialog_manager.dart';
 import 'package:InTheNou/dialog_service.dart';
 import 'package:InTheNou/stores/settings_store.dart';
 import 'package:InTheNou/views/EventFeed/feed_view.dart';
@@ -19,6 +20,13 @@ import 'background/notification_handler.dart';
 
 NotificationAppLaunchDetails notificationAppLaunchDetails;
 
+/// The main view where the user can navigate to the various functionalities
+/// of the app.
+///
+/// It does the verification of a current session and routes to the
+/// [HomePage] or [LoginView] respectively.
+///
+/// {@category View}
 class HomePage extends StatefulWidget {
   HomePage({Key key, this.title}) : super(key: key);
 
@@ -65,26 +73,31 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
       bottomNavigationBar: BottomNavigationBar(
         onTap: navigateToAction,
         currentIndex: navigationStore.destinationIndex,
+        elevation: 16,
         selectedItemColor: Theme.of(context).brightness == Brightness.dark ?
           Theme.of(context).primaryColorLight : Theme.of(context).primaryColor,
         unselectedItemColor: Theme.of(context).brightness == Brightness.dark ?
-          Theme.of(context).primaryColorLight.withAlpha(120) :
-          Theme.of(context).primaryColor.withAlpha(120),
+          Theme.of(context).primaryColorLight.withAlpha(80) :
+          Theme.of(context).primaryColor.withAlpha(80),
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            title: new Text("Personal Feed"),
+            backgroundColor: Theme.of(context).cardColor,
+            title: Text("Personal Feed"),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard),
-            title: new Text('General Feed'),
+            backgroundColor: Theme.of(context).cardColor,
+            title: Text('General Feed'),
           ),
           BottomNavigationBarItem(
               icon: Icon(Icons.business),
+              backgroundColor: Theme.of(context).cardColor,
               title: Text('Information Basee')
           ),
           BottomNavigationBarItem(
               icon: Icon(Icons.person),
+              backgroundColor: Theme.of(context).cardColor,
               title: Text('Profile')
           )
         ],
@@ -102,6 +115,23 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
   void checkLocationPermission() async {
     prefs = await SharedPreferences.getInstance();
     // Check status of permission
+    bool firstTime = prefs.getBool(FIRST_TIME_USER_KEY);
+    if(firstTime){
+      await _dialogService.showDialog(
+          type: DialogType.Alert,
+          title: "Welcome to the InTheNou App",
+          description: "In the App you will be able to create a profile that "
+              "caters to your interests. \n"
+              "You will be able to Follow Events to get Notifications of when "
+              "they will happen, which you can Unfollow them at any "
+              "time as well. Lastly you will be able to Dismiss an event from "
+              "your Feeds so that you will no longer see it there. \n"
+              "These interactions will shape your profile with your interests "
+              "which will help us Recommend Events to you, which will show up "
+              "in your Personal Profile.");
+      prefs.setBool(FIRST_TIME_USER_KEY, false);
+    }
+
     await Geolocator().checkGeolocationPermissionStatus().then((value) {
       if ((value == GeolocationStatus.denied ||
           value == GeolocationStatus.unknown) &&

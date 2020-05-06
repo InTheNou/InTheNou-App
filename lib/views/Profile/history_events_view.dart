@@ -1,10 +1,13 @@
 import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/stores/user_store.dart';
-import 'package:InTheNou/views/widgets/event_card.dart';
+import 'package:InTheNou/views/widgets/event_card_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
-
+/// The view for showing a list of [Event]s that have been followed by the
+/// current user and have ended
+///
+/// {@category View}
 class HistoryEventsView extends StatefulWidget {
 
   @override
@@ -92,7 +95,7 @@ class _HistoryEventsViewState extends State<HistoryEventsView>
             itemCount: historyEvents.length,
             itemBuilder: (context, index){
               Event _event = historyEvents[index];
-              return EventCard(_event, null);
+              return EventCardImage(_event, null);
             }
         ),
       ),

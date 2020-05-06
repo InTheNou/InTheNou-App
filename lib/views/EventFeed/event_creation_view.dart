@@ -1,4 +1,3 @@
-import 'package:InTheNou/assets/colors.dart';
 import 'package:InTheNou/assets/validators.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/dialog_manager.dart';
@@ -7,6 +6,7 @@ import 'package:InTheNou/models/building.dart';
 import 'package:InTheNou/models/floor.dart';
 import 'package:InTheNou/models/room.dart';
 import 'package:InTheNou/models/website.dart';
+import 'package:InTheNou/models/event.dart';
 import 'package:InTheNou/stores/event_creation_store.dart';
 import 'package:InTheNou/views/EventFeed/tag_selection_widget.dart';
 import 'package:InTheNou/views/EventFeed/website_alert_dialog.dart';
@@ -18,6 +18,9 @@ import 'package:intl/intl.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 
 
+/// The view for creating an [Event] to be shown in the system
+///
+/// {@category View}
 class EventCreationView extends StatefulWidget {
 
   @override
@@ -28,6 +31,7 @@ class EventCreationView extends StatefulWidget {
 class _EventCreationViewState extends State<EventCreationView>
   with flux.StoreWatcherMixin<EventCreationView>{
 
+  /// Key used to key used to check the validation of the whole form
   final _formKey = GlobalKey<FormState>();
   final _format = DateFormat("EE, MMMM d, yyyy 'at' h:mma");
   final DateTime _initialDaeTime = DateTime(DateTime.now().year,
@@ -99,6 +103,7 @@ class _EventCreationViewState extends State<EventCreationView>
                 padding: const EdgeInsets.only(top: 16.0, bottom: 8.0,
                     left: 8.0, right: 8.0),
                 child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Row(
                         children: <Widget>[
@@ -322,7 +327,7 @@ class _EventCreationViewState extends State<EventCreationView>
                             }).toList(),
                             onChanged: (value) => buildingSelectAction(value),
                             validator: (value) =>
-                              value == null? "Please choose a Floor" : null,
+                              value == null? "Please choose a Building" : null,
                           ),
                         ),
                       ),
@@ -341,14 +346,14 @@ class _EventCreationViewState extends State<EventCreationView>
                                     .copyWith(fontWeight: FontWeight.w200)),
                             value: _creationStore.selectedFloor,
                             items: _creationStore.floors.map((Floor floor) {
-                              return new DropdownMenuItem(
+                              return DropdownMenuItem(
                                 value: floor,
-                                child: new Text(floor.floorName),
+                                child: Text(floor.floorName),
                               );
                             }).toList(),
                             onChanged: (value) => floorSelectAction(value),
                             validator: (value) =>
-                              value == null? "Please choose a Floor" : null,
+                            value == null? "Please choose a Floor" : null,
                           ),
                         ),
                       ),
@@ -368,9 +373,9 @@ class _EventCreationViewState extends State<EventCreationView>
                               value: _creationStore.selectedRoom,
                               items: _creationStore.roomsInBuilding
                                   .map((Room room) {
-                                return new DropdownMenuItem(
+                                return DropdownMenuItem(
                                   value: room,
-                                  child: new Text(room.code),
+                                  child: Text(room.code),
                                 );
                               }).toList(),
                               onChanged: (value) => roomSelectAction(value),
@@ -493,6 +498,13 @@ class _EventCreationViewState extends State<EventCreationView>
                           ),
                         ],
                       ),
+                      Visibility(
+                        visible: _creationStore.tagsString.isNotEmpty,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(_creationStore.tagsString),
+                        ),
+                      ),
                       TagSelectionWidget(),
                     ]
                 ),
@@ -503,6 +515,8 @@ class _EventCreationViewState extends State<EventCreationView>
     );
   }
 
+  /// Checks the validation of the whole form as well as checking the image
+  /// URL by trying to download it.
   void _validateEventSubmit() async {
     if(_formKey.currentState.validate()
         && Validators.validateSelectedTags(_creationStore.selectedTags)){
@@ -517,8 +531,11 @@ class _EventCreationViewState extends State<EventCreationView>
         } catch(e){
           result = false;
         }
+        // Dismiss the loading dialog
         _dialogService.dialogComplete(DialogResponse(result: true));
       }
+      // Checks if the URL is for a valid image and continues the Event
+      // Creation, if not then it shows a Dialog.
       if (!result){
         _dialogService.showDialog(
             type: DialogType.Alert,
@@ -528,7 +545,10 @@ class _EventCreationViewState extends State<EventCreationView>
       } else {
         submitEventAction();
       }
-    } else if(!_formKey.currentState.validate()){
+    }
+    // If there is a problem in the form then enable validation to show the
+    // problems and scroll up so the user can see them
+    else if(!_formKey.currentState.validate()){
       _formKey.currentState.save();
       setState(() {
         _autoValidate = true;
@@ -551,6 +571,7 @@ class _EventCreationViewState extends State<EventCreationView>
     }
   }
 
+  // If the user has done any changes then we ask if they want to ave the draft
   Future<bool> _showExitWarning() async{
     if(_creationStore.hasNoChanges()){
       Navigator.pop(context);

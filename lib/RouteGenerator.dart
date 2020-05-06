@@ -22,6 +22,7 @@ import 'package:InTheNou/views/widgets/crashy_view.dart';
 import 'package:InTheNou/views/widgets/notification_view.dart';
 import "package:flutter/material.dart";
 
+/// Utility class for managing the routing between views
 class RouteGenerator{
 
   static Route<dynamic> generateRoute(RouteSettings settings){
@@ -80,64 +81,12 @@ class RouteGenerator{
             default:
               return _errorRoute();
           }
-//          return DialogManager(
-//            child: _getView(settings),
-//          );
         }
     );
   }
 
-  static Widget _getView(RouteSettings settings){
-    final args = settings.arguments;
-
-    switch (settings.name){
-      case "/":
-        return StartUpView();
-      case "/home":
-        return HomePage();
-      case "/login":
-        return LoginView();
-      case "/accountcreation":
-        return AccountCreationView();
-      case "/eventdetail":
-        if (args is int) {
-          return EventDetailView(args);
-        }
-        return _errorRoute();
-      case '/create_event':
-        return EventCreationView();
-      case '/infobase/search':
-        if (args is InfoBaseType) {
-          InfoBaseSearchView(args);
-        }
-        return _errorRoute();
-      case '/infobase/building':
-        return BuildingView();
-      case '/infobase/floor':
-        return FloorView();
-      case '/infobase/room':
-        return RoomView();
-      case '/infobase/service':
-        return ServiceView();
-      case '/profile/settings':
-        return SettingsView();
-      case '/profile/settings/debug':
-        return DebugSettingsView();
-      case '/profile/followed_events':
-        return FollowedEventsView();
-      case '/profile/event_history':
-        return HistoryEventsView();
-      case '/profile/dismissed_events':
-        return DismissedEventsView();
-      case '/profile/my_tags':
-        return MyTagsView();
-      case '/profile/created_events':
-        return CreatedEventsView();
-      default:
-        return _errorRoute();
-    }
-  }
-
+  /// The default Error route shown if there was a mistake moving from one
+  /// view to another
   static Widget _errorRoute() {
     return Scaffold(
       appBar: AppBar(

@@ -1,22 +1,20 @@
-import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/models/event.dart';
-import 'package:InTheNou/views/widgets/dismiss_button.dart';
-import 'package:InTheNou/views/widgets/follow_button.dart';
+import 'package:InTheNou/views/widgets/cancel_button.dart';
 import 'package:InTheNou/views/widgets/loading_image.dart';
 import 'package:flutter/material.dart';
 
-/// Widget to show Event results with a side image
+/// Widget to show Event results in the CreatedEventsView
 ///
 /// {@category Widget}
-class EventCardImage extends StatelessWidget {
+class CreatedEventCardImage extends StatelessWidget {
 
   final Event _event;
-  final FeedType _feedType;
   final bool interactionEnabled;
-  EventCardImage(this._event, this._feedType, {this.interactionEnabled = true});
+  CreatedEventCardImage(this._event, {this.interactionEnabled = true});
 
   @override
   Widget build(BuildContext context) {
+
     return Card(
         key: ValueKey(_event.UID),
         child: InkWell(
@@ -77,23 +75,25 @@ class EventCardImage extends StatelessWidget {
                         ],
                       ),
                     ),
-                  ),
+                  )
                 ],
               ),
-              Visibility(
-                visible: interactionEnabled &&
-                    _event.status == "active" &&
-                    !_event.dismissed &&
-                    _event.endDateTime.isAfter(DateTime.now()),
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: <Widget>[
-                        DismissButton(_event, _feedType),
-                        FollowButton(_event, _feedType),
-                      ]
-                  ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      SizedBox(
+                        width: 110,
+                      ),
+                      Visibility(
+                        visible:
+                        (_event.endDateTime.isAfter(DateTime.now())
+                            && _event.status == "active") ||
+                            _event.status == "deleted",
+                        child: CancelButton(_event),
+                      ),
+                    ]
                 ),
               ),
             ],

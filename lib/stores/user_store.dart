@@ -52,6 +52,8 @@ class UserStore extends flux.Store{
   Future<Cookie> _session;
   Future<GoogleSignInAccount> _account;
 
+  String tagsString = "";
+
   Future<bool> accountCreationFinished = Future.value(false);
 
   DialogService _dialogService = DialogService();
@@ -75,20 +77,49 @@ class UserStore extends flux.Store{
       _userRepo.getUserInfo(_user.UID).then((user) {
         _user = user;
         trigger();
+      }).catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Updating User Information",
+            description: e.toString());
       });
       _account = _userRepo.getGoogleAccount();
     });
     triggerOnAction(refreshFollowedAction, (_){
-      _followedEvents = _userRepo.getFollowedEvents(0, PAGINATION_LENGTH);
+      _followedEvents = _userRepo.getFollowedEvents(0, PAGINATION_GET_ALL)
+          .catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Getting Following Events",
+            description: e.toString());
+      });
     });
     triggerOnAction(refreshHistoryAction, (_){
-      _historyEvents = _userRepo.getFEventsHistory(0, PAGINATION_LENGTH);
+      _historyEvents = _userRepo.getFEventsHistory(0, PAGINATION_GET_ALL)
+          .catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Getting Events History",
+            description: e.toString());
+      });
     });
     triggerOnAction(refreshDismissedAction, (_){
-      _dismissedEvents = _userRepo.getDismissedEvents(0, PAGINATION_LENGTH);
+      _dismissedEvents = _userRepo.getDismissedEvents(0, PAGINATION_GET_ALL)
+          .catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Getting Created Events",
+            description: e.toString());
+      });
     });
     triggerOnAction(refreshCreatedAction, (_){
-      _createdEvents = _userRepo.getCreatedEvents(0, PAGINATION_LENGTH);
+      _createdEvents = _userRepo.getCreatedEvents(0, PAGINATION_GET_ALL)
+          .catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Getting Created Events",
+            description: e.toString());
+      });
     });
     triggerOnAction(cancelEventAction, (Event event) async{
       DialogResponse response = await _dialogService.showDialog(
@@ -111,8 +142,29 @@ class UserStore extends flux.Store{
     });
 
     // MyTags
+    triggerOnAction(getTagsAction, (_) {
+      _tagRepo.getAllTags().then((tags) {
+        _allTags = new Map<Tag,bool>.fromIterable(tags,
+            key: (tag) => tag,
+            value: (tag) => false
+        );
+        _searchTags = new Map.from(_allTags);
+        _filteredTags = new Map.from(_allTags);
+        trigger();
+      }).catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Unable to get Tags",
+            description: "Please try again.");
+      });
+    });
     triggerOnAction(getMyTagsAction, (_) {
-      _userTags = _userRepo.getUserTags();
+      _userTags = _userRepo.getUserTags().catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Updating User Tags",
+            description: e.toString());
+      });
     });
      triggerOnAction(addTagAction, (_) async{
        var tags = await _userTags;
@@ -144,7 +196,6 @@ class UserStore extends flux.Store{
                description: "Unable to Add that tag, please try again.");
          }
        }).catchError((e){
-         _dialogService.goBack();
          _dialogService.showDialog(
              type: DialogType.Error,
              title: "Adding Tag",
@@ -179,20 +230,12 @@ class UserStore extends flux.Store{
        });
      });
      triggerOnAction(resetTagsAction, (_) {
-       _tagRepo.getAllTags().then((tags) {
-         _allTags = new Map<Tag,bool>.fromIterable(tags,
-             key: (tag) => tag,
-             value: (tag) => false
-         );
-         _searchTags = new Map.from(_allTags);
-         _filteredTags = new Map.from(_allTags);
-         trigger();
-       }).catchError((e){
-         _dialogService.showDialog(
-             type: DialogType.Error,
-             title: "Unable to Get Tags",
-             description: e.toString());
+       _allTags.updateAll((key, value) {
+         return false;
        });
+       _searchTags = new Map.from(_allTags);
+       _filteredTags = new Map.from(_allTags);
+       trigger();
        _addedTag = null;
      });
      triggerOnAction(filterTagAction, (String keyword) async {
@@ -278,7 +321,8 @@ class UserStore extends flux.Store{
               type: DialogType.Alert,
               title: "Tag Limit Reached",
               description: "You have reached the limit of 5 Tags for the "
-                  "Account Creation.");
+                  "Account Creation. "
+                  "\n\nYou have selected the following: $tagsString");
           return;
         } else {
           _selectedTags.add(tag.key);
@@ -290,6 +334,10 @@ class UserStore extends flux.Store{
         _searchTags.update(tag.key, (value) => tag.value);
         _allTags.update(tag.key, (value) => tag.value);
       }
+      tagsString = "";
+      _selectedTags.forEach((tag) {
+        tagsString = tagsString + tag.name + " ";
+      });
     });
     triggerOnConditionalAction(createUserAction, (_) async {
       DialogResponse response = await _dialogService.showDialog(
@@ -350,9 +398,8 @@ class UserStore extends flux.Store{
         description: error);
   }
 
+  /// This method calls the cached data to get the information on the user
   ///
-  /// This method calls the backend to get the information on the uer after
-  /// it has logged in with Google.
   /// The [Future] can return a Null if the user is new to the system.
   /// Otherwise it return the full User information
   Future<User> getUser() async{
@@ -415,6 +462,7 @@ final flux.Action<Event> cancelEventAction = new flux.Action();
 final flux.Action getMyTagsAction = new flux.Action();
 
 //MyTags
+final flux.Action getTagsAction = new flux.Action();
 final flux.Action addTagAction = new flux.Action();
 final flux.Action<Tag> removeTagAction = new flux.Action();
 final flux.Action resetTagsAction = new flux.Action();

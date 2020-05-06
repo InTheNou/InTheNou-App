@@ -95,6 +95,11 @@ class ApiConnection {
     }
   }
 
+  /// Method to check if dio has been properly initialized
+  ///
+  /// Sometimes the dio object looses the options object while the app is in
+  /// the background, so it's best to call this and await it before doing a
+  /// call to the API.
   Future ensureInitialized() async{
     if(dio == null || dio.options == null || dio.options.baseUrl == null){
       await Future.delayed(Duration(milliseconds: 500));
@@ -104,6 +109,7 @@ class ApiConnection {
     }
   }
 
+  /// Utility method to be used when logging out to remove the session cookie
   deleteSession(){
     _persistentCookies.deleteAll();
   }
