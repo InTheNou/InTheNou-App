@@ -20,7 +20,6 @@ class _AddTagDialogState extends State<AddTagDialog>
     with flux.StoreWatcherMixin<AddTagDialog> {
   UserStore _userStore;
 
-
   @override
   void initState() {
     _userStore = listenToStore(UserStore.userStoreToken);
@@ -55,8 +54,15 @@ class _AddTagDialogState extends State<AddTagDialog>
                 child: Column(
                   children: <Widget>[
                     TextField(
+                        autofocus: false,
+                        maxLength: 50,
+                        maxLengthEnforced: true,
                         decoration: InputDecoration(
-                          hintText:  "Search Tags",),
+                            hintText: "Search Tags...",
+                            border: InputBorder.none,
+                            counterStyle: TextStyle(height: double.minPositive,),
+                            counterText: ""
+                        ),
                         onChanged: (String value) => filterTagAction(value)
                     ),
                     Padding(

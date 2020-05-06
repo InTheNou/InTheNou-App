@@ -146,7 +146,7 @@ class _MyTagsViewState extends State<MyTagsView>
   }
 
   void _showAddTagDialog(){
-    resetTagsAction();
+    getTagsAction();
     showDialog(
         context: context,
         builder: (_){

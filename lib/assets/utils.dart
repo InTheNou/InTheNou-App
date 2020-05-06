@@ -316,18 +316,14 @@ class Utils {
         return "$feature Request to API server was canceled";
         break;
       case DioErrorType.CONNECT_TIMEOUT:
-        return "Connection timeout with server"
-            + "${error.message.toString()}";
+        return "Connection timeout with server";
         break;
       case DioErrorType.DEFAULT:
         return "Connection to API server failed due to internet "
-            "unavailability "+ "${error.message.toString()}";
+            "unavailability";
         break;
       case DioErrorType.RECEIVE_TIMEOUT:
-        print(error.error.toString());
-        print(error.message.toString());
-        return "$feature Recieve timeout with server "
-            "${error.message.toString()}";
+        return "$feature Recieve timeout with server ";
         break;
       case DioErrorType.RESPONSE:
         return _responseString(feature, error.response.statusCode,

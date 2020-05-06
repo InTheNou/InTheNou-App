@@ -3,7 +3,9 @@ import 'package:InTheNou/models/phone_number.dart';
 import 'package:InTheNou/models/service.dart';
 import 'package:InTheNou/models/website.dart';
 import 'package:InTheNou/stores/infobase_store.dart';
+import 'package:InTheNou/views/widgets/error_scaffold_view.dart';
 import 'package:InTheNou/views/widgets/link_with_icon_widget.dart';
+import 'package:InTheNou/views/widgets/loading_scaffold_view.dart';
 import 'package:InTheNou/views/widgets/text_with_icon_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
@@ -38,9 +40,9 @@ class _ServiceViewState extends State<ServiceView>
           return _buildBody(detailService.data);
         }
         else if(detailService.hasError){
-          return _buildErrorWidget(detailService.error.toString());
+          return ErrorScaffoldView(detailService.error);
         }
-        return _buildLoadingWidget();
+        return LoadingScaffoldView();
       },
     );
   }

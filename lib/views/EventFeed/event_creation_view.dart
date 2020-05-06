@@ -103,6 +103,7 @@ class _EventCreationViewState extends State<EventCreationView>
                 padding: const EdgeInsets.only(top: 16.0, bottom: 8.0,
                     left: 8.0, right: 8.0),
                 child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Row(
                         children: <Widget>[
@@ -496,6 +497,13 @@ class _EventCreationViewState extends State<EventCreationView>
                             ),
                           ),
                         ],
+                      ),
+                      Visibility(
+                        visible: _creationStore.tagsString.isNotEmpty,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(_creationStore.tagsString),
+                        ),
                       ),
                       TagSelectionWidget(),
                     ]

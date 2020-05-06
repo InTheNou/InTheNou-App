@@ -145,58 +145,70 @@ class InfoBaseStore extends flux.Store{
     });
 
     triggerOnAction(selectBuildingAction, (Building building) async {
-      var dBuilding;
-      try{
-        dBuilding = await _detailBuilding;
-      }catch(e){}
-      if (dBuilding != null && building == dBuilding ) {
+      if (_detailBuilding != null && _selectedBuilding != null &&
+          _selectedBuilding == building ) {
         return;
       }
       _detailRoom = null;
       _selectedFloor = null;
       _selectedBuilding = building;
       trigger();
-      _detailBuilding = _infoBaseRepo.getBuilding(building.UID);
+      _detailBuilding = _infoBaseRepo.getBuilding(building.UID).catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Getting Building Information",
+            description: e.toString());
+        _detailBuilding = null;
+      });
     });
     triggerOnAction(selectFloorAction, (MapEntry<Building, Floor> floor) async {
-      var dRooms;
-      try{
-        dRooms = await _roomsInBuilding;
-      }catch(e){}
-      if (dRooms != null && _selectedFloor == floor.value) {
+      if (_roomsInBuilding != null &&_selectedFloor != null &&
+          _selectedFloor == floor.value) {
         return;
       }
       _roomsInBuilding = null;
       _selectedFloor = floor.value;
       trigger();
       _roomsInBuilding = _infoBaseRepo.getRoomsOfFloor(floor.key.UID,
-          floor.value.floorNumber);
+          floor.value.floorNumber).catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Getting Floor Information",
+            description: e.toString());
+        _roomsInBuilding = null;
+      });
     });
     triggerOnAction(selectRoomAction, (Room room) async {
-      var dRoom;
-      try{
-        dRoom = await _detailRoom;
-      }catch(e){}
-      if (dRoom != null && room == dRoom ) {
+      if (_detailRoom != null && _selectedRoom != null &&
+          _selectedRoom == room) {
         return;
       }
       _detailRoom = null;
       _selectedRoom = room;
       trigger();
-      _detailRoom = _infoBaseRepo.getRoom(room.UID);
+      _detailRoom = _infoBaseRepo.getRoom(room.UID).catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Getting Room Information",
+            description: e.toString());
+        _detailRoom = null;
+      });
     });
     triggerOnAction(selectServiceAction, (Service service) async {
-      var dService;
-      try{
-        dService = await _detailService;
-      }catch(e){}
-      if (dService != null && service == dService ) {
+      if (_detailService != null && _selectedService != null &&
+          _selectedService == service ) {
         return;
       }
       _detailService = null;
       _selectedService = service;
       trigger();
-      _detailService = _infoBaseRepo.getService(service.UID);
+      _detailService = _infoBaseRepo.getService(service.UID).catchError((e){
+        _dialogService.showDialog(
+            type: DialogType.Error,
+            title: "Getting Service Information",
+            description: e.toString());
+        _detailService = null;
+      });
     });
   }
 
@@ -228,7 +240,6 @@ class InfoBaseStore extends flux.Store{
       List<Building> results){
     return _infoBaseRepo.searchBuildings(keyword, skipBuildings,
         PAGINATION_LENGTH).then((newBuildings) {
-
           List<Building> buildings = results ?? List();
           if(buildings.length > 0){
             buildings.addAll(newBuildings);

@@ -38,16 +38,15 @@ class TagRepo {
       ));
       prefs.setString("Token", null);
       List<Tag> tagResults;
-      List<dynamic> jsonResponse = response.data["tags"];
 
-      if(jsonResponse != null){
-        tagResults = Tag.fromJsonToList(jsonResponse);
+      if(response.data["tags"] != null){
+        tagResults = Tag.fromJsonToList(response.data["tags"]);
       }
       return tagResults;
     } catch(error,stacktrace){
       if (error is DioError) {
         debugPrint("Exception: $error");
-        if(error.response.statusCode == 401){
+        if(error.response != null && error.response.statusCode == 401){
           return Future.error("Please Restart the Login Process.");
         }
         return Future.error(Utils.handleDioError(error, "Getting Tags") );

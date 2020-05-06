@@ -88,19 +88,23 @@ class InTheNouApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return new DynamicTheme(
+    return DynamicTheme(
         defaultBrightness: Brightness.light,
         data: (brightness) => ThemeData(
             brightness: brightness,
             primarySwatch: primaryColor,
-            primaryColorLight: primaryColorLight,
+            primaryColorLight: primaryColor[50],
+            primaryColorDark: primaryColor[900],
             primaryColorBrightness: Brightness.dark,
             accentColor: secondaryColor,
             accentColorBrightness: Brightness.dark,
             errorColor: errorColor,
             toggleableActiveColor: brightness == Brightness.dark ?
-            secondaryColorDark : secondaryColor,
+              secondaryColor[900] : secondaryColor,
+            canvasColor: brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[50],
             cardTheme: CardTheme(
+                color: brightness == Brightness.dark ? Colors.grey[850] :
+                Colors.white,
                 clipBehavior: Clip.antiAlias,
                 elevation: 1.0,
                 margin: const EdgeInsets.all(4.0),
@@ -119,8 +123,28 @@ class InTheNouApp extends StatelessWidget {
             ),
             floatingActionButtonTheme: FloatingActionButtonThemeData(
                 backgroundColor: brightness == Brightness.dark ?
-                secondaryColorDark : secondaryColor,
+                  secondaryColor[900] : secondaryColor,
                 foregroundColor: Colors.white
+            ),
+            snackBarTheme: SnackBarThemeData(
+              backgroundColor: Colors.grey[850],
+              actionTextColor: secondaryColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(radius),
+              ),
+              contentTextStyle: TextStyle(
+                color: Colors.white
+              )
+            ),
+            popupMenuTheme: PopupMenuThemeData(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(radius),
+              ),
+            ),
+            appBarTheme: AppBarTheme(
+              brightness: Brightness.dark,
+              color: brightness == Brightness.dark ?
+              primaryColor[900] : primaryColor,
             )
         ),
         themedWidgetBuilder: (context, theme) {

@@ -77,7 +77,7 @@ class User {
   /// Is it represented in the API as "type'.
   UserRole get role => _role;
 
-  /// The selected and developed interest [Tags]s associated with this User.
+  /// The selected and developed interest [Tag]s associated with this User.
   /// Is it represented in the API as "tags'.
   List<Tag> get tags => _tags;
   set tags(List<Tag> value) {

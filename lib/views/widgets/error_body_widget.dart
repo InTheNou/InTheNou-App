@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-class ErrorWBodyWidget extends StatelessWidget {
+class ErrorBodyWidget extends StatelessWidget {
 
   final dynamic error;
-  ErrorWBodyWidget(this.error);
+  ErrorBodyWidget(this.error);
 
   @override
   Widget build(BuildContext context) {

@@ -44,12 +44,14 @@ class _StartUpViewState extends State<StartUpView>
         if(session.hasData){
           // Checks the cached data for a user object
           _userStore.getUser().then((user) {
-            if (user == null) {
-              Navigator.of(context).pushReplacementNamed("/login");
-            } else {
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                "/home", (Route<dynamic> route) => false,
-              );
+            if (user != null) {
+              if(user.fullName == "None"){
+                Navigator.of(context).pushReplacementNamed("/login");
+              } else {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  "/home", (Route<dynamic> route) => false,
+                );
+              }
             }
           }).catchError((e){
             WidgetsBinding.instance.addPostFrameCallback((_) {

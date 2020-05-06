@@ -41,8 +41,15 @@ class _TagSelectionWidgetState extends State<TagSelectionWidget>
                   left: 16.0)),
               Expanded(
                 child: TextField(
-                  decoration: InputDecoration.collapsed(
-                      hintText:  "Search Tags",),
+                    autofocus: false,
+                    maxLength: 25,
+                    maxLengthEnforced: true,
+                    decoration: InputDecoration(
+                        hintText: "Search Tags...",
+                        border: InputBorder.none,
+                        counterStyle: TextStyle(height: double.minPositive,),
+                        counterText: ""
+                    ),
                   onChanged: (String value) => searchedTagAction(value)
                 ),
               ),

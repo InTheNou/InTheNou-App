@@ -94,10 +94,14 @@ class GeneralFeedState extends State<FeedView>
         controller: _searchQueryController,
         autofocus: false,
         focusNode: _searchFocus,
+        maxLength: 25,
+        maxLengthEnforced: true,
         decoration: InputDecoration(
-          hintText: "Search Events...",
-          border: InputBorder.none,
-          hintStyle: TextStyle(color: Colors.white70),
+            hintText: "Search Events...",
+            border: InputBorder.none,
+            hintStyle: TextStyle(color: Colors.white70),
+            counterStyle: TextStyle(height: double.minPositive,),
+            counterText: ""
         ),
         style: TextStyle(color: Colors.white, fontSize: 16.0),
         onSubmitted: (query) {
@@ -182,7 +186,7 @@ class GeneralFeedState extends State<FeedView>
               return _buildResults(events.data);
             }
           } else if(events.hasError){
-            return ErrorWBodyWidget(events.error);
+            return ErrorBodyWidget(events.error);
           }
           return LoadingBodyWidget();
         },

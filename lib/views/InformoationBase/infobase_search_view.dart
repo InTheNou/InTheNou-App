@@ -4,6 +4,8 @@ import 'package:InTheNou/stores/infobase_store.dart';
 import 'package:InTheNou/views/InformoationBase/building_card.dart';
 import 'package:InTheNou/views/InformoationBase/room_card.dart';
 import 'package:InTheNou/views/InformoationBase/services_card.dart';
+import 'package:InTheNou/views/widgets/error_body_widget.dart';
+import 'package:InTheNou/views/widgets/loading_body_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
@@ -95,7 +97,7 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
 
         if(!_infoBaseStore.getIsPaginating(widget.searchType) &&
             results.connectionState == ConnectionState.waiting){
-          return _buildLoadingWidget();
+          return LoadingBodyWidget();
         }
         if(results.hasData){
           if(results.data.length == 0){
@@ -105,10 +107,10 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
           }
         }
         else if(results.hasError){
-          return _buildErrorWidget(results.error.toString());
+          return ErrorBodyWidget(results.error);
         }
         if(widget.searchType == InfoBaseType.Building){
-          return _buildLoadingWidget();
+          return LoadingBodyWidget();
         } else if (widget.searchType == InfoBaseType.Room){
           return _buildSearchNotice();
         } else {
@@ -173,33 +175,6 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
     );
   }
 
-
-  Widget _buildErrorWidget(String error){
-    return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(error,
-                  style: Theme.of(context).textTheme.headline5
-              ),
-            ),
-          ],
-        )
-    );
-  }
-
-  Widget _buildLoadingWidget(){
-    return Center(
-      child: Container(
-        height: 100,
-        width: 100,
-        child: CircularProgressIndicator(),
-      ),
-    );
-  }
-
   Widget _buildSearchNotice(){
     return Center(
       child: Text("Initiate a Search",
@@ -247,10 +222,14 @@ class _InfoBaseSearchViewState extends State<InfoBaseSearchView>
       controller: _searchQueryController,
       autofocus: false,
       focusNode: _searchFocus,
+      maxLength: 50,
+      maxLengthEnforced: true,
       decoration: InputDecoration(
-        hintText: _buildHint(widget.searchType),
-        border: InputBorder.none,
-        hintStyle: TextStyle(color: Colors.white70),
+          hintText: _buildHint(widget.searchType),
+          border: InputBorder.none,
+          hintStyle: TextStyle(color: Colors.white70),
+          counterStyle: TextStyle(height: double.minPositive,),
+          counterText: ""
       ),
       style: TextStyle(color: Colors.white, fontSize: 16.0),
       onSubmitted: (query) {

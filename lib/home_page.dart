@@ -73,26 +73,31 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
       bottomNavigationBar: BottomNavigationBar(
         onTap: navigateToAction,
         currentIndex: navigationStore.destinationIndex,
+        elevation: 16,
         selectedItemColor: Theme.of(context).brightness == Brightness.dark ?
           Theme.of(context).primaryColorLight : Theme.of(context).primaryColor,
         unselectedItemColor: Theme.of(context).brightness == Brightness.dark ?
-          Theme.of(context).primaryColorLight.withAlpha(120) :
-          Theme.of(context).primaryColor.withAlpha(120),
+          Theme.of(context).primaryColorLight.withAlpha(80) :
+          Theme.of(context).primaryColor.withAlpha(80),
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            title: new Text("Personal Feed"),
+            backgroundColor: Theme.of(context).cardColor,
+            title: Text("Personal Feed"),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard),
-            title: new Text('General Feed'),
+            backgroundColor: Theme.of(context).cardColor,
+            title: Text('General Feed'),
           ),
           BottomNavigationBarItem(
               icon: Icon(Icons.business),
+              backgroundColor: Theme.of(context).cardColor,
               title: Text('Information Basee')
           ),
           BottomNavigationBarItem(
               icon: Icon(Icons.person),
+              backgroundColor: Theme.of(context).cardColor,
               title: Text('Profile')
           )
         ],

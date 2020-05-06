@@ -93,6 +93,12 @@ class Building {
   /// Is it represented in the API as "photourl'
   String get image => _image;
 
+
+  @override
+  String toString() {
+    return 'Building{_UID: $_UID, _abbreviation: $_abbreviation, _name: $_name, _commonName: $_commonName, _numFloors: $_numFloors, _floors: $_floors, _type: $_type, _image: $_image}';
+  }
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

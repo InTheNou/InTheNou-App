@@ -117,6 +117,13 @@ class _AccountCreationViewState extends State<AccountCreationView>
                             color: Theme.of(context).canvasColor
                         )),
                   ),
+                  Visibility(
+                    visible: _userStore.tagsString.isNotEmpty,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(_userStore.tagsString),
+                    ),
+                  ),
                   Card(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15.0),
@@ -129,8 +136,15 @@ class _AccountCreationViewState extends State<AccountCreationView>
                             left: 16.0)),
                         Expanded(
                           child: TextField(
-                              decoration: InputDecoration.collapsed(
-                                hintText:  "Serach Tags",),
+                              autofocus: false,
+                              maxLength: 50,
+                              maxLengthEnforced: true,
+                              decoration: InputDecoration(
+                                  hintText: "Search Tags...",
+                                  border: InputBorder.none,
+                                  counterStyle: TextStyle(height: double.minPositive,),
+                                  counterText: ""
+                              ),
                               onChanged: (String value) => searchedTagAction(value.trim())
                           ),
                         ),

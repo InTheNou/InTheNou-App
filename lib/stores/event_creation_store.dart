@@ -47,6 +47,7 @@ class EventCreationStore extends flux.Store {
   Map<Tag,bool> _allTags = new Map();
   Map<Tag,bool> _searchTags = new Map();
   List<Tag> _selectedTags = new List();
+  String tagsString = "";
 
   EventCreationStore() {
     triggerOnAction(submitEventAction, (_) async{
@@ -157,12 +158,11 @@ class EventCreationStore extends flux.Store {
       }
     });
     triggerOnConditionalAction(buildingSelectAction, (Building building){
-      _selectedFloor = null;
       _selectedRoom = null;
+      _selectedFloor = null;
       _roomsInBuilding = new List();
       return _infoBaseRepo.getBuilding(building.UID).then((value) {
         _selectedBuilding = value;
-        _selectedFloor = value.floors.first;
         _floors = selectedBuilding.floors;
         return true;
       }).catchError((e){
@@ -179,8 +179,7 @@ class EventCreationStore extends flux.Store {
       return _infoBaseRepo.getRoomsOfFloor(_selectedBuilding.UID,
           floor.floorNumber).then((value){
         _roomsInBuilding = value;
-        _selectedRoom = value.first;
-        return false;
+        return true;
       }).catchError((e){
         _dialogService.showDialog(
             type: DialogType.Error,
@@ -206,7 +205,8 @@ class EventCreationStore extends flux.Store {
               type: DialogType.Alert,
               title: "Tag Limit Reached",
               description: "You have reached the limit of 10 Tags for the "
-                  "Event.");
+                  "Event."
+                  "\n\nYou have selected the following: $tagsString");
           return;
         } else {
           _selectedTags.add(tag.key);
@@ -218,6 +218,10 @@ class EventCreationStore extends flux.Store {
         _searchTags.update(tag.key, (value) => tag.value);
         _allTags.update(tag.key, (value) => tag.value);
       }
+      tagsString = "";
+      _selectedTags.forEach((tag) {
+        tagsString = tagsString + tag.name + " ";
+      });
     });
     triggerOnAction(searchedTagAction, (String search){
       _searchTags.clear();
@@ -243,6 +247,7 @@ class EventCreationStore extends flux.Store {
     _websites = new List();
     _searchTags = new Map();
     _selectedTags = new List();
+    tagsString = "";
   }
 
   bool hasNoChanges(){

@@ -238,7 +238,7 @@ class UserRepo {
   Future<User> getUserFromPrefs() async{
     SharedPreferences prefs = await _prefs;
     if(prefs.get(USER_KEY) == null)
-      return null;
+      return User(0, "None", "None", "None", null, null, null, null);
     return getUserInfo(convert.jsonDecode(prefs.get(USER_KEY))["uid"]);
   }
 
