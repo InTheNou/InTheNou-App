@@ -34,8 +34,8 @@ class Service {
       json['sdescription'],
       room.code,
       json['sschedule'].toString(),
-      PhoneNumber.jsonToList(json['PNumbers']),
-      Website.jsonToList(json["Websites"]),
+      PhoneNumber.jsonToList(json['numbers']),
+      Website.jsonToList(json["websites"]),
     );
   }
 

@@ -168,7 +168,8 @@ class _DialogManagerState extends State<DialogManager> {
               ),
               Padding(padding: EdgeInsets.only(left: 8.0)),
               FlatButton(
-                textColor: Theme.of(context).primaryColor,
+                textColor: Theme.of(context).brightness == Brightness.dark ?
+                  Theme.of(context).primaryColorLight : Theme.of(context).primaryColor,
                 child: Text(request.primaryButtonTitle),
                 onPressed: () =>
                     _dialogService.dialogComplete(DialogResponse(result: true))

@@ -192,7 +192,8 @@ class NotificationHandler {
       int notificationID;
       events.forEach((event) {
         timeToEvent = event.startDateTime.difference(timestamp);
-        if(Utils.isEventInTheNextDay(event.startDateTime, timestamp)){
+        if(event.status =="active" &&
+            Utils.isEventInTheNextDay(event.startDateTime, timestamp)){
           double timeToWalk = Utils.GPSTimeToWalkCalculation(timeToEvent,
               userCoords, event.room.coordinates);
           if(Utils.isScheduleSmartNecessary(timeToEvent, timeToWalk)){

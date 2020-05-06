@@ -80,13 +80,13 @@ class EventCardImage extends StatelessWidget {
                   ),
                 ],
               ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Visibility(
-                  visible: interactionEnabled &&
-                      _event.status == "active" &&
-                      !_event.dismissed &&
-                      _event.endDateTime.isAfter(DateTime.now()),
+              Visibility(
+                visible: interactionEnabled &&
+                    _event.status == "active" &&
+                    !_event.dismissed &&
+                    _event.endDateTime.isAfter(DateTime.now()),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
                   child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: <Widget>[

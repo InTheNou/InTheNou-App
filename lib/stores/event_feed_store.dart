@@ -382,20 +382,20 @@ class EventFeedStore extends flux.Store{
   }
 
   void _modifyFollowStatus(Event event, bool status) async{
-    var pEvents = await _personalSearch;
+    List<Event> pEvents = await _personalSearch;
     int i = pEvents.indexOf(event);
     if (i != -1){
       pEvents[i].followed = status;
       _personalSearch = Future.value(pEvents);
     }
-    var gEvents = await _generalSearch;
+    List<Event> gEvents = await _generalSearch;
     i = gEvents.indexOf(event);
     if (i != -1){
       gEvents[i].followed = status;
       _generalSearch = Future.value(gEvents);
     }
     // Also change the detailed in case it is showing
-    var dEvent = await _eventDetail;
+    Event dEvent = await _eventDetail;
 
     if (dEvent != null && dEvent.UID == event.UID){
       dEvent.followed = status;
@@ -405,12 +405,12 @@ class EventFeedStore extends flux.Store{
 
   void _reInsertDismissed() async{
     if (perDismissEventIndex != -1){
-      var pEvents = await _personalSearch;
+      List<Event> pEvents = await _personalSearch;
       pEvents.insert(perDismissEventIndex, eventDismissed);
       _personalSearch = Future.value(pEvents);
     }
     if (genDismissEventIndex != -1){
-      var gEvents = await _generalSearch;
+      List<Event> gEvents = await _generalSearch;
       gEvents.insert(genDismissEventIndex, eventDismissed);
       _generalSearch = Future.value(gEvents);
     }
