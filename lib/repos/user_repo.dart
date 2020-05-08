@@ -217,7 +217,7 @@ class UserRepo {
       User newUser;
       if(response.data != null){
         getGoogleAccount();
-        newUser = User.fromJson(response.data);
+        newUser = User.fromJson(response.data["User"]);
         newUser.photo = _userAccount.photoUrl;
       }
       prefs.setString(USER_KEY, convert.jsonEncode(newUser.toJson()));

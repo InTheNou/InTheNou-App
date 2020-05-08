@@ -13,7 +13,7 @@ const String PROFILE = "Profile";
 /// {@category View}
 class ProfileView extends StatefulWidget{
 
-  ProfileView({Key key}) : super(key: PageStorageKey(key));
+  ProfileView({Key key}) : super(key: key);
 
   @override
   ProfileState createState() => ProfileState();

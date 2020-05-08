@@ -13,7 +13,7 @@ const String INFORMATION_BASE = "Information Base";
 /// {@category View}
 class InfoBaseCategoryView extends StatefulWidget{
 
-  InfoBaseCategoryView({Key key}) : super(key: PageStorageKey(key));
+  InfoBaseCategoryView({Key key}) : super(key: key);
 
   @override
   InformationBaseState createState() => InformationBaseState();

@@ -50,9 +50,6 @@ class _EventDetailViewState extends State<EventDetailView>
       future: _eventFeedStore.eventDetail,
       builder: (BuildContext context, AsyncSnapshot<Event> eventDetail) {
 
-        if(eventDetail.connectionState == ConnectionState.waiting){
-          return LoadingScaffoldView();
-        }
         if(eventDetail.hasData){
           return _buildBody(eventDetail.data);
         } else if(eventDetail.hasError){

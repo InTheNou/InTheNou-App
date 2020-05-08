@@ -327,7 +327,8 @@ class _EventCreationViewState extends State<EventCreationView>
                             }).toList(),
                             onChanged: (value) => buildingSelectAction(value),
                             validator: (value) =>
-                              value == null? "Please choose a Building" : null,
+                            _creationStore.selectedBuilding == null ?
+                            "Please choose a Building" : null,
                           ),
                         ),
                       ),
@@ -353,7 +354,8 @@ class _EventCreationViewState extends State<EventCreationView>
                             }).toList(),
                             onChanged: (value) => floorSelectAction(value),
                             validator: (value) =>
-                            value == null? "Please choose a Floor" : null,
+                            _creationStore.selectedFloor == null ?
+                            "Please choose a Floor" : null,
                           ),
                         ),
                       ),
@@ -380,7 +382,8 @@ class _EventCreationViewState extends State<EventCreationView>
                               }).toList(),
                               onChanged: (value) => roomSelectAction(value),
                               validator: (value) =>
-                              value == null? "Please choose a Room" : null
+                              _creationStore.selectedRoom == null ?
+                              "Please choose a Room" : null
                           ),
                         ),
                       ),
@@ -557,7 +560,7 @@ class _EventCreationViewState extends State<EventCreationView>
           curve: Curves.ease, duration: Duration(seconds: 1));
     }
     else{
-      _scrollController.animateTo(10.0,
+      _scrollController.animateTo(500.0,
           curve: Curves.ease, duration: Duration(seconds: 1));
       _dialogService.showDialog(
           type: DialogType.Alert,
