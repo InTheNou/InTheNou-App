@@ -66,8 +66,8 @@ class EventCreationStore extends flux.Store {
       _dialogService.showLoadingDialog(
           title: "Creating Event");
 
-      _newEvent = new Event(0,_title, _description, "",
-          _image == null ? null : _image.isEmpty ? null : _image,
+      _newEvent = new Event(0,_title.trim(), _description.trim(), "",
+          _image == null ? null : _image.isEmpty ? null : _image.trim(),
           _startDateTime, _endDateTime, DateTime.now(), _selectedRoom,
           _websites, _selectedTags, false, false, null, "active");
 
@@ -95,7 +95,7 @@ class EventCreationStore extends flux.Store {
         _dialogService.dialogComplete(DialogResponse(result: true));
         _dialogService.showDialog(
             type: DialogType.Error,
-            title: "Creation Failed",
+            title: "Unable to Create Event",
             description: e.toString());
       });
     });

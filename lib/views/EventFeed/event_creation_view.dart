@@ -527,7 +527,7 @@ class _EventCreationViewState extends State<EventCreationView>
       bool result = true;
       if(_creationStore.image != null && _creationStore.image.isNotEmpty){
         _dialogService.showLoadingDialog(
-            title: "Verifying Image");
+            title: "Verifying Image URL");
         try{
           response = await _dio.get(_creationStore.image);
           result = response.headers["Content-Type"].toString().contains("image");

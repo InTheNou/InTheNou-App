@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:InTheNou/assets/colors.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/dialog_service.dart';
+import 'package:InTheNou/repos/api_connection.dart';
 import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -90,10 +91,13 @@ class _StartUpViewState extends State<StartUpView>
                   ),
                   Expanded(
                       flex: 1,
-                      child: Image.asset(
-                        "lib/assets/AlphaCode_logo.png",
-                        width: 150,
-                        semanticLabel: "AlphaCode Logo",
+                      child: FlatButton(
+                        child: Image.asset(
+                          "lib/assets/AlphaCode_logo.png",
+                          width: 150,
+                          semanticLabel: "AlphaCode Logo",
+                        ),
+                        onPressed: () => _showHostInput(),
                       )
                   ),
                 ],
@@ -101,6 +105,37 @@ class _StartUpViewState extends State<StartUpView>
             )
         );
       },
+    );
+  }
+  String url;
+  ApiConnection apiConnection = ApiConnection();
+
+  void _showHostInput(){
+    showDialog(
+        context: context,
+        builder: (_){
+          return AlertDialog(
+            content: TextField(
+              controller: TextEditingController(
+                text: "https://X/API"
+              ),
+              onChanged: (value){
+                url = value;
+              },
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text("Connect"),
+                onPressed: () async{
+                  print(url);
+                  await apiConnection.init(apiHost: Uri.parse(url));
+                  Navigator.of(context).pop();
+                  fetchSession();
+                },
+              )
+            ],
+          );
+        }
     );
   }
 

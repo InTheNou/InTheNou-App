@@ -48,8 +48,11 @@ class ApiConnection {
   /// [API_URL] that contains the base URL for the API. Lastly it uses
   /// interceptors to save the session when we receive it in the response of
   /// our requests.
-  init() async{
+  init({Uri apiHost}) async{
     try {
+      if(apiHost == null){
+        apiHost = Uri.parse(API_URL);
+      }
       _dio = Dio();
       final Directory dir = await _localCookieDirectory;
       final cookiePath = dir.path;
@@ -57,7 +60,7 @@ class ApiConnection {
           dir: '$cookiePath',
           persistSession: true);
       _cookies = _persistentCookies.loadForRequest(
-          Uri.parse(API_URL));
+          apiHost);
       session = _cookies.firstWhere((c) => c.name == 'session', orElse: () => null);
       if(session != null ){
         debugPrint("Session Loaded");
@@ -71,7 +74,7 @@ class ApiConnection {
         return client;
       };
       _dio.options = new BaseOptions(
-        baseUrl: API_URL,
+        baseUrl: apiHost.toString(),
         responseType: ResponseType.json,
         connectTimeout: 10000,
         receiveTimeout: 100000,
@@ -80,7 +83,7 @@ class ApiConnection {
           InterceptorsWrapper(
               onResponse:(Response response) {
                 _cookies = _persistentCookies.loadForRequest(
-                    Uri.parse(API_URL));
+                    apiHost);
                 session = cookies.firstWhere((c) => c.name == 'session', orElse: () => null);
                 if(session != null){
                   _dio.options.headers['Cookie'] = session;

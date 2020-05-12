@@ -98,7 +98,7 @@ class GeneralFeedState extends State<FeedView>
         controller: _searchQueryController,
         autofocus: false,
         focusNode: _searchFocus,
-        maxLength: 25,
+        maxLength: 50,
         maxLengthEnforced: true,
         decoration: InputDecoration(
             hintText: "Search Events...",

@@ -145,10 +145,6 @@ class InfoBaseStore extends flux.Store{
     });
 
     triggerOnAction(selectBuildingAction, (Building building) async {
-      if (_detailBuilding != null && _selectedBuilding != null &&
-          _selectedBuilding == building ) {
-        return;
-      }
       _detailRoom = null;
       _selectedFloor = null;
       _selectedBuilding = building;
@@ -162,10 +158,6 @@ class InfoBaseStore extends flux.Store{
       });
     });
     triggerOnAction(selectFloorAction, (MapEntry<Building, Floor> floor) async {
-      if (_roomsInBuilding != null &&_selectedFloor != null &&
-          _selectedFloor == floor.value) {
-        return;
-      }
       _roomsInBuilding = null;
       _selectedFloor = floor.value;
       trigger();
@@ -179,10 +171,6 @@ class InfoBaseStore extends flux.Store{
       });
     });
     triggerOnAction(selectRoomAction, (Room room) async {
-      if (_detailRoom != null && _selectedRoom != null &&
-          _selectedRoom == room) {
-        return;
-      }
       _detailRoom = null;
       _selectedRoom = room;
       trigger();
@@ -195,10 +183,6 @@ class InfoBaseStore extends flux.Store{
       });
     });
     triggerOnAction(selectServiceAction, (Service service) async {
-      if (_detailService != null && _selectedService != null &&
-          _selectedService == service ) {
-        return;
-      }
       _detailService = null;
       _selectedService = service;
       trigger();
@@ -252,7 +236,7 @@ class InfoBaseStore extends flux.Store{
     }).catchError((e){
       _dialogService.showDialog(
           type: DialogType.Error,
-          title: "Getting Search Results ",
+          title: "Getting Building Results",
           description: e.toString());
       return null;
     });

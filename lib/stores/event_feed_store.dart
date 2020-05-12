@@ -100,7 +100,6 @@ class EventFeedStore extends flux.Store{
       }
     });
     triggerOnAction(openEventDetail, (int eventID) async {
-      _eventDetail = Future.value(null);
       _eventDetail = _eventsRepo.getEvent(eventID).then((event) {
         _eventDetailResult = event;
         return event;
@@ -126,15 +125,6 @@ class EventFeedStore extends flux.Store{
             primaryButtonTitle: "OK");
         return;
       }
-      if(event.value.startDateTime.isBefore(DateTime.now())){
-        _dialogService.showDialog(
-            type: DialogType.Alert,
-            title: "Following an event that has started",
-            description: "You have Followed an event that has already"
-                " started. Your interest in the event will be recorded but "
-                "you will not recieve a notification.",
-            primaryButtonTitle: "OK");
-      }
 
       // If the server was able to follow, don't send another change trigger,
       // but run the scheduling of Default notifications and check in case
@@ -142,6 +132,15 @@ class EventFeedStore extends flux.Store{
       _eventsRepo.requestFollowEvent(event.value.UID).then((bool followed) {
         if (followed){
           NotificationHandler.checkNotifications(event.value);
+          if(event.value.startDateTime.isBefore(DateTime.now())){
+            _dialogService.showDialog(
+                type: DialogType.Alert,
+                title: "Following an event that has started",
+                description: "You have Followed an event that has already"
+                    " started. Your interest in the event will be recorded but "
+                    "you will not recieve a notification.",
+                primaryButtonTitle: "OK");
+          }
         } else {
           // If the server was able to follow, revert local follow
           _modifyFollowStatus(event.value, false);
@@ -278,6 +277,9 @@ class EventFeedStore extends flux.Store{
           _reInsertDismissed();
         }
       }).catchError((error){
+        if(type == FeedType.Detail){
+          _dialogService.dialogComplete(DialogResponse(result: true));
+        }
         _showDismissErrorDialog(error.toString());
         _reInsertDismissed();
       });

@@ -95,7 +95,8 @@ class _WebsiteAlertDialogState extends State<WebsiteAlertDialog> {
                     description: "You have already added $_URL to the "
                         "Event");
               } else {
-                modifyWebsiteAction(MapEntry(true, new Website(_URL, _name)));
+                modifyWebsiteAction(MapEntry(true,
+                    Website(_URL.trim(), _name.trim())));
                 Navigator.of(context).pop();
               }
             }
