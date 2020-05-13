@@ -16,18 +16,21 @@ class EventFeedStore extends flux.Store{
   static final EventsRepo _eventsRepo = new EventsRepo();
   SharedPreferences _prefs;
 
+  List<Event> _personalResults = List();
   Future<List<Event>> _personalSearch;
   String _personalSearchKeyword;
   bool _isPerSearching = false;
   bool _isPerPaginating = false;
   bool _canPerPaginate = false;
 
+  List<Event> _generalResults = List();
   Future<List<Event>> _generalSearch;
   String _generalSearchKeyword;
   bool _isGenSearching = false;
   bool _isGenPaginating = false;
   bool _canGenPaginate = false;
 
+  Event _eventDetailResult;
   Future<Event> _eventDetail;
   Future<bool> _detailNeedsToClose = Future.value(false);
 
@@ -47,12 +50,14 @@ class EventFeedStore extends flux.Store{
         _personalSearchKeyword = search.value;
         _personalSearch = Future.value(null);
         trigger();
-        _personalSearch = _searchFeed(FeedType.PersonalFeed, search.value, List());
+        _personalSearch = _searchFeed(FeedType.PersonalFeed, search.value,
+            true);
       } else {
         _generalSearchKeyword = search.value;
         _generalSearch = Future.value(null);
         trigger();
-        _generalSearch = _searchFeed(FeedType.GeneralFeed, search.value, List());
+        _generalSearch = _searchFeed(FeedType.GeneralFeed, search.value,
+            true);
       }
     });
     triggerOnAction(setFeedSearching, (MapEntry<FeedType, bool> search){
@@ -64,61 +69,41 @@ class EventFeedStore extends flux.Store{
     });
     triggerOnAction(getAllEventsAction, (FeedType feed) {
       if (feed == FeedType.PersonalFeed) {
-        _generalSearch = Future.value(null);
-        trigger();
-        _personalSearch = _getAllEvents(FeedType.PersonalFeed, List());
+        _personalSearch = _getAllEvents(FeedType.PersonalFeed, true);
       } else {
-        _generalSearch = Future.value(null);
-        trigger();
-        _generalSearch = _getAllEvents(FeedType.GeneralFeed, List());
+        _generalSearch = _getAllEvents(FeedType.GeneralFeed, true);
       }
     });
     triggerOnAction(paginateFeedAction, (FeedType feed) async {
-      List<Event> events;
       if (feed == FeedType.PersonalFeed) {
         // Here we just catch the error since it means that _personalSearch is
         // null or the last time that it was called it was an error
-        try{
-          events = await _personalSearch;
-        } catch(e){}
         _isPerPaginating = true;
         if(_personalSearchKeyword == null || _personalSearchKeyword.isEmpty){
-          _personalSearch = _getAllEvents(FeedType.PersonalFeed,
-              events ?? List());
+          _personalSearch = _getAllEvents(FeedType.PersonalFeed, false);
         }
         else {
           _personalSearch = _searchFeed(FeedType.PersonalFeed,
-              _personalSearchKeyword, events ?? List());
+              _personalSearchKeyword, false);
         }
       } else {
-        // Here we just catch the error since it means that _generalSearch is
-        // null or the last time that it was called it was an error
-        try{
-          events = await _generalSearch;
-        } catch(e){}
 
         _isGenPaginating = true;
         if(_generalSearchKeyword == null || _generalSearchKeyword.isEmpty){
-          _generalSearch = _getAllEvents(FeedType.GeneralFeed, events ?? List());
+          _generalSearch = _getAllEvents(FeedType.GeneralFeed,
+              false);
         }
         else {
           _generalSearch = _searchFeed(FeedType.GeneralFeed,
-              _generalSearchKeyword, events ?? List());
+              _generalSearchKeyword, false);
         }
       }
     });
     triggerOnAction(openEventDetail, (int eventID) async {
-      var currentEvent;
-      // Here we just catch the error sinse it means that the _eventDetail is
-      // null or the last time that it was called it was an error
-      try{
-        currentEvent = await _eventDetail.catchError((e){});
-      } catch(e){}
-
-      if (currentEvent == null || currentEvent.UID != eventID) {
-        trigger();
-        _eventDetail = _eventsRepo.getEvent(eventID);
-      }
+      _eventDetail = _eventsRepo.getEvent(eventID).then((event) {
+        _eventDetailResult = event;
+        return event;
+      });
     });
     triggerOnAction(clearSearchKeywordAction, (FeedType feed){
       if (feed == FeedType.PersonalFeed) {
@@ -128,7 +113,7 @@ class EventFeedStore extends flux.Store{
       }
     });
     triggerOnAction(followEventAction, (MapEntry<FeedType, Event> event){
-      // Follow locally first just to show the change tot he user
+      // Follow locally first just to show the change to the user
       _modifyFollowStatus(event.value, true);
       trigger();
       if(event.value.endDateTime.isBefore(DateTime.now())){
@@ -140,15 +125,6 @@ class EventFeedStore extends flux.Store{
             primaryButtonTitle: "OK");
         return;
       }
-      if(event.value.startDateTime.isBefore(DateTime.now())){
-        _dialogService.showDialog(
-            type: DialogType.Alert,
-            title: "Following an event that has started",
-            description: "You have Followed an event that has already"
-                " started. Your interest in the event will be recorded but "
-                "you will not recieve a notification.",
-            primaryButtonTitle: "OK");
-      }
 
       // If the server was able to follow, don't send another change trigger,
       // but run the scheduling of Default notifications and check in case
@@ -156,6 +132,15 @@ class EventFeedStore extends flux.Store{
       _eventsRepo.requestFollowEvent(event.value.UID).then((bool followed) {
         if (followed){
           NotificationHandler.checkNotifications(event.value);
+          if(event.value.startDateTime.isBefore(DateTime.now())){
+            _dialogService.showDialog(
+                type: DialogType.Alert,
+                title: "Following an event that has started",
+                description: "You have Followed an event that has already"
+                    " started. Your interest in the event will be recorded but "
+                    "you will not recieve a notification.",
+                primaryButtonTitle: "OK");
+          }
         } else {
           // If the server was able to follow, revert local follow
           _modifyFollowStatus(event.value, false);
@@ -235,24 +220,22 @@ class EventFeedStore extends flux.Store{
       }
       // Remove the event from the list of events for the Personal Feed
       // And save the event in case the user hits Undo
-      var pEvents = await _personalSearch;
-      perDismissEventIndex = pEvents.indexWhere((feedEvent) =>
+      perDismissEventIndex = _personalResults.indexWhere((feedEvent) =>
         feedEvent.UID == event.UID);
       if (perDismissEventIndex != -1){
-        eventDismissed = pEvents[perDismissEventIndex];
-        pEvents.removeAt(perDismissEventIndex);
-        _personalSearch = Future.value(pEvents);
+        eventDismissed = _personalResults[perDismissEventIndex];
+        _personalResults.removeAt(perDismissEventIndex);
+        _personalSearch = Future.value(_personalResults);
       }
 //
 //      // Remove it also from the General Feed
 //      // Saved here again just in case it's not in the Personal Feed
-      var gEvents = await _generalSearch;
-      genDismissEventIndex = gEvents.indexWhere((feedEvent) =>
+      genDismissEventIndex = _generalResults.indexWhere((feedEvent) =>
         feedEvent.UID == event.UID);
       if (genDismissEventIndex != -1){
-        eventDismissed = gEvents[genDismissEventIndex];
-        gEvents.removeAt(genDismissEventIndex);
-        _generalSearch = Future.value(gEvents);
+        eventDismissed = _generalResults[genDismissEventIndex];
+        _generalResults.removeAt(genDismissEventIndex);
+        _generalSearch = Future.value(_generalResults);
       }
     });
     triggerOnAction(undoDismissAction, (_) async{
@@ -294,28 +277,32 @@ class EventFeedStore extends flux.Store{
           _reInsertDismissed();
         }
       }).catchError((error){
+        if(type == FeedType.Detail){
+          _dialogService.dialogComplete(DialogResponse(result: true));
+        }
         _showDismissErrorDialog(error.toString());
         _reInsertDismissed();
       });
     });
      triggerOnAction(cancelEventAction, (_){
-       _personalSearch = _getAllEvents(FeedType.PersonalFeed, List());
-       _generalSearch = _getAllEvents(FeedType.GeneralFeed, List());
+       _personalSearch = _getAllEvents(FeedType.PersonalFeed, true);
+       _generalSearch = _getAllEvents(FeedType.GeneralFeed, true);
      });
   }
 
-  Future<List<Event>> _getAllEvents(FeedType feed, List<Event> results) async{
+  Future<List<Event>> _getAllEvents(FeedType feed, bool getAll) async{
     if (feed == FeedType.PersonalFeed) {
-      return _eventsRepo.getPerEvents(results.length, PAGINATION_LENGTH)
-          .then((newEvents) {
-        if(results.length > 0){
-          results.addAll(newEvents);
+      return _eventsRepo.getPerEvents(getAll ? 0 : _personalResults.length,
+          PAGINATION_LENGTH).then((newEvents) {
+
+        if(!getAll){
+          _personalResults.addAll(newEvents);
         } else {
-          results = newEvents;
+          _personalResults = newEvents;
         }
         _canPerPaginate = newEvents.length == PAGINATION_LENGTH;
         _isPerPaginating = false;
-        return results;
+        return _personalResults;
       }).catchError((e){
         _dialogService.showDialog(
             type: DialogType.Error,
@@ -323,16 +310,16 @@ class EventFeedStore extends flux.Store{
             description: e.toString());
       });
     } else {
-      return _eventsRepo.getGenEvents(results.length, PAGINATION_LENGTH)
-          .then((newEvents) {
-        if(results.length > 0){
-          results.addAll(newEvents);
+      return _eventsRepo.getGenEvents(getAll ? 0 : _generalResults.length,
+          PAGINATION_LENGTH).then((newEvents) {
+        if(!getAll){
+          _generalResults.addAll(newEvents);
         } else {
-          results = newEvents;
+          _generalResults = newEvents;
         }
         _canGenPaginate = newEvents.length == PAGINATION_LENGTH;
         _isGenPaginating = false;
-        return results;
+        return _generalResults;
       }).catchError((e){
         _dialogService.showDialog(
             type: DialogType.Error,
@@ -343,18 +330,18 @@ class EventFeedStore extends flux.Store{
   }
 
   Future<List<Event>> _searchFeed(FeedType feed, String keyword,
-      List<Event> results){
+      bool getAll){
     if(feed == FeedType.PersonalFeed){
-      return _eventsRepo.searchPerEvents(keyword, results.length,
+      return _eventsRepo.searchPerEvents(keyword, getAll ? 0 : _personalResults.length,
           PAGINATION_LENGTH).then((newEvents) {
-        if(results.length > 0){
-          results.addAll(newEvents);
+        if(!getAll){
+          _personalResults.addAll(newEvents);
         } else {
-          results = newEvents;
+          _personalResults = newEvents;
         }
-        _canPerPaginate = results.length == PAGINATION_LENGTH;
+        _canPerPaginate = newEvents.length == PAGINATION_LENGTH;
         _isPerPaginating = false;
-        return results;
+        return _personalResults;
       }).catchError((e){
         _dialogService.showDialog(
             type: DialogType.Error,
@@ -362,16 +349,16 @@ class EventFeedStore extends flux.Store{
             description: e.toString());
       });
     } else{
-      return _eventsRepo.searchGenEvents(keyword, results.length,
+      return _eventsRepo.searchGenEvents(keyword, getAll? 0 : _generalResults.length,
           PAGINATION_LENGTH).then((newEvents) {
-        if(results.length > 0){
-          results.addAll(newEvents);
+        if(!getAll){
+          _generalResults.addAll(newEvents);
         } else {
-          results = newEvents;
+          _generalResults = newEvents;
         }
-        _canGenPaginate = results.length == PAGINATION_LENGTH;
+        _canGenPaginate = newEvents.length == PAGINATION_LENGTH;
         _isGenPaginating = false;
-        return results;
+        return _generalResults;
       }).catchError((e){
         _dialogService.showDialog(
             type: DialogType.Error,
@@ -382,37 +369,31 @@ class EventFeedStore extends flux.Store{
   }
 
   void _modifyFollowStatus(Event event, bool status) async{
-    List<Event> pEvents = await _personalSearch;
-    int i = pEvents.indexOf(event);
+    int i = _personalResults.indexOf(event);
     if (i != -1){
-      pEvents[i].followed = status;
-      _personalSearch = Future.value(pEvents);
+      _personalResults[i].followed = status;
+      _personalSearch = Future.value(_personalResults);
     }
-    List<Event> gEvents = await _generalSearch;
-    i = gEvents.indexOf(event);
+    i = _generalResults.indexOf(event);
     if (i != -1){
-      gEvents[i].followed = status;
-      _generalSearch = Future.value(gEvents);
+      _generalResults[i].followed = status;
+      _generalSearch = Future.value(_generalResults);
     }
     // Also change the detailed in case it is showing
-    Event dEvent = await _eventDetail;
-
-    if (dEvent != null && dEvent.UID == event.UID){
-      dEvent.followed = status;
-      _eventDetail = Future.value(dEvent);
+    if (_eventDetailResult != null && _eventDetailResult.UID == event.UID){
+      _eventDetailResult.followed = status;
+      _eventDetail = Future.value(_eventDetailResult);
     }
   }
 
   void _reInsertDismissed() async{
     if (perDismissEventIndex != -1){
-      List<Event> pEvents = await _personalSearch;
-      pEvents.insert(perDismissEventIndex, eventDismissed);
-      _personalSearch = Future.value(pEvents);
+      _personalResults.insert(perDismissEventIndex, eventDismissed);
+      _personalSearch = Future.value(_personalResults);
     }
     if (genDismissEventIndex != -1){
-      List<Event> gEvents = await _generalSearch;
-      gEvents.insert(genDismissEventIndex, eventDismissed);
-      _generalSearch = Future.value(gEvents);
+      _generalResults.insert(genDismissEventIndex, eventDismissed);
+      _generalSearch = Future.value(_generalResults);
     }
     perDismissEventIndex = -1;
     genDismissEventIndex = -1;
@@ -436,6 +417,14 @@ class EventFeedStore extends flux.Store{
         description: message,
         primaryButtonTitle: "OK"
     );
+  }
+
+  List<Event> getResults(FeedType feed){
+    if (feed ==  FeedType.PersonalFeed) {
+      return _personalResults;
+    } else {
+      return _generalResults;
+    }
   }
 
   bool isSearching(FeedType feed){

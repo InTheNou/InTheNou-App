@@ -42,8 +42,8 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
   DialogService _dialogService = DialogService();
 
   final List<Widget> _children = [
-    FeedView(type: FeedType.PersonalFeed),
-    FeedView(type: FeedType.GeneralFeed),
+    FeedView(type: FeedType.PersonalFeed, key: PageStorageKey("PersonalFeed")),
+    FeedView(type: FeedType.GeneralFeed, key: PageStorageKey("GeneralFeed")),
     InfoBaseCategoryView(key: PageStorageKey("InfoBaseCategoryView")),
     ProfileView(key: PageStorageKey("ProfileView"))
   ];
@@ -69,6 +69,7 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
       body: PageStorage(
         child: _children[navigationStore.destinationIndex],
         bucket: bucket,
+        key: GlobalKey(),
       ),
       bottomNavigationBar: BottomNavigationBar(
         onTap: navigateToAction,
@@ -93,7 +94,7 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
           BottomNavigationBarItem(
               icon: Icon(Icons.business),
               backgroundColor: Theme.of(context).cardColor,
-              title: Text('Information Basee')
+              title: Text('Info Base')
           ),
           BottomNavigationBarItem(
               icon: Icon(Icons.person),
@@ -130,6 +131,7 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
               "which will help us Recommend Events to you, which will show up "
               "in your Personal Profile.");
       prefs.setBool(FIRST_TIME_USER_KEY, false);
+      BackgroundHandler.doRecommendation(false);
     }
 
     await Geolocator().checkGeolocationPermissionStatus().then((value) {

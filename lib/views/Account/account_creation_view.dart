@@ -30,7 +30,7 @@ class _AccountCreationViewState extends State<AccountCreationView>
   void initState() {
     super.initState();
     _userStore = listenToStore(UserStore.userStoreToken);
-    resetTagsAction();
+    getTagsAction();
   }
 
   @override
@@ -117,11 +117,14 @@ class _AccountCreationViewState extends State<AccountCreationView>
                             color: Theme.of(context).canvasColor
                         )),
                   ),
-                  Visibility(
-                    visible: _userStore.tagsString.isNotEmpty,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(_userStore.tagsString),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Visibility(
+                      visible: _userStore.tagsString.isNotEmpty,
+                      child: Text(_userStore.tagsString,
+                        style: TextStyle(
+                            color: Colors.white
+                        ),),
                     ),
                   ),
                   Card(

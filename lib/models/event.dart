@@ -204,18 +204,17 @@ class Event {
     if (_startDateTime.month ==  DateTime.now().month){
       return DateFormat('EEE d: hh:mm aaa - ').format(_startDateTime);
     } else {
-      return DateFormat('EEE, MMM d: hh:mm aaa - ').format(_startDateTime)
-          + DateFormat('hh:mm aaa').format(_startDateTime);
+      return DateFormat('EEE, MMM d: hh:mm aaa - ').format(_startDateTime);
     }
   }
 
   /// Helper method to format the [_endDateTime] as a readable string
-  String getEEndTimeString() {
+  String getEndTimeString() {
     if (_endDateTime.month ==  DateTime.now().month){
-      return DateFormat('EEE d: hh:mm aaa - ').format(_endDateTime);
+      return "Ends: "+ DateFormat('EEE d: hh:mm aaa - ').format(_endDateTime);
     } else {
-      return DateFormat('EEE, MMM d: hh:mm aaa - ').format(_endDateTime)
-          + DateFormat('hh:mm aaa').format(_endDateTime);
+      return "Ends: "+ DateFormat('EEE, MMM d: hh:mm aaa - ').format
+        (_endDateTime);
     }
   }
 

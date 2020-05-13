@@ -417,7 +417,7 @@ class EventsRepo {
         return Future.error(Utils.handleDioError(error, "Create Event"));
       } else {
         debugPrint("Exception: $error stackTrace: $stacktrace");
-        return Future.error("Internal app error while Createing Event");
+        return Future.error("Internal app error while Creating Event");
       }
     }
   }

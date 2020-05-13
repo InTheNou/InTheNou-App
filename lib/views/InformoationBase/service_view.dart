@@ -111,7 +111,32 @@ class _ServiceViewState extends State<ServiceView>
                     ),
                   ),
                   //
-                  // Contact info
+                  //Schedule
+                  Card(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Padding(
+                            padding: EdgeInsets.only(top: 8.0, bottom: 8.0,
+                                left: 8.0, right: 8.0),
+                            child: Text(
+                              "Schedule:",
+                              style: Theme.of(context).textTheme.subtitle2.copyWith(
+                                  fontWeight: FontWeight.w300
+                              ),
+                            )
+                        ),
+                        ListTile(
+                          title: Text(detailService.schedule,
+                              style: Theme.of(context).textTheme.subtitle1),
+                          leading: Icon(Icons.access_time),
+                          dense: true,
+                        )
+                      ],
+                    ),
+                  ),
+                  //
+                  // Websites info
                   Visibility(
                     visible: detailService.websites.length>0,
                     child: Card(
@@ -122,7 +147,7 @@ class _ServiceViewState extends State<ServiceView>
                               padding: const EdgeInsets.fromLTRB(8.0, 4.0,
                                   8.0, 4.0),
                               child: Text(
-                                "Contact Information",
+                                "Websites",
                                 style: Theme.of(context).textTheme.subtitle2.copyWith(
                                     fontWeight: FontWeight.w300
                                 ),
@@ -151,6 +176,28 @@ class _ServiceViewState extends State<ServiceView>
                               ],
                             )
                           ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  //
+                  // Phones info
+                  Visibility(
+                    visible: detailService.numbers.length>0,
+                    child: Card(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Padding(
+                              padding: const EdgeInsets.fromLTRB(8.0, 4.0,
+                                  8.0, 4.0),
+                              child: Text(
+                                "Phone Numbers",
+                                style: Theme.of(context).textTheme.subtitle2.copyWith(
+                                    fontWeight: FontWeight.w300
+                                ),
+                              )
+                          ),
                           Padding(
                               padding: const EdgeInsets.fromLTRB(8.0, 2.0,
                                   8.0, 4.0),
@@ -160,7 +207,7 @@ class _ServiceViewState extends State<ServiceView>
                                   itemCount: detailService.numbers.length,
                                   itemBuilder: (context, index){
                                     PhoneNumber _phone =
-                                        detailService.numbers[index];
+                                    detailService.numbers[index];
                                     return createPhoneEntry(_phone);
                                   })
                           )
@@ -168,65 +215,10 @@ class _ServiceViewState extends State<ServiceView>
                       ),
                     ),
                   ),
-                  //
-                  //Schedule
-                  Card(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Padding(
-                            padding: EdgeInsets.only(top: 8.0, bottom: 8.0,
-                                left: 8.0, right: 8.0),
-                            child: Text(
-                              "Schedule:",
-                              style: Theme.of(context).textTheme.subtitle2.copyWith(
-                                  fontWeight: FontWeight.w300
-                              ),
-                            )
-                        ),
-                        ListTile(
-                          title: Text(detailService.schedule,
-                              style: Theme.of(context).textTheme.subtitle1),
-                          leading: Icon(Icons.access_time),
-                          dense: true,
-                        )
-                      ],
-                    ),
-                  ),
                 ],
               ),
             )
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildErrorWidget(String error) {
-    return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(error,
-                  style: Theme.of(context).textTheme.headline5
-              ),
-            ),
-          ],
-        ));
-  }
-
-  Widget _buildLoadingWidget(){
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Loading"),
-      ),
-      body: Center(
-        child: Container(
-          height: 100,
-          width: 100,
-          child: CircularProgressIndicator(),
         ),
       ),
     );

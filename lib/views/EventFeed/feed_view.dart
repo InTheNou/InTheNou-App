@@ -17,7 +17,7 @@ import 'package:flutter_flux/flutter_flux.dart' as flux;
 class FeedView extends StatefulWidget{
 
   final FeedType type;
-  FeedView({this.type}) : super(key: PageStorageKey(Utils.feedTypeString(type)));
+  FeedView({this.type, Key key}) : super(key: key);
 
   @override
   GeneralFeedState createState() => GeneralFeedState();
@@ -49,14 +49,18 @@ class GeneralFeedState extends State<FeedView>
     _searchQueryController =TextEditingController(
         text:_eventFeedStore.searchKeyword(widget.type));
     _searchFocus = FocusNode();
-    getAllEventsAction(widget.type);
+
+    if(_eventFeedStore.getResults(widget.type).length == 0 &&
+        !_eventFeedStore.isSearching(widget.type)){
+      getAllEventsAction(widget.type);
+    }
   }
 
   @override
   void dispose() {
+    super.dispose();
     _searchQueryController.dispose();
     _searchFocus.dispose();
-    super.dispose();
   }
 
   @override
@@ -94,7 +98,7 @@ class GeneralFeedState extends State<FeedView>
         controller: _searchQueryController,
         autofocus: false,
         focusNode: _searchFocus,
-        maxLength: 25,
+        maxLength: 50,
         maxLengthEnforced: true,
         decoration: InputDecoration(
             hintText: "Search Events...",
@@ -154,7 +158,11 @@ class GeneralFeedState extends State<FeedView>
     ];
   }
 
+  Future future;
   Widget _buildBody(){
+    future = widget.type == FeedType.PersonalFeed ?
+    _eventFeedStore.personalSearch : _eventFeedStore.generalSearch;
+
     return GestureDetector(
       onTap: () {
         FocusScopeNode currentFocus = FocusScope.of(context);
@@ -162,9 +170,9 @@ class GeneralFeedState extends State<FeedView>
           currentFocus.unfocus();
         }
       },
-      child: FutureBuilder(
-        future: widget.type == FeedType.PersonalFeed ?
-          _eventFeedStore.personalSearch : _eventFeedStore.generalSearch,
+      child: FutureBuilder<List<Event>>(
+        key: ValueKey(widget.type.toString() + "futurebuilder"),
+        future: future,
         builder: (BuildContext context, AsyncSnapshot<List<Event>> events) {
 
           if(events.hasData){
@@ -206,7 +214,7 @@ class GeneralFeedState extends State<FeedView>
                 children: <Widget>[
                   Flexible(
                     child: ListView.builder(
-                        key: ValueKey(widget.type),
+                        key: ValueKey(widget.type.toString()+ "listView"),
                         itemCount: results.length,
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),

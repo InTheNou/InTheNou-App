@@ -34,12 +34,12 @@ class EventCardImage extends StatelessWidget {
                   Visibility(
                     visible: _event.image != null && _event.image.isNotEmpty,
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 8.0, bottom: 8.0,
+                      padding: const EdgeInsets.only(top: 8.0,
                           left: 8.0, right: 0.0),
                       child: LoadingImage(
                           imageURL: _event.image,
-                          height: 100,
-                          width: 100),
+                          height: 120,
+                          width: 120),
                     ),
                   ),
                   Expanded(
@@ -62,7 +62,9 @@ class EventCardImage extends StatelessWidget {
                           ),
                           const Padding(padding: EdgeInsets.only(bottom: 8.0)),
                           Text(
-                              _event.getDurationString(),
+                              _event.startDateTime.isBefore(DateTime.now()) ?
+                                _event.getEndTimeString() :
+                                _event.getDurationString(),
                               style: Theme.of(context).textTheme.bodyText1.copyWith(
                                   fontWeight: FontWeight.w400
                               )
@@ -85,15 +87,12 @@ class EventCardImage extends StatelessWidget {
                     _event.status == "active" &&
                     !_event.dismissed &&
                     _event.endDateTime.isAfter(DateTime.now()),
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: <Widget>[
-                        DismissButton(_event, _feedType),
-                        FollowButton(_event, _feedType),
-                      ]
-                  ),
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      DismissButton(_event, _feedType),
+                      FollowButton(_event, _feedType),
+                    ]
                 ),
               ),
             ],

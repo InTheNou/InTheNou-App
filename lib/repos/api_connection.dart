@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiConnection {
   Dio _dio;
@@ -49,7 +50,9 @@ class ApiConnection {
   /// interceptors to save the session when we receive it in the response of
   /// our requests.
   init() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     try {
+      Uri apiHost = Uri.parse(prefs.getString(API_ROUTE_KEY) ?? API_URL);
       _dio = Dio();
       final Directory dir = await _localCookieDirectory;
       final cookiePath = dir.path;
@@ -57,7 +60,7 @@ class ApiConnection {
           dir: '$cookiePath',
           persistSession: true);
       _cookies = _persistentCookies.loadForRequest(
-          Uri.parse(API_URL));
+          apiHost);
       session = _cookies.firstWhere((c) => c.name == 'session', orElse: () => null);
       if(session != null ){
         debugPrint("Session Loaded");
@@ -71,7 +74,7 @@ class ApiConnection {
         return client;
       };
       _dio.options = new BaseOptions(
-        baseUrl: API_URL,
+        baseUrl: apiHost.toString(),
         responseType: ResponseType.json,
         connectTimeout: 10000,
         receiveTimeout: 100000,
@@ -80,7 +83,7 @@ class ApiConnection {
           InterceptorsWrapper(
               onResponse:(Response response) {
                 _cookies = _persistentCookies.loadForRequest(
-                    Uri.parse(API_URL));
+                    apiHost);
                 session = cookies.firstWhere((c) => c.name == 'session', orElse: () => null);
                 if(session != null){
                   _dio.options.headers['Cookie'] = session;

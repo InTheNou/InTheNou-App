@@ -48,11 +48,9 @@ class _EventDetailViewState extends State<EventDetailView>
   Widget build(BuildContext context) {
     return FutureBuilder(
       future: _eventFeedStore.eventDetail,
+      initialData: null,
       builder: (BuildContext context, AsyncSnapshot<Event> eventDetail) {
 
-        if(eventDetail.connectionState == ConnectionState.waiting){
-          return LoadingScaffoldView();
-        }
         if(eventDetail.hasData){
           return _buildBody(eventDetail.data);
         } else if(eventDetail.hasError){
@@ -228,50 +226,53 @@ class _EventDetailViewState extends State<EventDetailView>
                     ),
                   ),
                 ),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, left:
-                    8.0, right: 8.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Expanded(
-                          flex: 2,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                "Reminders",
-                                style: TextStyle(
-                                  color: Theme.of(context).brightness == Brightness.dark ?
-                                  Theme.of(context).primaryColorLight :
-                                  Theme.of(context).primaryColor,
-                                  fontSize: Theme.of(context).textTheme
-                                      .bodyText1.fontSize,
-                                  fontWeight: FontWeight.w300,
+                Visibility(
+                  visible: eventDetail.followed,
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, left:
+                      8.0, right: 8.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Expanded(
+                            flex: 2,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  "Reminders",
+                                  style: TextStyle(
+                                    color: Theme.of(context).brightness == Brightness.dark ?
+                                    Theme.of(context).primaryColorLight :
+                                    Theme.of(context).primaryColor,
+                                    fontSize: Theme.of(context).textTheme
+                                        .bodyText1.fontSize,
+                                    fontWeight: FontWeight.w300,
+                                  ),
                                 ),
-                              ),
-                              const Padding(padding: EdgeInsets.only(
-                                  bottom: 8.0)),
-                              MultiTextWithIcon(
-                                  "Default Notification:",
-                                  _eventFeedStore
-                                      .getDefaultNotification()
-                                      .toString()+ " mins before",
-                                  Icons.alarm_on),
-                              const Padding(padding: EdgeInsets.only(
-                                  bottom: 8.0)),
-                              MultiTextWithIcon(
-                                  "Smart Notification:",
-                                  _eventFeedStore
-                                      .getSmartNotification(),
-                                  Icons.alarm_on),
-                              const Padding(padding: EdgeInsets.only(
-                                  bottom: 8.0)),
-                            ],
+                                const Padding(padding: EdgeInsets.only(
+                                    bottom: 8.0)),
+                                MultiTextWithIcon(
+                                    "Default Notification:",
+                                    _eventFeedStore
+                                        .getDefaultNotification()
+                                        .toString()+ " mins before",
+                                    Icons.alarm_on),
+                                const Padding(padding: EdgeInsets.only(
+                                    bottom: 8.0)),
+                                MultiTextWithIcon(
+                                    "Smart Notification:",
+                                    _eventFeedStore
+                                        .getSmartNotification(),
+                                    Icons.alarm_on),
+                                const Padding(padding: EdgeInsets.only(
+                                    bottom: 8.0)),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

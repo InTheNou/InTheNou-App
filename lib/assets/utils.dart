@@ -77,6 +77,9 @@ class Utils {
   /// values
   static Future<void> checkSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    if(!prefs.containsKey(API_ROUTE_KEY)){
+      prefs.setString(API_ROUTE_KEY, API_URL);
+    }
     if(!prefs.containsKey(DEFAULT_NOTIFICATION_KEY)){
       prefs.setInt(DEFAULT_NOTIFICATION_KEY, DEFAULT_NOTIFICATION_TIME);
     }

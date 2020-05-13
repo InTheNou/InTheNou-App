@@ -21,6 +21,7 @@ class CancelButton extends StatelessWidget {
           child: FlatButton(
               child: _event.status == "active" ?
               Text("CANCEL") : Text("CANCELED"),
+              textColor: Colors.white,
               color: Theme.of(context).errorColor,
               disabledColor: Theme.of(context).brightness == Brightness.dark ?
                 Colors.grey[700] : Colors.grey[200],

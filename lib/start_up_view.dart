@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:InTheNou/assets/colors.dart';
 import 'package:InTheNou/assets/values.dart';
 import 'package:InTheNou/dialog_service.dart';
+import 'package:InTheNou/repos/api_connection.dart';
 import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,6 +10,7 @@ import 'package:flutter_flux/flutter_flux.dart' as flux;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:InTheNou/home_page.dart';
 import 'package:InTheNou/views/Account/login_view.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 /// The initial view whenever the user loads into the app.
@@ -71,11 +73,14 @@ class _StartUpViewState extends State<StartUpView>
                   Container(
                     height: 450,
                     width: 350,
-                    child: Image.asset(
-                      "lib/assets/InTheNou_logo.png",
-                      fit: BoxFit.fitWidth,
-                      semanticLabel: "InTheNou App Logo",
-                    ),
+                      child: FlatButton(
+                        child: Image.asset(
+                          "lib/assets/InTheNou_logo.png",
+                          fit: BoxFit.fitWidth,
+                          semanticLabel: "InTheNou App Logo",
+                        ),
+                        onPressed: () => _showHostInput(),
+                      )
                   ),
                   Flexible(
                     flex: 4,
@@ -94,13 +99,45 @@ class _StartUpViewState extends State<StartUpView>
                         "lib/assets/AlphaCode_logo.png",
                         width: 150,
                         semanticLabel: "AlphaCode Logo",
-                      )
+                      ),
                   ),
                 ],
               ),
             )
         );
       },
+    );
+  }
+  String url = "https://X/API";
+  ApiConnection apiConnection = ApiConnection();
+
+  void _showHostInput(){
+    showDialog(
+        context: context,
+        builder: (_){
+          return AlertDialog(
+            content: TextField(
+              controller: TextEditingController(
+                text: url
+              ),
+              onChanged: (value){
+                url = value;
+              },
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text("Connect"),
+                onPressed: () async{
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  prefs.setString(API_ROUTE_KEY, url);
+                  await apiConnection.init();
+                  Navigator.of(context).pop();
+                  fetchSession();
+                },
+              )
+            ],
+          );
+        }
     );
   }
 

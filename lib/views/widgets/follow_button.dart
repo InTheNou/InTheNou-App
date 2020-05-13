@@ -27,8 +27,9 @@ class FollowButton extends StatelessWidget {
           Theme.of(context).brightness == Brightness.dark ?
           Theme.of(context).primaryColorLight : Theme.of(context).primaryColor,
         color: _event.followed ?
-        Theme.of(context).primaryColor :
-        Theme.of(context).cardColor,
+        Theme.of(context).brightness == Brightness.dark ?
+        Theme.of(context).primaryColorDark:
+        Theme.of(context).primaryColor : null,
         onPressed: () {
           _event.followed ?
           unFollowEventAction

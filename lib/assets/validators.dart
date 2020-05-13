@@ -31,7 +31,7 @@ class Validators {
     if(image.isNotEmpty){
       if(image.trim().length < 3){
         return "Image link is too short";
-      } else if(!Uri.parse(image).isAbsolute || !isURL(image,
+      } else if(!Uri.parse(image.trim()).isAbsolute || !isURL(image.trim(),
           protocols: ['http', 'https'])){
         return "Invalid Image link";
       } else if(image.length > 400){
@@ -76,7 +76,8 @@ class Validators {
       return "URL is required";
     } else if(link.trim().length < 3){
       return "URL is too short";
-    } else if(!Uri.parse(link).isAbsolute || !isURL(link)){
+    } else if(!Uri.parse(link.trim()).isAbsolute || !isURL(link.trim(), protocols:
+    ['http', 'https'])){
       return "Invalid URL";
     }  else if(link.length > 400){
       return "URL is too long";
