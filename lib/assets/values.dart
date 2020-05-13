@@ -67,7 +67,7 @@ enum DialogType{
 const PAGINATION_GET_ALL = 100000;
 const PAGINATION_LENGTH = 20;
 const DEFAULT_NOTIFICATION_TIME = 5;
-const SMART_NOTIFICATION_STATE = false;
+const SMART_NOTIFICATION_STATE = true;
 const AVERAGE_WALKING_SPEED = 3.0;
 const RECOMMENDATION_INTERVAL_MINUTES = 60;
 const ASK_LOCATION_PERMISSION = true;
@@ -93,6 +93,7 @@ const API_URL = "https://inthenou.uprm.edu/API";
 const radius = 12.0;
 
 //Shared Preferences Keys
+const API_ROUTE_KEY = "apiRoute";
 const DEFAULT_NOTIFICATION_KEY = "defaultNotificationTime";
 const SMART_NOTIFICATION_KEY = "smartNotificationEnabled";
 const USER_SESSION_KEY = "userSession";

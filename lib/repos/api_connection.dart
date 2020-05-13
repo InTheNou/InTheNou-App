@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiConnection {
   Dio _dio;
@@ -48,11 +49,10 @@ class ApiConnection {
   /// [API_URL] that contains the base URL for the API. Lastly it uses
   /// interceptors to save the session when we receive it in the response of
   /// our requests.
-  init({Uri apiHost}) async{
+  init() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     try {
-      if(apiHost == null){
-        apiHost = Uri.parse(API_URL);
-      }
+      Uri apiHost = Uri.parse(prefs.getString(API_ROUTE_KEY) ?? API_URL);
       _dio = Dio();
       final Directory dir = await _localCookieDirectory;
       final cookiePath = dir.path;

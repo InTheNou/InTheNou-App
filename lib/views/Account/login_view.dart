@@ -1,9 +1,12 @@
 import 'package:InTheNou/assets/colors.dart';
+import 'package:InTheNou/assets/values.dart';
+import 'package:InTheNou/repos/api_connection.dart';
 import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_auth_buttons/flutter_auth_buttons.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// The view for logging into the app using a Google account
 ///
@@ -69,11 +72,14 @@ class _LoginViewState extends State<LoginView>
                   child: Container(
                     height: 450,
                     width: 350,
-                    child: Image.asset(
-                      "lib/assets/InTheNou_logo.png",
-                      fit: BoxFit.fitWidth,
-                      semanticLabel: "InTheNou App Logo",
-                    ),
+                    child: FlatButton(
+                      child: Image.asset(
+                        "lib/assets/InTheNou_logo.png",
+                        fit: BoxFit.fitWidth,
+                        semanticLabel: "InTheNou App Logo",
+                      ),
+                      onPressed: () => _showHostInput(),
+                    )
                   ),
                 ),
                 Expanded(
@@ -137,6 +143,38 @@ class _LoginViewState extends State<LoginView>
           ),
         );
         },
+    );
+  }
+
+  String url = "https://X/API";
+  ApiConnection apiConnection = ApiConnection();
+
+  void _showHostInput(){
+    showDialog(
+        context: context,
+        builder: (_){
+          return AlertDialog(
+            content: TextField(
+              controller: TextEditingController(
+                  text: url
+              ),
+              onChanged: (value){
+                url = value;
+              },
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text("Connect"),
+                onPressed: () async{
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  prefs.setString(API_ROUTE_KEY, url);
+                  await apiConnection.init();
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
+          );
+        }
     );
   }
 

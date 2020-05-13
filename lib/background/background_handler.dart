@@ -26,7 +26,7 @@ class BackgroundHandler {
   /// [NotificationHandler.doSmartNotification].
   /// This method can also schedule any other background tasks needed, be
   /// it one-hot or recurring. Here the Recommendation feature handled by
-  /// the [_doRecommendation] task.
+  /// the [doRecommendation] task.
   ///
   /// The variable stopOnTerminate makes these tasks to
   /// operate when the app is not active. enableHeadless makes it so that a
@@ -118,10 +118,10 @@ class BackgroundHandler {
         }
         break;
       case "com.inthenou.app.reccomendation":
-        _doRecommendation(true);
+        doRecommendation(true);
         break;
       case "com.inthenou.app.reccomendation.retry":
-        _doRecommendation(false);
+        doRecommendation(false);
         break;
       case "com.inthenou.app.cancellation":
         _checkCanceledEvents(true);
@@ -316,7 +316,7 @@ class BackgroundHandler {
   /// passed through the Recommendation algorithm to see which aer of
   /// interest to the user. The user is then sent a Recommendation
   /// Notification saying how many events have been recommended.
-  static void _doRecommendation(bool retry) async{
+  static void doRecommendation(bool retry) async{
     _prefs = await SharedPreferences.getInstance();
 
     try{

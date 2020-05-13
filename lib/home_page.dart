@@ -131,6 +131,7 @@ class _HomePageState extends State<HomePage> with flux.StoreWatcherMixin {
               "which will help us Recommend Events to you, which will show up "
               "in your Personal Profile.");
       prefs.setBool(FIRST_TIME_USER_KEY, false);
+      BackgroundHandler.doRecommendation(false);
     }
 
     await Geolocator().checkGeolocationPermissionStatus().then((value) {
