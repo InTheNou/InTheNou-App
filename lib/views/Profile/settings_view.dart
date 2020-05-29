@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:InTheNou/assets/utils.dart';
 import 'package:InTheNou/background/background_handler.dart';
 import 'package:InTheNou/background/notification_handler.dart';
@@ -171,16 +173,14 @@ class _SettingsViewState extends State<SettingsView>
                               onTap: () async {
                                 // Move the HomePage navigator to the Personal feed for
                                 // the next sign in
-                                navigateToAction(0);
                                 await logoutAction();
                                 // Cancel all Preferences and Notifications of the
                                 // current user
-                                NotificationHandler.cancelAllSmartNotifications();
+                                NotificationHandler.cancelAllNotifications();
                                 Utils.clearAllPreferences();
                                 // Disable the background tasks
                                 BackgroundHandler.toggleBackgroundTask(false);
-                                Navigator.pushNamedAndRemoveUntil(
-                                  context, "/login", (Route<dynamic> route) => false,);
+                                exit(1);
                               }
                           )
                       ),

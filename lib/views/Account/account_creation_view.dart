@@ -5,6 +5,7 @@ import 'package:InTheNou/models/tag.dart';
 import 'package:InTheNou/stores/user_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart' as flux;
+import 'package:InTheNou/assets/colors.dart';
 
 /// The view for creating account for new users
 ///
@@ -182,7 +183,7 @@ class _AccountCreationViewState extends State<AccountCreationView>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       RaisedButton(
-                        color: Theme.of(context).accentColor,
+                        color: primaryColor[50],
                         child: Text(
                           "Create Your Account",
                           style: Theme.of(context).accentTextTheme.headline6

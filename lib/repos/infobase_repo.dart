@@ -29,7 +29,7 @@ class InfoBaseRepo {
       List<Building> buildingResults = new List();
 
       if(response.data != null){
-        response.data.forEach((element) {
+        response.data["buildings"].forEach((element) {
           buildingResults.add(Building.fromJson(element));
         });
       }
@@ -65,7 +65,7 @@ class InfoBaseRepo {
       List<Building> buildingResults = new List();
 
       if(response.data != null){
-        response.data.forEach((element) {
+        response.data["buildings"].forEach((element) {
           buildingResults.add(Building.fromJson(element));
         });
       }

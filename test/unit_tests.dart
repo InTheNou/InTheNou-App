@@ -99,8 +99,10 @@ void main(){
           expect(Validators.validateDate(null, null ,null), "Insert Date");
         });
         test('Duration bigger than 7 days', () {
-          expect(Validators.validateDate(DateTime.now(), DateTime.now(),
-              DateTime.now().add(Duration(hours: 169))),
+          expect(Validators.validateDate(
+              DateTime.now().add(Duration(minutes: 1)),
+              DateTime.now().add(Duration(minutes: 1)),
+              DateTime.now().add(Duration(hours: 170))),
               "Event Duration too long");
         });
         test('Duration shorter than 7 days', () {
@@ -285,6 +287,77 @@ void main(){
           expect(Utils.isScheduleSmartNecessary(timeToEvent, timeToWalk), true);
         }
       });
+      test('Checking for margin of error', () {
+        DateTime timestamp = new DateTime.now();
+        DateTime startDateTime = new DateTime.now().add(Duration(minutes: 60));
+        Duration timeToEvent;
+        Coordinate userCoords = Coordinate(18.220244, -67.152635, 0);
+        Coordinate eventCoords = Coordinate(18.209641, -67.139923, 0);
+
+        timeToEvent = startDateTime.difference(timestamp);
+        bool isEventInTheNextDay = Utils.isEventInTheNextDay(startDateTime, timestamp);
+        expect(isEventInTheNextDay, true);
+
+        double timeToWalk = Utils.GPSTimeToWalkCalculation(timeToEvent,
+            userCoords, eventCoords);
+
+        userCoords = Coordinate(18.240789, -67.163173, 0);
+        timeToWalk = Utils.GPSTimeToWalkCalculation(timeToEvent,
+            userCoords, eventCoords);
+
+        userCoords = Coordinate(18.217844, -67.150352, 0);
+        timeToWalk = Utils.GPSTimeToWalkCalculation(timeToEvent,
+            userCoords, eventCoords);
+
+        userCoords = Coordinate(18.217247, -67.142751, 0);
+        timeToWalk = Utils.GPSTimeToWalkCalculation(timeToEvent,
+            userCoords, eventCoords);
+
+        userCoords = Coordinate(18.215242, -67.138848, 0);
+        timeToWalk = Utils.GPSTimeToWalkCalculation(timeToEvent,
+            userCoords, eventCoords);
+
+        userCoords = Coordinate(18.212666, -67.138521, 0);
+        timeToWalk = Utils.GPSTimeToWalkCalculation(timeToEvent,
+            userCoords, eventCoords);
+
+        userCoords = Coordinate(18.205127, -67.140531, 0);
+        timeToWalk = Utils.GPSTimeToWalkCalculation(timeToEvent,
+            userCoords, eventCoords);
+
+        userCoords = Coordinate(18.204485, -67.142402, 0);
+        timeToWalk = Utils.GPSTimeToWalkCalculation(timeToEvent,
+            userCoords, eventCoords);
+
+        userCoords = Coordinate(18.209577, -67.144592, 0);
+        timeToWalk = Utils.GPSTimeToWalkCalculation(timeToEvent,
+            userCoords, eventCoords);
+
+        userCoords = Coordinate(18.211511, -67.142590, 0);
+        timeToWalk = Utils.GPSTimeToWalkCalculation(timeToEvent,
+            userCoords, eventCoords);
+
+        userCoords = Coordinate(18.212589, -67.141170, 0);
+        timeToWalk = Utils.GPSTimeToWalkCalculation(timeToEvent,
+            userCoords, eventCoords);
+
+        userCoords = Coordinate(18.210039, -67.141148, 0);
+        timeToWalk = Utils.GPSTimeToWalkCalculation(timeToEvent,
+            userCoords, eventCoords);
+
+        userCoords = Coordinate(18.210086, -67.139771, 0);
+        timeToWalk = Utils.GPSTimeToWalkCalculation(timeToEvent,
+            userCoords, eventCoords);
+
+        userCoords = Coordinate( 18.209479, -67.139487 , 0);
+        timeToWalk = Utils.GPSTimeToWalkCalculation(timeToEvent,
+            userCoords, eventCoords);
+
+        userCoords = Coordinate(18.209958, -67.140285, 0);
+        timeToWalk = Utils.GPSTimeToWalkCalculation(timeToEvent,
+            userCoords, eventCoords);
+      });
+
     });
     group("Reccomendation Calculations", (){
       test('Event with 1 common tag', () {
@@ -376,7 +449,6 @@ void main(){
         });
       });
     });
-
   });
 
 }

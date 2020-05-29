@@ -36,7 +36,7 @@ class LoadingImage extends StatelessWidget {
             Align(
                 alignment: Alignment.bottomCenter,
                 child: LinearProgressIndicator(
-                    backgroundColor: Colors.transparent,
+                    backgroundColor: Colors.white,
                     value: downloadProgress.progress)
             ),
       );

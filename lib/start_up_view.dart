@@ -89,7 +89,9 @@ class _StartUpViewState extends State<StartUpView>
                       child: Container(
                         height: 100,
                         width: 100,
-                        child: CircularProgressIndicator(),
+                        child: CircularProgressIndicator(
+                          backgroundColor: Colors.white,
+                        ),
                       ),
                     ),
                   ),

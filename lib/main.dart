@@ -96,11 +96,11 @@ class InTheNouApp extends StatelessWidget {
             primaryColorLight: primaryColor[50],
             primaryColorDark: primaryColor[900],
             primaryColorBrightness: Brightness.dark,
-            accentColor: secondaryColor,
+            accentColor: primaryColor,
             accentColorBrightness: Brightness.dark,
             errorColor: errorColor,
             toggleableActiveColor: brightness == Brightness.dark ?
-              secondaryColor[900] : secondaryColor,
+              primaryColor[50] : primaryColor,
             canvasColor: brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[50],
             cardTheme: CardTheme(
                 color: brightness == Brightness.dark ? Colors.grey[850] :
@@ -122,13 +122,12 @@ class InTheNouApp extends StatelessWidget {
               ),
             ),
             floatingActionButtonTheme: FloatingActionButtonThemeData(
-                backgroundColor: brightness == Brightness.dark ?
-                  secondaryColor[900] : secondaryColor,
+                backgroundColor: primaryColor,
                 foregroundColor: Colors.white
             ),
             snackBarTheme: SnackBarThemeData(
               backgroundColor: Colors.grey[850],
-              actionTextColor: secondaryColor,
+              actionTextColor: primaryColor[50],
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(radius),
               ),
@@ -143,8 +142,7 @@ class InTheNouApp extends StatelessWidget {
             ),
             appBarTheme: AppBarTheme(
               brightness: Brightness.dark,
-              color: brightness == Brightness.dark ?
-              primaryColor[900] : primaryColor,
+              color: primaryColor,
             )
         ),
         themedWidgetBuilder: (context, theme) {
